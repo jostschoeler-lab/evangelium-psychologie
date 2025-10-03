@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { saveEntry, Entry } from "../lib/storage";
+import { saveEntry, loadEntry, listEntries } from "../lib/storage";
 
 /**
  * Kleine Hilfsfunktion: liest/schreibt einen einzelnen Feldwert
