@@ -147,11 +147,46 @@ window.__saveDemo = async () => {
   });
   console.log("✅ __saveDemo -> Testeintrag gespeichert!");
 };
+// ---- Test-Helfer am window registrieren ----
+import { listEntries, saveEntry } from "./lib/storage"; // Pfad ggf. anpassen
 
-// Ab hier kommt dein Editor
-export default function App() {
-  // dein Formular
-}
+// Ping: liest den neuesten Datensatz
+(window as any).__pingSupabase = async () => {
+  const rows = await listEntries(1, 0);
+  console.log("✅ __pingSupabase -> Verbindung OK. Erste Zeile:", rows[0] ?? null);
+  return rows[0] ?? null;
+};
+
+// Demo-Speichern: legt einen Testeintrag an
+(window as any).__saveDemo = async () => {
+  const id = await saveEntry({
+    bible_reference: "Test 1. Kor 13",
+    theological_explanation: "Liebe ist das Größte",
+    psychological_term: "Bindung",
+    bridge_text: "Bindung ↔ Liebe",
+    tags: "Liebe, Bindung",
+    visibility: "Entwurf (lokal)",
+    notes: "Nur ein Testeintrag",
+  });
+  console.log("💾 __saveDemo -> Testeintrag gespeichert! ID:", id);
+  return id;
+};
+
+// Optional: aktuelle Formularwerte speichern (falls du das brauchst)
+(window as any).__handleSaveTest = async (payload: {
+  bible_reference: string;
+  theological_explanation: string;
+  psychological_term: string;
+  bridge_text: string;
+  tags: string;
+  visibility: string;
+  notes: string;
+}) => {
+  const id = await saveEntry(payload);
+  console.log("💾 __handleSaveTest -> gespeichert! ID:", id);
+  return id;
+};
+// ---- Ende Test-Helfer ----
 
 
 export default function App() {
