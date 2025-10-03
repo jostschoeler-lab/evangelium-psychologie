@@ -101,6 +101,33 @@ if (typeof window !== "undefined") {
 
   console.log("🔧 Test-Helpers registriert:", Object.keys(window).filter(k => k.startsWith("__")));
 }
+import React, { useState } from "react";
+import { saveEntry, listEntries, loadLatest } from "./lib/storage";
+
+// Hier die Testfunktionen einfügen
+window.__pingSupabase = async () => {
+  const rows = await listEntries(1, 0);
+  console.log("✅ __pingSupabase -> Verbindung OK. Erste Zeile:", rows[0] ?? null);
+  return rows[0] ?? null;
+};
+
+window.__saveDemo = async () => {
+  await saveEntry({
+    bible_reference: "Test 1. Kor 13",
+    theological_explanation: "Liebe ist das Größte",
+    psychological_term: "Bindung",
+    bridge_text: "Bindung ↔ Liebe",
+    tags: ["Liebe", "Bindung"],
+    visibility: "Entwurf (lokal)",
+    notes: "Nur ein Testeintrag",
+  });
+  console.log("✅ __saveDemo -> Testeintrag gespeichert!");
+};
+
+// Ab hier kommt dein Editor
+export default function App() {
+  // dein Formular
+}
 
 
 export default function App() {
