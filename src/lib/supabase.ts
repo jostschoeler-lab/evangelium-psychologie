@@ -1,7 +1,14 @@
 import { createClient } from "@supabase/supabase-js";
 
-const url = import.meta.env.VITE_SUPABASE_URL!;
-const anon = import.meta.env.VITE_SUPABASE_ANON_KEY!;
+// Die Werte kommen aus deinen Environment-Variablen in Vercel
+// (VITE_SUPABASE_URL und VITE_SUPABASE_ANON_KEY müssen dort gesetzt sein)
+const supabaseUrl: string = import.meta.env.VITE_SUPABASE_URL as string;
+const supabaseAnonKey: string = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
 
-// ein Client für den Browser
-export const supabase = createClient(url, anon);
+// Falls die Variablen fehlen → Fehler werfen
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error("Supabase-Umgebungsvariablen fehlen! Bitte in Vercel prüfen.");
+}
+
+// Den Supabase-Client erstellen
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
