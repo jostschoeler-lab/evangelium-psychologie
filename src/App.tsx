@@ -1,193 +1,39 @@
-import { saveEntry } from "./lib/storage";
+// src/App.tsx  — clean build: v2
 
-import React, { useEffect, useMemo, useState } from "react";
-import { saveEntry, loadEntry } from "./lib/storage";
+import { useEffect, useMemo, useState } from "react";
+import { saveEntry, loadEntry, listEntries } from "./lib/storage";
 
-/**
- * Einfache Sichtbarkeits-Optionen
- */
-const VIS_OPTIONS = [
-  "Entwurf (lokal)",
-  "Öffentlich (später)",
-  "Öffentlich",
-] as const;
+/** Sichtbarkeits-Optionen */
+const VIS_OPTIONS = ["Entwurf (lokal)", "Öffentlich (später)", "Öffentlich"] as const;
 type Visibility = (typeof VIS_OPTIONS)[number];
 
+/** Draft-Struktur (muss zu saveEntry passen) */
 type EntryDraft = {
   bible_reference: string;
   theological_explanation: string;
   psychological_term: string;
   bridge_text: string;
-  tags: string;         // als Kommaliste
+  tags: string;            // Kommaliste
   visibility: Visibility;
   notes: string;
 };
 
+/** localStorage Helpers */
 const LOCAL_KEY = "unified-editor@draft-v1";
-
-/**
- * Kleine Hilfen für localStorage
- */
 function loadLocal(): EntryDraft | null {
   try {
     const raw = localStorage.getItem(LOCAL_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw);
-    return parsed;
+    return raw ? (JSON.parse(raw) as EntryDraft) : null;
   } catch {
     return null;
   }
 }
-function saveLocal(draft: EntryDraft) {
-  localStorage.setItem(LOCAL_KEY, JSON.stringify(draft));
+function saveLocal(d: EntryDraft) {
+  localStorage.setItem(LOCAL_KEY, JSON.stringify(d));
 }
 function clearLocal() {
   localStorage.removeItem(LOCAL_KEY);
 }
-// ⬇ diese Importe oben bei den anderen Imports
-import { saveEntry, loadEntry, listEntries } from "./lib/storage";
-
-// ⬇ nur für TypeScript, damit window-Erweiterungen keinen Fehler werfen
-declare global {
-  interface Window {
-    __saveDemo?: (overrides?: Partial<import("./lib/storage").EntryDraft>) => Promise<any>;
-    __loadLatest?: () => Promise<any>;
-    __loadById?: (id: string) => Promise<any>;
-    __listEntries?: (limit?: number, offset?: number) => Promise<any>;
-    __pingSupabase?: () => Promise<any>;
-  }
-}
-
-// ⬇ Test-Helfer an window hängen (außerhalb der Komponente!)
-if (typeof window !== "undefined") {
-  window.__saveDemo = async (overrides = {}) => {
-    const demo = {
-      bible_reference: "1. Petr 4,1-2 (Demo)",
-      theological_explanation:
-        "Demo-Text: Nicht den Leiden ausweichen – Testeintrag via Konsole.",
-      psychological_term: "Akzeptanz (Demo)",
-      bridge_text: "Brücke: ACT-Werte & Leiden annehmen (Demo).",
-      tags: "demo, test, act",
-      visibility: "öffentlich",
-      notes: "Erstellt via __saveDemo() in der Konsole.",
-      ...overrides,
-    };
-    const saved = await saveEntry(demo);
-    console.log("✅ __saveDemo -> gespeichert:", saved);
-    return saved;
-  };
-
-  window.__loadLatest = async () => {
-    const latest = await loadEntry();
-    console.log("✅ __loadLatest -> geladen:", latest);
-    return latest;
-  };
-
-  window.__loadById = async (id: string) => {
-    const row = await loadEntry(id);
-    console.log("✅ __loadById -> geladen:", row);
-    return row;
-  };
-
-  window.__listEntries = async (limit = 5, offset = 0) => {
-    const rows = await listEntries(limit, offset);
-    console.log(`✅ __listEntries -> ${rows.length} Einträge:`, rows);
-    return rows;
-  };
-
-  window.__pingSupabase = async () => {
-    const rows = await listEntries(1, 0);
-    console.log("✅ __pingSupabase -> Verbindung OK. Erste Zeile:", rows[0] ?? null);
-    return rows[0] ?? null;
-  };
-
-  console.log("🔧 Test-Helpers registriert:", Object.keys(window).filter(k => k.startsWith("__")));
-}
-import React, {  } from "react";
-import { saveEntry, listEntries, loadLatest } from "./lib/storage";
-
-// Hier die Testfunktionen einfügen
-window.__pingSupabase = async () => {
-  const rows = await listEntries(1, 0);
-  console.log("✅ __pingSupabase -> Verbindung OK. Erste Zeile:", rows[0] ?? null);
-  return rows[0] ?? null;
-};
-
-// Speichern (Test) – sammelt die aktuellen Formularwerte und speichert bei Supabase
-async function handleSaveTest() {
-  const payload = {
-    bible_reference,
-    theological_explanation,
-    psychological_term,
-    bridge_text,
-    tags,
-    visibility,
-    notes,
-  };
-  try {
-    const id = await saveEntry(payload);
-    console.log("✅ Gespeichert! ID:", id);
-    alert("Gespeichert! ID: " + id);
-  } catch (err) {
-    console.error("❌ Speichern fehlgeschlagen:", err);
-    alert("Speichern fehlgeschlagen – Details in der Konsole.");
-  }
-}
-
-
-window.__saveDemo = async () => {
-  await saveEntry({
-    bible_reference: "Test 1. Kor 13",
-    theological_explanation: "Liebe ist das Größte",
-    psychological_term: "Bindung",
-    bridge_text: "Bindung ↔ Liebe",
-    tags: ["Liebe", "Bindung"],
-    visibility: "Entwurf (lokal)",
-    notes: "Nur ein Testeintrag",
-  });
-  console.log("✅ __saveDemo -> Testeintrag gespeichert!");
-};
-// ---- Test-Helfer am window registrieren ----
-import { listEntries, saveEntry } from "./lib/storage"; // Pfad ggf. anpassen
-
-// Ping: liest den neuesten Datensatz
-(window as any).__pingSupabase = async () => {
-  const rows = await listEntries(1, 0);
-  console.log("✅ __pingSupabase -> Verbindung OK. Erste Zeile:", rows[0] ?? null);
-  return rows[0] ?? null;
-};
-
-// Demo-Speichern: legt einen Testeintrag an
-(window as any).__saveDemo = async () => {
-  const id = await saveEntry({
-    bible_reference: "Test 1. Kor 13",
-    theological_explanation: "Liebe ist das Größte",
-    psychological_term: "Bindung",
-    bridge_text: "Bindung ↔ Liebe",
-    tags: "Liebe, Bindung",
-    visibility: "Entwurf (lokal)",
-    notes: "Nur ein Testeintrag",
-  });
-  console.log("💾 __saveDemo -> Testeintrag gespeichert! ID:", id);
-  return id;
-};
-
-// Optional: aktuelle Formularwerte speichern (falls du das brauchst)
-(window as any).__handleSaveTest = async (payload: {
-  bible_reference: string;
-  theological_explanation: string;
-  psychological_term: string;
-  bridge_text: string;
-  tags: string;
-  visibility: string;
-  notes: string;
-}) => {
-  const id = await saveEntry(payload);
-  console.log("💾 __handleSaveTest -> gespeichert! ID:", id);
-  return id;
-};
-// ---- Ende Test-Helfer ----
-
 
 export default function App() {
   // ---------- Formular-State ----------
@@ -195,16 +41,16 @@ export default function App() {
   const [theological_explanation, setTheological] = useState("");
   const [psychological_term, setPsych] = useState("");
   const [bridge_text, setBridge] = useState("");
-  const [tags, setTags] = useState(""); // als "Trauer, Bindung, Angst"
+  const [tags, setTags] = useState("");
   const [visibility, setVisibility] = useState<Visibility>("Entwurf (lokal)");
   const [notes, setNotes] = useState("");
 
   // UI/Status
-  const [status, setStatus] = useState<string>("");      // Meldungen
-  const [busy, setBusy] = useState<boolean>(false);       // Buttons sperren
-  const [build] = useState<string>("build: save-btn v1"); // Diagnosezeile
+  const [status, setStatus] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [build] = useState("build: app v2"); // hilft, neuen Build zu erkennen
 
-  // Draft zusammensetzen (Memo, damit Autosave nicht zu oft feuert)
+  // Draft für Autosave/Cloud
   const draft: EntryDraft = useMemo(
     () => ({
       bible_reference,
@@ -241,25 +87,17 @@ export default function App() {
     }
   }, []);
 
-  // ---------- Autosave in localStorage ----------
+  // ---------- Autosave ----------
   useEffect(() => {
     saveLocal(draft);
   }, [draft]);
 
-  // ---------- Cloud-Callbacks ----------
+  // ---------- Cloud Aktionen ----------
   async function handleSave() {
     try {
       setBusy(true);
       setStatus("⏳ Speichere in Supabase …");
-      await saveEntry({
-        bible_reference,
-        theological_explanation,
-        psychological_term,
-        bridge_text,
-        tags,
-        visibility,
-        notes,
-      });
+      await saveEntry(draft);
       setStatus("✅ In die Cloud gespeichert.");
     } catch (e: any) {
       setStatus("❌ Fehler beim Speichern: " + (e?.message ?? String(e)));
@@ -272,13 +110,11 @@ export default function App() {
     try {
       setBusy(true);
       setStatus("⏳ Lade aus Supabase …");
-
-      const data = await loadEntry(); // lädt aktuell die „neueste“ (oder zuletzt gespeicherte) Entry
+      const data = await loadEntry(); // „neuester“ Datensatz
       if (!data) {
         setStatus("ℹ️ Keine Einträge in der Cloud gefunden.");
         return;
       }
-
       setBibleReference(data.bible_reference ?? "");
       setTheological(data.theological_explanation ?? "");
       setPsych(data.psychological_term ?? "");
@@ -286,7 +122,6 @@ export default function App() {
       setTags(data.tags ?? "");
       setVisibility((data.visibility as Visibility) ?? "Entwurf (lokal)");
       setNotes(data.notes ?? "");
-
       setStatus("✅ Aus der Cloud geladen.");
     } catch (e: any) {
       setStatus("❌ Fehler beim Laden: " + (e?.message ?? String(e)));
@@ -297,31 +132,56 @@ export default function App() {
 
   function handleClearLocal() {
     clearLocal();
-    setStatus("🧹 Lokaler Entwurf gelöscht (Cloud-Daten bleiben erhalten).");
+    setStatus("🧹 Lokaler Entwurf gelöscht (Cloud bleibt).");
   }
+
+  // ---------- Dev-Helpers einmalig am window registrieren ----------
+  useEffect(() => {
+    (window as any).__pingSupabase = async () => {
+      const rows = await listEntries(1, 0);
+      console.log("✅ __pingSupabase:", rows[0] ?? null);
+      return rows[0] ?? null;
+    };
+
+    (window as any).__saveDemo = async () => {
+      const id = await saveEntry({
+        bible_reference: "Test 1. Kor 13",
+        theological_explanation: "Liebe ist das Größte",
+        psychological_term: "Bindung",
+        bridge_text: "Bindung ↔ Liebe",
+        tags: "Liebe, Bindung",
+        visibility: "Entwurf (lokal)",
+        notes: "Nur ein Testeintrag",
+      });
+      console.log("💾 __saveDemo -> ID:", id);
+      return id;
+    };
+
+    (window as any).__handleSaveTest = async () => {
+      const id = await saveEntry(draft);
+      console.log("💾 __handleSaveTest -> ID:", id);
+      return id;
+    };
+
+    console.log(
+      "🔧 Helpers registriert:",
+      Object.keys(window).filter((k) => k.startsWith("__"))
+    );
+  }, [draft]);
 
   // ---------- UI ----------
   return (
     <div style={{ maxWidth: 960, margin: "0 auto", padding: 16 }}>
-      {/* Diagnose-Zeile (hilft zu sehen, ob der neue Build wirklich live ist) */}
       <div style={{ fontSize: 12, color: "#0a0", marginBottom: 8 }}>{build}</div>
 
       <h1 style={{ marginTop: 0 }}>Not-Bedürfnis-Jesus</h1>
-      <p style={{ marginTop: 0, color: "#555" }}>
-        Startergerüst (React + Vite + i18n).
-      </p>
+      <p style={{ marginTop: 0, color: "#555" }}>Startergerüst (React + Vite + i18n).</p>
 
       {/* Aktionen */}
       <div style={{ display: "flex", gap: 8, alignItems: "center", margin: "8px 0 16px" }}>
-        <button onClick={handleSave} disabled={busy}>
-          💾 In die Cloud speichern
-        </button>
-        <button onClick={handleLoad} disabled={busy}>
-          ☁️ Aus der Cloud laden
-        </button>
-        <button onClick={handleClearLocal} disabled={busy}>
-          🧹 Lokalen Entwurf löschen
-        </button>
+        <button onClick={handleSave} disabled={busy}>💾 In die Cloud speichern</button>
+        <button onClick={handleLoad} disabled={busy}>☁️ Aus der Cloud laden</button>
+        <button onClick={handleClearLocal} disabled={busy}>🧹 Lokalen Entwurf löschen</button>
         <span style={{ marginLeft: 8, color: "#444" }}>{status}</span>
       </div>
 
@@ -331,7 +191,6 @@ export default function App() {
         kannst du zusätzlich in der Cloud sichern.
       </p>
 
-      {/* Formular */}
       <Section label="Bibelstelle(n)">
         <input
           value={bible_reference}
@@ -366,7 +225,7 @@ export default function App() {
         />
       </Section>
 
-      <Section label="Tags (mit Enter hinzufügen)">
+      <Section label="Tags (Kommaliste)">
         <input
           value={tags}
           onChange={(e) => setTags(e.target.value)}
@@ -375,14 +234,9 @@ export default function App() {
       </Section>
 
       <Section label="Sichtbarkeit">
-        <select
-          value={visibility}
-          onChange={(e) => setVisibility(e.target.value as Visibility)}
-        >
+        <select value={visibility} onChange={(e) => setVisibility(e.target.value as Visibility)}>
           {VIS_OPTIONS.map((o) => (
-            <option key={o} value={o}>
-              {o}
-            </option>
+            <option key={o} value={o}>{o}</option>
           ))}
         </select>
       </Section>
@@ -396,9 +250,8 @@ export default function App() {
         />
       </Section>
 
-      {/* Fußleiste */}
       <div style={{ marginTop: 24, fontSize: 12, color: "#777" }}>
-        Hinweis: „Entwurf (lokal)“ bleibt ausschließlich im Browser (localStorage).  
+        Hinweis: „Entwurf (lokal)“ bleibt ausschließlich im Browser (localStorage).
         „In die Cloud speichern“ legt einen Datensatz in deiner Supabase-Tabelle
         <code style={{ marginLeft: 4 }}>entries</code> an.
       </div>
@@ -406,9 +259,7 @@ export default function App() {
   );
 }
 
-/**
- * Einfache Feldsektion mit Label & Standard-Styles
- */
+/** Kleine Sektion mit Label */
 function Section(props: { label: string; children: React.ReactNode }) {
   return (
     <div style={{ marginBottom: 16 }}>
@@ -437,60 +288,3 @@ function Section(props: { label: string; children: React.ReactNode }) {
     </div>
   );
 }
-// 👇 zusätzliche Importe (falls noch nicht vorhanden)
-import { saveEntry, loadEntry, listEntries } from "./lib/storage";
-
-// 👇 (nur für TypeScript, damit window-Erweiterungen keinen Fehler werfen)
-declare global {
-  interface Window {
-    __saveDemo?: (overrides?: Partial<import("./lib/storage").EntryDraft>) => Promise<any>;
-    __loadLatest?: () => Promise<any>;
-    __loadById?: (id: string) => Promise<any>;
-    __listEntries?: (limit?: number, offset?: number) => Promise<any>;
-    __pingSupabase?: () => Promise<any>;
-  }
-}
-
-// 👇 Test-Helfer an window hängen – nur für Debug/Manuell-Tests
-window.__saveDemo = async (overrides = {}) => {
-  const demo = {
-    bible_reference: "1. Petr 4,1-2 (Demo)",
-    theological_explanation:
-      "Demo-Text: Nicht den Leiden ausweichen – Testeintrag via Konsole.",
-    psychological_term: "Akzeptanz (Demo)",
-    bridge_text: "Brücke: ACT-Werte & Leiden annehmen (Demo).",
-    tags: "demo, test, act",
-    visibility: "öffentlich",
-    notes: "Erstellt via __saveDemo() in der Konsole.",
-    ...overrides, // erlaubt dir Felder zu überschreiben
-  };
-
-  const saved = await saveEntry(demo);
-  console.log("✅ __saveDemo -> gespeichert:", saved);
-  return saved;
-};
-
-window.__loadLatest = async () => {
-  const latest = await loadEntry();
-  console.log("✅ __loadLatest -> geladen:", latest);
-  return latest;
-};
-
-window.__loadById = async (id: string) => {
-  const row = await loadEntry(id);
-  console.log("✅ __loadById -> geladen:", row);
-  return row;
-};
-
-window.__listEntries = async (limit = 5, offset = 0) => {
-  const rows = await listEntries(limit, offset);
-  console.log(`✅ __listEntries -> ${rows.length} Einträge:`, rows);
-  return rows;
-};
-
-window.__pingSupabase = async () => {
-  // sehr leichter Ping: z.B. 1 Row lesen (wenn vorhanden)
-  const rows = await listEntries(1, 0);
-  console.log("✅ __pingSupabase -> Verbindung OK. Erste Zeile:", rows[0] ?? null);
-  return rows[0] ?? null;
-};
