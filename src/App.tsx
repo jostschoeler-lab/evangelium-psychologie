@@ -1,3 +1,5 @@
+import { saveEntry } from "./lib/storage";
+
 import React, { useEffect, useMemo, useState } from "react";
 import { saveEntry, loadEntry } from "./lib/storage";
 
