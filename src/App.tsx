@@ -103,7 +103,7 @@ if (typeof window !== "undefined") {
 
   console.log("🔧 Test-Helpers registriert:", Object.keys(window).filter(k => k.startsWith("__")));
 }
-import React, { useState } from "react";
+import React, {  } from "react";
 import { saveEntry, listEntries, loadLatest } from "./lib/storage";
 
 // Hier die Testfunktionen einfügen
@@ -112,6 +112,28 @@ window.__pingSupabase = async () => {
   console.log("✅ __pingSupabase -> Verbindung OK. Erste Zeile:", rows[0] ?? null);
   return rows[0] ?? null;
 };
+
+// Speichern (Test) – sammelt die aktuellen Formularwerte und speichert bei Supabase
+async function handleSaveTest() {
+  const payload = {
+    bible_reference,
+    theological_explanation,
+    psychological_term,
+    bridge_text,
+    tags,
+    visibility,
+    notes,
+  };
+  try {
+    const id = await saveEntry(payload);
+    console.log("✅ Gespeichert! ID:", id);
+    alert("Gespeichert! ID: " + id);
+  } catch (err) {
+    console.error("❌ Speichern fehlgeschlagen:", err);
+    alert("Speichern fehlgeschlagen – Details in der Konsole.");
+  }
+}
+
 
 window.__saveDemo = async () => {
   await saveEntry({
