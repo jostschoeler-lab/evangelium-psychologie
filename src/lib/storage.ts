@@ -1,17 +1,17 @@
 // src/lib/storage.ts
-import { UnifiedEntry } from "../types";
+export const LS_KEYS = {
+  unified: "nbj_unified_v1",
+} as const;
 
-const KEY = "nbj_entries_v1";
-
-export function loadEntries(): UnifiedEntry[] {
-  try {
-    const raw = localStorage.getItem(KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
+export function saveLS<T>(key: string, data: T) {
+  try { localStorage.setItem(key, JSON.stringify(data)); } catch {}
 }
 
-export function saveEntries(list: UnifiedEntry[]) {
-  localStorage.setItem(KEY, JSON.stringify(list));
+export function loadLS<T>(key: string, fallback: T): T {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? (JSON.parse(raw) as T) : fallback;
+  } catch {
+    return fallback;
+  }
 }
