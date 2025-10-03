@@ -1,308 +1,228 @@
 // src/components/UnifiedEditor.tsx
-import React, { useMemo, useState } from "react";
-import { UnifiedEntry, Visibility } from "../types";
-import { loadAll, saveOne, newEmptyUnified, findById } from "../lib/storage";
+import React, { useState } from "react";
 
-type InputProps = React.InputHTMLAttributes<HTMLInputElement> & { label: string };
-type TextProps  = React.TextareaHTMLAttributes<HTMLTextAreaElement> & { label: string };
+type Entry = {
+  // Bibel-Modul
+  bibleId: string;
+  bibleRef: string;
+  bibleTitle: string;
+  bibleSummary: string;
+  exegesesA: string; // Tradition/Verdrängung
+  exegesesB: string; // Integration/Verwandlung
 
-const Row: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div style={{ display: "grid", gridTemplateColumns: "180px 1fr", gap: 8, alignItems: "start", marginBottom: 10 }}>
-    {children}
-  </div>
-);
+  // Psychologie-Modul
+  psychId: string;
+  psychTerm: string;
+  psychSyn: string;
+  psychShort: string;
 
-const Label: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div style={{ fontWeight: 600, paddingTop: 6 }}>{children}</div>
-);
+  // Crosslink
+  bridgeId: string;
+  bridgeText: string;
 
-const Input: React.FC<InputProps> = ({ label, ...props }) => (
-  <Row>
-    <Label>{label}</Label>
-    <input {...props} style={{ width: "100%", padding: "6px 8px" }} />
-  </Row>
-);
+  // Meta
+  tags: string;
+  visibility: "draft" | "public";
+  note: string;
+};
 
-const TextArea: React.FC<TextProps> = ({ label, rows = 4, ...props }) => (
-  <Row>
-    <Label>{label}</Label>
-    <textarea {...props} rows={rows} style={{ width: "100%", padding: "6px 8px" }} />
-  </Row>
-);
+const LS_KEY = "nbj_unified_entries_v1";
 
-const Select: React.FC<{ label: string; value: Visibility; onChange: (v: Visibility) => void }> = ({ label, value, onChange }) => (
-  <Row>
-    <Label>{label}</Label>
-    <select value={value} onChange={(e) => onChange(e.target.value as Visibility)} style={{ padding: "6px 8px" }}>
-      <option value="draft">Entwurf</option>
-      <option value="internal">Intern</option>
-      <option value="public">Öffentlich</option>
-    </select>
-  </Row>
-);
+function load(): Entry[] {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    return raw ? (JSON.parse(raw) as Entry[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function save(all: Entry[]) {
+  localStorage.setItem(LS_KEY, JSON.stringify(all));
+}
 
 export default function UnifiedEditor() {
-  const [list, setList] = useState<UnifiedEntry[]>(() => loadAll());
-  const [entry, setEntry] = useState<UnifiedEntry>(() => newEmptyUnified());
-  const [filter, setFilter] = useState("");
+  const [entry, setEntry] = useState<Entry>({
+    bibleId: "",
+    bibleRef: "",
+    bibleTitle: "",
+    bibleSummary: "",
+    exegesesA: "",
+    exegesesB: "",
 
-  const filtered = useMemo(() => {
-    const f = filter.trim().toLowerCase();
-    if (!f) return list;
-    return list.filter((e) =>
-      [e.title, e.bible.ref, e.psych.term, e.link.bridgeText, e.tags.join(",")].join(" ").toLowerCase().includes(f)
-    );
-  }, [filter, list]);
+    psychId: "",
+    psychTerm: "",
+    psychSyn: "",
+    psychShort: "",
 
-  function save() {
-    const updated = saveOne(entry);
-    setEntry(updated);
-    setList(loadAll());
-    alert("Gespeichert ✅");
+    bridgeId: "",
+    bridgeText: "",
+
+    tags: "",
+    visibility: "draft",
+    note: "",
+  });
+
+  const [saved, setSaved] = useState(false);
+  const [list, setList] = useState<Entry[]>(load());
+
+  function update<K extends keyof Entry>(key: K, value: Entry[K]) {
+    setEntry(prev => ({ ...prev, [key]: value }));
   }
 
-  function newEmpty() {
-    setEntry(newEmptyUnified());
-  }
-
-  function load(id: string) {
-    const e = findById(id);
-    if (e) setEntry(e);
+  function onSave() {
+    const next = [entry, ...load()];
+    save(next);
+    setList(next);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 1600);
   }
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "320px 1fr", gap: 16 }}>
-      {/* Sidebar */}
-      <div style={{ borderRight: "1px solid #ddd", paddingRight: 12 }}>
-        <div style={{ fontWeight: 700, marginBottom: 8 }}>Einträge</div>
-        <input
-          placeholder="Suche…"
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          style={{ width: "100%", padding: "6px 8px", marginBottom: 8 }}
-        />
-        <div style={{ maxHeight: 500, overflow: "auto", border: "1px solid #eee" }}>
-          {filtered.map((e) => (
-            <div
-              key={e.id}
-              onClick={() => load(e.id)}
-              style={{
-                padding: 8,
-                cursor: "pointer",
-                borderBottom: "1px solid #f2f2f2",
-                background: e.id === entry.id ? "#f7fbff" : "transparent",
-              }}
-            >
-              <div style={{ fontWeight: 600 }}>{e.title || "(ohne Titel)"}</div>
-              <div style={{ fontSize: 12, color: "#555" }}>{e.bible.ref} • {e.psych.term}</div>
-            </div>
-          ))}
-          {filtered.length === 0 && <div style={{ padding: 8, color: "#666" }}>Keine Einträge.</div>}
+    <div style={{ display: "grid", gap: 16, maxWidth: 900 }}>
+      <section style={{ border: "1px solid #ddd", borderRadius: 8, padding: 12 }}>
+        <h3 style={{ marginTop: 0 }}>Bibel</h3>
+        <div style={{ display: "grid", gap: 8 }}>
+          <input
+            placeholder="bibelId (z. B. bibel.2petrus1.3-4)"
+            value={entry.bibleId}
+            onChange={(e) => update("bibleId", e.target.value)}
+          />
+          <input
+            placeholder="bibelRef (z. B. 2. Petrus 1,3–4)"
+            value={entry.bibleRef}
+            onChange={(e) => update("bibleRef", e.target.value)}
+          />
+          <input
+            placeholder="bibleTitle (z. B. Teilnahme an göttlicher Natur)"
+            value={entry.bibleTitle}
+            onChange={(e) => update("bibleTitle", e.target.value)}
+          />
+          <textarea
+            placeholder="bibleSummary (Kurz-Zusammenfassung)"
+            rows={3}
+            value={entry.bibleSummary}
+            onChange={(e) => update("bibleSummary", e.target.value)}
+          />
+          <textarea
+            placeholder="Auslegung A (Tradition / Verdrängung)"
+            rows={3}
+            value={entry.exegesesA}
+            onChange={(e) => update("exegesesA", e.target.value)}
+          />
+          <textarea
+            placeholder="Auslegung B (Integration / Verwandlung)"
+            rows={3}
+            value={entry.exegesesB}
+            onChange={(e) => update("exegesesB", e.target.value)}
+          />
         </div>
+      </section>
 
-        <button onClick={newEmpty} style={{ marginTop: 10, width: "100%", padding: "8px 10px" }}>
-          Neuer Eintrag
-        </button>
-        <button
-          onClick={() => {
-            navigator.clipboard.writeText(JSON.stringify(entry, null, 2));
-            alert("Aktueller Eintrag in die Zwischenablage kopiert (JSON).");
-          }}
-          style={{ marginTop: 6, width: "100%", padding: "8px 10px" }}
-        >
-          JSON kopieren
-        </button>
-      </div>
+      <section style={{ border: "1px solid #ddd", borderRadius: 8, padding: 12 }}>
+        <h3 style={{ marginTop: 0 }}>Psychologie</h3>
+        <div style={{ display: "grid", gap: 8 }}>
+          <input
+            placeholder="psychId (z. B. psych.grawe.bindung)"
+            value={entry.psychId}
+            onChange={(e) => update("psychId", e.target.value)}
+          />
+          <input
+            placeholder="psychTerm (z. B. Bindung)"
+            value={entry.psychTerm}
+            onChange={(e) => update("psychTerm", e.target.value)}
+          />
+          <input
+            placeholder="psychSyn (Synonyme, z. B. Nähe, Sicherheit, Zugehörigkeit)"
+            value={entry.psychSyn}
+            onChange={(e) => update("psychSyn", e.target.value)}
+          />
+          <textarea
+            placeholder="psychShort (Kurzdefinition)"
+            rows={2}
+            value={entry.psychShort}
+            onChange={(e) => update("psychShort", e.target.value)}
+          />
+        </div>
+      </section>
 
-      {/* Form */}
-      <div>
-        <h2 style={{ marginTop: 0 }}>Unified-Editor</h2>
+      <section style={{ border: "1px solid #ddd", borderRadius: 8, padding: 12 }}>
+        <h3 style={{ marginTop: 0 }}>Crosslink</h3>
+        <div style={{ display: "grid", gap: 8 }}>
+          <input
+            placeholder="bridgeId (z. B. crosslink.bibel.2petrus1.3-4.psych.bindung)"
+            value={entry.bridgeId}
+            onChange={(e) => update("bridgeId", e.target.value)}
+          />
+          <textarea
+            placeholder="bridgeText (Brückentext)"
+            rows={3}
+            value={entry.bridgeText}
+            onChange={(e) => update("bridgeText", e.target.value)}
+          />
+        </div>
+      </section>
 
-        <Input
-          label="Titel / Thema"
-          value={entry.title}
-          onChange={(e) => setEntry({ ...entry, title: e.target.value })}
-          placeholder="z. B. Teilnahme an göttlicher Natur"
-        />
-
-        <h3 style={{ marginTop: 20 }}>1) Bibel</h3>
-        <Input
-          label="Bibel-ID"
-          value={entry.bible.id}
-          onChange={(e) => setEntry({ ...entry, bible: { ...entry.bible, id: e.target.value } })}
-          placeholder="bibel.2petrus1.3-4"
-        />
-        <Input
-          label="Bibelstelle"
-          value={entry.bible.ref}
-          onChange={(e) => setEntry({ ...entry, bible: { ...entry.bible, ref: e.target.value } })}
-          placeholder="2. Petrus 1,3–4"
-        />
-        <Input
-          label="Bibel-Titel"
-          value={entry.bible.title}
-          onChange={(e) => setEntry({ ...entry, bible: { ...entry.bible, title: e.target.value } })}
-          placeholder="Teilnahme an göttlicher Natur"
-        />
-        <TextArea
-          label="Kurz-Zusammenfassung"
-          value={entry.bible.summary}
-          onChange={(e) => setEntry({ ...entry, bible: { ...entry.bible, summary: e.target.value } })}
-          rows={3}
-        />
-        {/* Exegesen A/B */}
-        {entry.bible.exegeses.map((ex, i) => (
-          <div key={ex.key} style={{ border: "1px solid #eee", padding: 10, marginBottom: 10 }}>
-            <Input
-              label={`Auslegung ${ex.key} – Label`}
-              value={ex.label}
-              onChange={(e) => {
-                const exs = [...entry.bible.exegeses];
-                exs[i] = { ...exs[i], label: e.target.value };
-                setEntry({ ...entry, bible: { ...entry.bible, exegeses: exs } });
-              }}
-            />
-            <TextArea
-              label={`Auslegung ${ex.key} – Text`}
-              value={ex.body}
-              onChange={(e) => {
-                const exs = [...entry.bible.exegeses];
-                exs[i] = { ...exs[i], body: e.target.value };
-                setEntry({ ...entry, bible: { ...entry.bible, exegeses: exs } });
-              }}
-              rows={4}
-            />
-            <Input
-              label="Crosslinks (optional, Kommas)"
-              placeholder="bibel.1kor10.13, artikel.xyz/…"
-              value={(ex.links || []).join(", ")}
-              onChange={(e) => {
-                const exs = [...entry.bible.exegeses];
-                exs[i] = { ...exs[i], links: e.target.value.split(",").map(s => s.trim()).filter(Boolean) };
-                setEntry({ ...entry, bible: { ...entry.bible, exegeses: exs } });
-              }}
-            />
+      <section style={{ border: "1px solid #ddd", borderRadius: 8, padding: 12 }}>
+        <h3 style={{ marginTop: 0 }}>Meta</h3>
+        <div style={{ display: "grid", gap: 8 }}>
+          <input
+            placeholder="tags (kommagetrennt, z. B. Bedürfnis, Lust, Verwandlung)"
+            value={entry.tags}
+            onChange={(e) => update("tags", e.target.value)}
+          />
+          <div>
+            <label>
+              <input
+                type="radio"
+                name="visibility"
+                checked={entry.visibility === "draft"}
+                onChange={() => update("visibility", "draft")}
+              />
+              &nbsp;Entwurf
+            </label>
+            &nbsp;&nbsp;
+            <label>
+              <input
+                type="radio"
+                name="visibility"
+                checked={entry.visibility === "public"}
+                onChange={() => update("visibility", "public")}
+              />
+              &nbsp;Öffentlich
+            </label>
           </div>
-        ))}
-
-        <h3 style={{ marginTop: 20 }}>2) Psychologie</h3>
-        <Input
-          label="Psych-ID"
-          value={entry.psych.id}
-          onChange={(e) => setEntry({ ...entry, psych: { ...entry.psych, id: e.target.value } })}
-          placeholder="psych.grawe.bindung"
-        />
-        <Input
-          label="Begriff"
-          value={entry.psych.term}
-          onChange={(e) => setEntry({ ...entry, psych: { ...entry.psych, term: e.target.value } })}
-          placeholder="Bindung"
-        />
-        <Input
-          label="Synonyme (Kommas)"
-          value={entry.psych.synonyms.join(", ")}
-          onChange={(e) =>
-            setEntry({ ...entry, psych: { ...entry.psych, synonyms: e.target.value.split(",").map(s => s.trim()).filter(Boolean) } })
-          }
-          placeholder="Nähe, Sicherheit, Zugehörigkeit"
-        />
-        <TextArea
-          label="Kurzdefinition (1–2 Sätze)"
-          value={entry.psych.short}
-          onChange={(e) => setEntry({ ...entry, psych: { ...entry.psych, short: e.target.value } })}
-          rows={3}
-        />
-        <TextArea
-          label="Vertiefung (optional)"
-          value={entry.psych.long || ""}
-          onChange={(e) => setEntry({ ...entry, psych: { ...entry.psych, long: e.target.value } })}
-          rows={4}
-        />
-        <TextArea
-          label="Quellen / APA / Zitate (optional)"
-          value={entry.psych.sources || ""}
-          onChange={(e) => setEntry({ ...entry, psych: { ...entry.psych, sources: e.target.value } })}
-          rows={3}
-        />
-
-        <h3 style={{ marginTop: 20 }}>3) Crosslink (Brücke)</h3>
-        <Input
-          label="Crosslink-ID"
-          value={entry.link.id}
-          onChange={(e) => setEntry({ ...entry, link: { ...entry.link, id: e.target.value } })}
-          placeholder="crosslink.bibel.2petrus1.3-4.psych.bindung"
-        />
-        <Input
-          label="Bibel-ID (Verweis)"
-          value={entry.link.bibleId}
-          onChange={(e) => setEntry({ ...entry, link: { ...entry.link, bibleId: e.target.value } })}
-          placeholder="bibel.2petrus1.3-4"
-        />
-        <Input
-          label="Psych-IDs (Kommas)"
-          value={entry.link.psychIds.join(", ")}
-          onChange={(e) =>
-            setEntry({ ...entry, link: { ...entry.link, psychIds: e.target.value.split(",").map(s => s.trim()).filter(Boolean) } })
-          }
-          placeholder="psych.grawe.bindung"
-        />
-        <TextArea
-          label="Brückentext"
-          value={entry.link.bridgeText}
-          onChange={(e) => setEntry({ ...entry, link: { ...entry.link, bridgeText: e.target.value } })}
-          rows={4}
-        />
-        <Input
-          label="Crosslink-Tags (Kommas)"
-          value={entry.link.tags.join(", ")}
-          onChange={(e) =>
-            setEntry({ ...entry, link: { ...entry.link, tags: e.target.value.split(",").map(s => s.trim()).filter(Boolean) } })
-          }
-          placeholder="Bedürfnis, Lust, Verwandlung"
-        />
-
-        <h3 style={{ marginTop: 20 }}>4) Gemeinsame Felder</h3>
-        <Input
-          label="Tags (Kommas)"
-          value={entry.tags.join(", ")}
-          onChange={(e) => setEntry({ ...entry, tags: e.target.value.split(",").map(s => s.trim()).filter(Boolean) })}
-          placeholder="Scham, Angst, Abhängigkeit…"
-        />
-        <Input
-          label="Ressourcen (Kommas)"
-          value={entry.resources.join(", ")}
-          onChange={(e) => setEntry({ ...entry, resources: e.target.value.split(",").map(s => s.trim()).filter(Boolean) })}
-          placeholder="Lied: …, Bild: …, Zitat: …"
-        />
-        <Select
-          label="Sichtbarkeit"
-          value={entry.visibility}
-          onChange={(v) => setEntry({ ...entry, visibility: v })}
-        />
-        <TextArea
-          label="Notiz (optional)"
-          value={entry.note || ""}
-          onChange={(e) => setEntry({ ...entry, note: e.target.value })}
-        />
-
-        <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
-          <button onClick={save} style={{ padding: "8px 12px" }}>💾 Speichern</button>
-          <button
-            onClick={() => {
-              const confirmNew = confirm("Ungespeicherte Änderungen gehen verloren. Neuen Eintrag beginnen?");
-              if (confirmNew) setEntry(newEmptyUnified());
-            }}
-            style={{ padding: "8px 12px" }}
-          >
-            ➕ Neu (leer)
-          </button>
+          <textarea
+            placeholder="Notiz / Version"
+            rows={2}
+            value={entry.note}
+            onChange={(e) => update("note", e.target.value)}
+          />
         </div>
+      </section>
 
-        <div style={{ marginTop: 20, fontSize: 12, color: "#666" }}>
-          <div>Erstellt: {new Date(entry.createdAt).toLocaleString()}</div>
-          <div>Geändert: {new Date(entry.updatedAt).toLocaleString()}</div>
-        </div>
+      <div style={{ display: "flex", gap: 8 }}>
+        <button onClick={onSave} style={{ padding: "8px 12px" }}>Speichern (lokal)</button>
+        {saved && <span style={{ color: "green" }}>✓ Gespeichert</span>}
       </div>
+
+      <section style={{ border: "1px dashed #aaa", borderRadius: 8, padding: 12 }}>
+        <h4 style={{ marginTop: 0 }}>Vorschau gespeicherter Einträge</h4>
+        {list.length === 0 ? (
+          <div style={{ color: "#777" }}>Noch keine Einträge gespeichert.</div>
+        ) : (
+          <ul style={{ margin: 0, paddingLeft: 18 }}>
+            {list.map((e, i) => (
+              <li key={i}>
+                <b>{e.bibleRef || e.bibleId || "(ohne Bibel-Ref)"}:</b>{" "}
+                {e.bibleTitle || "(ohne Titel)"} &nbsp;—&nbsp;
+                <i>{e.psychTerm || e.psychId || "(ohne Psych-Begriff)"}</i>
+                {e.tags ? <> &nbsp; • &nbsp;{e.tags}</> : null}
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
     </div>
   );
 }
