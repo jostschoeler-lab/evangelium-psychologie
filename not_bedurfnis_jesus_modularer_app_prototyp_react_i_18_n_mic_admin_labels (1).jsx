@@ -522,8 +522,8 @@ function UnifiedEditor({ t }){
     bibelRef: "2Petr 1,3–4",
     bibelTitle: "Teilnahme an göttlicher Natur",
     bibelSummary: "Gottes Verheißungen helfen, den Lüsten zu entfliehen.",
-    exegeses: "A) Tradition/Verdrängung…
-B) Verwandlung/Integration…",
+    exegeses: "A) Tradition/Verdrängung…\nB) Verwandlung/Integration…",
+
     psychId: "psych.grawe.bindung",
     psychTerm: "Bindung",
     psychSyn: "Nähe, Sicherheit, Zugehörigkeit",
