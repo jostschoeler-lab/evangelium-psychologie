@@ -10,7 +10,9 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "useDefineForClassFields": true,
-    "types": []
+
+    // ⬇️ hier die Änderung
+    "types": ["vite/client"]
   },
   "include": ["src"]
 }
