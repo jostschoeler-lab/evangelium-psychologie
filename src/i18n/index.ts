@@ -4,7 +4,7 @@ const KEY = "nbj_lang_v1";
 const messages: Record<Lang, Record<string, string>> = {
   de: {
     "app.title": "Not-Bedürfnis-Jesus",
-    "app.subtitle": "Startgerüst (React + Vite + i18n).",
+    "app.subtitle": "Startergerüst (React + Vite + i18n).",
 
     "menu.uebung": "Übung (Start)",
     "menu.themen": "Themen",
@@ -24,6 +24,7 @@ const messages: Record<Lang, Record<string, string>> = {
 
     "footnote.localOnly": "Hinweis: Speicher zunächst lokal (localStorage). Cloud-Sync kann später ergänzt werden."
   },
+
   en: {
     "app.title": "Need-Crisis-Jesus",
     "app.subtitle": "Starter scaffold (React + Vite + i18n).",
@@ -36,16 +37,17 @@ const messages: Record<Lang, Record<string, string>> = {
     "menu.journal": "Journal & Review",
     "menu.settings": "Settings",
 
-    "editor.title": "Unified Editor: Bible + Psychology + Bridge",
-    "editor.hint": "Enter Bible readings (multiple), psychology terms and the bridge text in ONE form.",
-    "editor.fields.bible": "Bible module (reference, title, summary, exegeses…)",
-    "editor.fields.psych": "Psych module (term, synonyms, short/long…)",
+    "editor.title": "Unified Editor: Bible + Psychology + Crosslink",
+    "editor.hint": "Capture multiple Bible interpretations, psychological terms and the bridge text in ONE mask.",
+    "editor.fields.bible": "Bible module (reference, title, summary, interpretations…)",
+    "editor.fields.psych": "Psychology module (term, synonyms, short/long…)",
     "editor.fields.bridge": "Crosslink (bridge text, IDs, visibility…)",
-    "editor.fields.tags": "Tags (feeling, need, behavior, domain)",
-    "editor.fields.visibility": "Visibility (Draft/Public)",
+    "editor.fields.tags": "Tags (emotion, need, behavior, topic)",
+    "editor.fields.visibility": "Visibility (draft/public)",
 
-    "footnote.localOnly": "Note: Stored locally first (localStorage). Cloud sync can be added later."
+    "footnote.localOnly": "Note: Saved locally first (localStorage). Cloud sync can be added later."
   },
+
   no: {
     "app.title": "Nød-Behov-Jesus",
     "app.subtitle": "Startoppsett (React + Vite + i18n).",
@@ -55,22 +57,39 @@ const messages: Record<Lang, Record<string, string>> = {
     "menu.grundwissen": "Grunnkunnskap",
     "menu.bibliothek": "Bibliotek",
     "menu.editor": "Ressurser/Broer (Editor)",
-    "menu.journal": "Journal & Analyse",
+    "menu.journal": "Journal & Evaluering",
     "menu.settings": "Innstillinger",
 
-    "editor.title": "Unified-editor: Bibel + Psykologi + Bro",
-    "editor.hint": "Her registrerer du bibeltolkninger (flere), psykologibegrep og bro-tekst i ETT skjema.",
-    "editor.fields.bible": "Bibel-modul (referanse, tittel, sammendrag, tolkninger…)",
-    "editor.fields.psych": "Psykologi-modul (begrep, synonymer, kort/lang…)",
-    "editor.fields.bridge": "Bro (bro-tekst, IDer, synlighet…)",
-    "editor.fields.tags": "Tagger (følelse, behov, atferd, tema)",
-    "editor.fields.visibility": "Synlighet (Utkast/Offentlig)",
+    "editor.title": "Enhetlig Editor: Bibel + Psykologi + Crosslink",
+    "editor.hint": "Her registrerer du flere bibelutlegg, psykologiske begreper og bro-tekst i ÉN maske.",
+    "editor.fields.bible": "Bibelmodul (referanse, tittel, sammendrag, utlegg…)",
+    "editor.fields.psych": "Psykologimodul (begrep, synonymer, kort/lang…)",
+    "editor.fields.bridge": "Crosslink (bro-tekst, IDer, synlighet…)",
+    "editor.fields.tags": "Tags (følelse, behov, atferd, tema)",
+    "editor.fields.visibility": "Synlighet (utkast/offentlig)",
 
-    "footnote.localOnly": "Merk: Lagrer lokalt først (localStorage). Sky-synk kan legges til senere."
+    "footnote.localOnly": "Merk: Lagres først lokalt (localStorage). Cloud sync kan legges til senere."
   }
 };
 
-let current: Lang = (localStorage.getItem(KEY) as Lang) || "de";
-export function setLang(next: Lang) { current = next; localStorage.setItem(KEY, next); }
-export function getLang(): Lang { return current; }
-export function t(key: string): string { return messages[current][key] ?? key; }
+// 🔑 aktuelle Sprache aus localStorage lesen
+let currentLang: Lang = (localStorage.getItem(KEY) as Lang) || "de";
+
+// 🟢 Übersetzungsfunktion
+export function t(key: string): string {
+  return messages[currentLang][key] || key;
+}
+
+// 🔄 Sprache umschalten
+export function switchLang(lang: Lang) {
+  currentLang = lang;
+  localStorage.setItem(KEY, lang);
+  // App neu rendern
+  window.location.reload();
+}
+
+// 📌 aktuell gesetzte Sprache zurückgeben
+export function getLang(): Lang {
+  return currentLang;
+}
+
