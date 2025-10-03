@@ -291,3 +291,60 @@ function Section(props: { label: string; children: React.ReactNode }) {
     </div>
   );
 }
+// 👇 zusätzliche Importe (falls noch nicht vorhanden)
+import { saveEntry, loadEntry, listEntries } from "./lib/storage";
+
+// 👇 (nur für TypeScript, damit window-Erweiterungen keinen Fehler werfen)
+declare global {
+  interface Window {
+    __saveDemo?: (overrides?: Partial<import("./lib/storage").EntryDraft>) => Promise<any>;
+    __loadLatest?: () => Promise<any>;
+    __loadById?: (id: string) => Promise<any>;
+    __listEntries?: (limit?: number, offset?: number) => Promise<any>;
+    __pingSupabase?: () => Promise<any>;
+  }
+}
+
+// 👇 Test-Helfer an window hängen – nur für Debug/Manuell-Tests
+window.__saveDemo = async (overrides = {}) => {
+  const demo = {
+    bible_reference: "1. Petr 4,1-2 (Demo)",
+    theological_explanation:
+      "Demo-Text: Nicht den Leiden ausweichen – Testeintrag via Konsole.",
+    psychological_term: "Akzeptanz (Demo)",
+    bridge_text: "Brücke: ACT-Werte & Leiden annehmen (Demo).",
+    tags: "demo, test, act",
+    visibility: "öffentlich",
+    notes: "Erstellt via __saveDemo() in der Konsole.",
+    ...overrides, // erlaubt dir Felder zu überschreiben
+  };
+
+  const saved = await saveEntry(demo);
+  console.log("✅ __saveDemo -> gespeichert:", saved);
+  return saved;
+};
+
+window.__loadLatest = async () => {
+  const latest = await loadEntry();
+  console.log("✅ __loadLatest -> geladen:", latest);
+  return latest;
+};
+
+window.__loadById = async (id: string) => {
+  const row = await loadEntry(id);
+  console.log("✅ __loadById -> geladen:", row);
+  return row;
+};
+
+window.__listEntries = async (limit = 5, offset = 0) => {
+  const rows = await listEntries(limit, offset);
+  console.log(`✅ __listEntries -> ${rows.length} Einträge:`, rows);
+  return rows;
+};
+
+window.__pingSupabase = async () => {
+  // sehr leichter Ping: z.B. 1 Row lesen (wenn vorhanden)
+  const rows = await listEntries(1, 0);
+  console.log("✅ __pingSupabase -> Verbindung OK. Erste Zeile:", rows[0] ?? null);
+  return rows[0] ?? null;
+};
