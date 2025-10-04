@@ -179,8 +179,7 @@ const entry = {
           placeholder="Wie passt der psychologische Begriff zur Bibelstelle?"
           style={{ width: "100%", marginTop: 6, marginBottom: 12 }}
         />
-      </label>
-{/* NEUE FELDER */}
+    {/* NEUE FELDER */}
 <label>
   <b>Kommentar (Psychologie) – kurz</b>
   <textarea
@@ -191,6 +190,29 @@ const entry = {
     style={{ width: "100%", marginTop: 6, marginBottom: 12 }}
   />
 </label>
+
+<details style={{ marginBottom: 12 }}>
+  <summary style={{ fontWeight: 700 }}>Theologischer Hintergrund (ausführlich)</summary>
+  <textarea
+    value={theological_background}
+    onChange={(e) => setTheoBg(e.target.value)}
+    rows={10}
+    placeholder="Biblische Bezüge, Auslegungen, theologische Vertiefung …"
+    style={{ width: "100%", marginTop: 6 }}
+  />
+</details>
+
+<details style={{ marginBottom: 12 }}>
+  <summary style={{ fontWeight: 700 }}>Psychologischer Hintergrund (ausführlich)</summary>
+  <textarea
+    value={psychological_background}
+    onChange={(e) => setPsychBg(e.target.value)}
+    rows={10}
+    placeholder="Psychologische Konzepte, Schematherapie, Grawe, Synergetik …"
+    style={{ width: "100%", marginTop: 6 }}
+  />
+</details>
+
 
 <details style={{ marginBottom: 12 }}>
   <summary style={{ fontWeight: 700 }}>Theologischer Hintergrund (ausführlich)</summary>
