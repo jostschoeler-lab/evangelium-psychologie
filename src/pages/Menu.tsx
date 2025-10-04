@@ -26,25 +26,25 @@ export default function Menu() {
       <h1>NBJ – Suite</h1>
 
       <div style={rowStyle}>
-        {/* Statische Seiten im Projekt */}
+        {/* Statische Seiten in deinem Projekt */}
         <a href="/nbj/" style={btnStyle}>Meditation (NBJ)</a>
+        <a href="/spannungsmodell/" style={btnStyle}>Spannungsmodell</a>
+        <a href="/bibliothek/" style={btnStyle}>Bibliothek</a>
 
         {/* Formular bleibt auf deiner Hash-Route */}
         <a href="#/ep" style={btnStyle}>Formular (EP)</a>
 
-        <a href="/spannungsmodell/" style={btnStyle}>Spannungsmodell</a>
-
-        {/* HIER: Direkt zur Sandbox im neuen Tab */}
+        {/* Stuhldialog: Sandbox im neuen Tab öffnen (robusteste Variante) */}
         <a
-          href="https://dzr1l7z.csb.app/"
-          target="_blank"
-          rel="noopener"
+          href="#"
+          onClick={(e) => {
+            e.preventDefault();
+            window.open("https://dzr1l7z.csb.app/", "_blank", "noopener,noreferrer");
+          }}
           style={btnStyle}
         >
           Stuhldialog
         </a>
-
-        <a href="/bibliothek/" style={btnStyle}>Bibliothek</a>
       </div>
     </main>
   );
