@@ -1,10 +1,10 @@
-// src/components/UnifiedEditor.tsx
 import React, { useEffect, useMemo, useState } from "react";
-import { saveEntry, loadEntry, EntryRow } from "../lib/storage";
+import { saveEntry, loadEntry, listEntries, EntryRow } from "../lib/storage";
 
 /**
- * Kleiner Hook: liest/schreibt ein einzelnes Feld in localStorage,
- * damit bei einem Reload Eingaben nicht verloren gehen.
+ * Kleine Hilfsfunktion: liest/schreibt einen einzelnen Feldwert
+ * aus/in localStorage, damit dir Eingaben bei einem Browser-Reload
+ * nicht verloren gehen.
  */
 function useLocalField(key: string, initial = "") {
   const [value, setValue] = useState<string>(() => {
@@ -26,30 +26,95 @@ function useLocalField(key: string, initial = "") {
 }
 
 export default function UnifiedEditor() {
-  // Status/Info
-  const [busy, setBusy] = useState(false);          // für „Laden“
-  const [saving, setSaving] = useState(false);      // für „Speichern“
-  const [status, setStatus] = useState<string>(""); // kleine Statuszeile
-  const [message, setMessage] = useState<null | { type: "ok" | "error"; text: string }>(null);
+  // direkt unter "export default function UnifiedEditor() {"
+const [busy, setBusy] = useState(false);
+const [status, setStatus] = useState<string>("");
 
-  // Alle Eingabefelder (werden in localStorage gesichert)
-  const [bible_reference, setBibleReference] = useLocalField("ue:bible_reference", "");
-  const [theological_explanation, setTheo] = useLocalField("ue:theological_explanation", "");
-  const [psychological_term, setPsych] = useLocalField("ue:psychological_term", "");
+// speichern in Supabase
+async function handleSave() {
+  try {
+    setBusy(true);
+    setStatus("⏳ Speichere …");
+    await saveEntry({
+      bible_reference,
+      theological_explanation,
+      psychological_term,
+      bridge_text,
+      tags,
+      visibility,
+      notes,
+    });
+    setStatus("✅ Gespeichert.");
+  } catch (e: any) {
+    setStatus("❌ Fehler beim Speichern: " + (e?.message ?? String(e)));
+  } finally {
+    setBusy(false);
+  }
+}
+
+// optional: laden (falls du loadEntry importiert hast)
+async function handleLoad() {
+  try {
+    setBusy(true);
+    setStatus("⏳ Lade …");
+    const row = await loadEntry(); // neueste Zeile
+    if (!row) { setStatus("ℹ️ Keine Einträge gefunden."); return; }
+    setBibleReference(row.bible_reference ?? "");
+    setTheological(row.theological_explanation ?? "");
+    setPsych(row.psychological_term ?? "");
+    setBridge(row.bridge_text ?? "");
+    setTags(row.tags ?? "");
+    setVisibility((row.visibility as any) ?? "Entwurf (lokal)");
+    setNotes(row.notes ?? "");
+    setStatus("✅ Geladen.");
+  } catch (e: any) {
+    setStatus("❌ Fehler beim Laden: " + (e?.message ?? String(e)));
+  } finally {
+    setBusy(false);
+  }
+}
+
+// optional: lokalen Entwurf löschen
+function handleClearLocal() {
+  localStorage.removeItem("unified-editor@draft-v1");
+  setStatus("🧹 Lokaler Entwurf gelöscht.");
+}
+
+  // Alle Felder (mit localStorage-Persistenz)
+  const [bible_reference, setBibleReference] = useLocalField(
+    "ue:bible_reference",
+    ""
+  );
+  const [theological_explanation, setTheo] = useLocalField(
+    "ue:theological_explanation",
+    ""
+  );
+  const [psychological_term, setPsych] = useLocalField(
+    "ue:psychological_term",
+    ""
+  );
   const [bridge_text, setBridge] = useLocalField("ue:bridge_text", "");
   const [tags, setTags] = useLocalField("ue:tags", "");
   const [visibility, setVisibility] = useLocalField("ue:visibility", "draft");
   const [notes, setNotes] = useLocalField("ue:notes", "");
 
-  // Simple Validierung
-  const isValid = useMemo(() => bible_reference.trim().length > 0, [bible_reference]);
+  // UI-Status
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState<null | { type: "ok" | "error"; text: string }>(null);
 
-  // In Supabase speichern
+  // Für simple Validierung
+  const isValid = useMemo(() => {
+    return bible_reference.trim().length > 0;
+  }, [bible_reference]);
+
   async function handleSaveToCloud() {
     setMessage(null);
 
     if (!isValid) {
-      setMessage({ type: "error", text: "Bitte mindestens 'Bibelstelle(n)' ausfüllen." });
+      setMessage({
+        type: "error",
+        text: "Bitte mindestens 'Bibelstelle(n)' ausfüllen.",
+      });
       return;
     }
 
@@ -59,7 +124,7 @@ export default function UnifiedEditor() {
       psychological_term: psychological_term.trim(),
       bridge_text: bridge_text.trim(),
       tags: tags.trim(),
-      visibility: visibility.trim(), // 'draft' | 'public' | 'private'
+      visibility: visibility.trim(), // z.B. 'draft' | 'public' | 'private'
       notes: notes.trim(),
     };
 
@@ -70,62 +135,21 @@ export default function UnifiedEditor() {
     } catch (err: any) {
       setMessage({
         type: "error",
-        text: "Speichern fehlgeschlagen: " + (err?.message || "Unbekannter Fehler"),
+        text:
+          "Speichern fehlgeschlagen: " +
+          (err?.message || "Unbekannter Fehler"),
       });
     } finally {
       setSaving(false);
     }
   }
 
-  // Neuesten Eintrag aus Supabase laden
-  async function handleLoad() {
-    try {
-      setBusy(true);
-      setStatus("⏳ Lade …");
-      const row = await loadEntry();
-      if (!row) {
-        setStatus("ℹ️ Keine Einträge gefunden.");
-        return;
-      }
-      setBibleReference(row.bible_reference ?? "");
-      setTheo(row.theological_explanation ?? "");
-      setPsych(row.psychological_term ?? "");
-      setBridge(row.bridge_text ?? "");
-      setTags(row.tags ?? "");
-      setVisibility((row.visibility as any) ?? "draft");
-      setNotes(row.notes ?? "");
-      setStatus("✅ Geladen.");
-    } catch (e: any) {
-      setStatus("❌ Fehler beim Laden: " + (e?.message ?? String(e)));
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  // Lokale Entwürfe löschen
-  function handleClearLocal() {
-    try {
-      localStorage.removeItem("ue:bible_reference");
-      localStorage.removeItem("ue:theological_explanation");
-      localStorage.removeItem("ue:psychological_term");
-      localStorage.removeItem("ue:bridge_text");
-      localStorage.removeItem("ue:tags");
-      localStorage.removeItem("ue:visibility");
-      localStorage.removeItem("ue:notes");
-      setStatus("🧹 Lokaler Entwurf gelöscht.");
-    } catch {
-      setStatus("⚠️ Konnte lokalen Entwurf nicht löschen.");
-    }
-  }
-
   return (
     <div style={{ maxWidth: 980, margin: "0 auto", padding: "8px 12px" }}>
-      {/* Marker, damit wir sicher sehen, dass das NEUE Build live ist */}
-      <h2>Unified-Editor (Bibel + Psych + Brücke) • v4</h2>
-
+      <h2>Unified-Editor (Bibel + Psych + Brücke)</h2>
       <p>Alle Felder werden lokal gespeichert (localStorage). Mit „In die Cloud speichern“ schreibst du in Supabase.</p>
 
-      {/* Meldung (grün/rot) */}
+      {/* Status / Meldungen */}
       {message && (
         <div
           style={{
@@ -142,17 +166,6 @@ export default function UnifiedEditor() {
         </div>
       )}
 
-      {/* Die drei Buttons ganz oben */}
-      <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
-        <button onClick={handleSaveToCloud} disabled={saving || !isValid}>
-          {saving ? "Speichere …" : "In die Cloud speichern"}
-        </button>
-        <button onClick={handleLoad} disabled={busy}>Aus Cloud laden</button>
-        <button onClick={handleClearLocal}>Lokalen Entwurf löschen</button>
-        <span style={{ marginLeft: 8, opacity: 0.8 }}>{status}</span>
-      </div>
-
-      {/* Felder */}
       <label>
         <b>Bibelstelle(n)</b>
         <input
@@ -228,6 +241,23 @@ export default function UnifiedEditor() {
           style={{ width: "100%", marginTop: 6, marginBottom: 20 }}
         />
       </label>
+
+      <button
+        onClick={handleSaveToCloud}
+        disabled={saving || !isValid}
+        style={{
+          padding: "10px 16px",
+          fontWeight: 600,
+          borderRadius: 8,
+          border: "1px solid #198754",
+          background: saving ? "#7bd3a3" : "#20c997",
+          color: "white",
+          cursor: saving ? "not-allowed" : "pointer",
+        }}
+        title={!isValid ? "Bitte 'Bibelstelle(n)' ausfüllen" : "In die Cloud speichern"}
+      >
+        {saving ? "Speichere …" : "In die Cloud speichern"}
+      </button>
     </div>
   );
 }
