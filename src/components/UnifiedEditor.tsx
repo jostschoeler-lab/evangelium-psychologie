@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { saveEntry } from "../lib/storage";
+import { saveEntry, loadEntry, listEntries } from "../lib/storage";
+
 /**
  * Kleine Hilfsfunktion: liest/schreibt einen einzelnen Feldwert
  * aus/in localStorage, damit dir Eingaben bei einem Browser-Reload
