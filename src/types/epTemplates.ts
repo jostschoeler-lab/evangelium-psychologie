@@ -1,6 +1,5 @@
 import { EpEintrag } from "./epTypes";
-import { epNewE, epNewB, epNewP, epNewL } from "./epIds";
-
+import { epNewE, epNewB, epNewP, epNewL } from "./epKeys";
 export const epNewEintrag = (): EpEintrag => ({
   id: epNewE(),
   bibelstelle: {
