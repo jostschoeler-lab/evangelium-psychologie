@@ -1,6 +1,5 @@
 import { HashRouter, Routes, Route } from "react-router-dom";
 
-// Seiten importieren
 import Menu from "./pages/Menu";
 import NBJ from "./pages/NBJ";
 import EP from "./pages/EP";
@@ -12,10 +11,7 @@ export default function App() {
   return (
     <HashRouter>
       <Routes>
-        {/* Startmenü */}
         <Route path="/" element={<Menu />} />
-
-        {/* Module */}
         <Route path="/nbj" element={<NBJ />} />
         <Route path="/ep" element={<EP />} />
         <Route path="/spannungsmodell" element={<Spannungsmodell />} />
