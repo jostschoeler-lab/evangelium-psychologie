@@ -120,6 +120,10 @@ const entry = {
   return (
     <div style={{ maxWidth: 980, margin: "0 auto", padding: "8px 12px" }}>
       <h2>Unified-Editor (Bibel + Psych + Brücke)</h2>
+     <div style={{background:"#eef6ff",border:"1px solid #4da3ff",padding:8,margin:"8px 0"}}>
+  *** MARKER C: UnifiedEditor aktiv ***
+</div>
+
       <p>Alle Felder werden lokal gespeichert (localStorage). Mit „In die Cloud speichern“ schreibst du in Supabase.</p>
 
       {/* Status / Meldungen */}
