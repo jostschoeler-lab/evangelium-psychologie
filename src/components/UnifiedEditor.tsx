@@ -179,7 +179,11 @@ const entry = {
           placeholder="Wie passt der psychologische Begriff zur Bibelstelle?"
           style={{ width: "100%", marginTop: 6, marginBottom: 12 }}
         />
-    {/* NEUE FELDER */}
+<div style={{padding:"8px",border:"1px dashed #999",margin:"8px 0"}}>
+  *** MARKER: UnifiedEditor aktiv ***
+</div>
+
+        {/* NEUE FELDER */}
 <label>
   <b>Kommentar (Psychologie) – kurz</b>
   <textarea
