@@ -8,7 +8,7 @@ export default function Menu() {
 
   return (
     <main style={pageStyle}>
-      <h1>NBJ – Suite • v3</h1>
+      <h1>NBJ – Suite • v4</h1>
 
       <div style={rowStyle}>
         <a href="/nbj/" style={btnStyle}>Meditation (NBJ)</a>
@@ -16,9 +16,9 @@ export default function Menu() {
         <a href="/bibliothek/" style={btnStyle}>Bibliothek</a>
         <a href="#/ep" style={btnStyle}>Formular (EP)</a>
 
-        {/* Stuhldialog: direkt absoluter Link in neuem Tab (ohne onClick-JS) */}
+        {/* Stuhldialog: Sandbox in neuem Tab */}
         <a
-          href="https://dzr1l7z.csb.app/?v=1"
+          href="https://dzr1l7z.csb.app/?v=4"
           target="_blank"
           rel="noopener"
           style={btnStyle}
