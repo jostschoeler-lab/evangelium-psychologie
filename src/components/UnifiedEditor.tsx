@@ -85,8 +85,7 @@ const [psychological_background, setPsychBg] = useLocalField("ue:psychological_b
       });
       return;
     }
-
-    const entry = {
+const entry = {
   bible_reference: bible_reference.trim(),
   theological_explanation: theological_explanation.trim(),
   psychological_term: psychological_term.trim(),
@@ -94,7 +93,13 @@ const [psychological_background, setPsychBg] = useLocalField("ue:psychological_b
   tags: tags.trim(),            // falls tags ein String ist; sonst: tags,
   visibility: visibility.trim(),
   notes: notes.trim(),
+
+  // neu hinzugefügt – für die drei neuen Spalten in Supabase
+  psychology_comment: psychology_comment.trim(),
+  theological_background: theological_background.trim(),
+  psychological_background: psychological_background.trim(),
 };
+
 
     setSaving(true);
     try {
