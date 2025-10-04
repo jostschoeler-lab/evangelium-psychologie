@@ -82,14 +82,14 @@ export default function UnifiedEditor() {
     }
 
     const entry = {
-      bible_reference: bible_reference.trim(),
-      theological_explanation: theological_explanation.trim(),
-      psychological_term: psychological_term.trim(),
-      bridge_text: bridge_text.trim(),
-      tags: tags.trim(),
-      visibility: visibility.trim(), // z.B. 'draft' | 'public' | 'private'
-      notes: notes.trim(),
-    };
+  bible_reference: bible_reference.trim(),
+  theological_explanation: theological_explanation.trim(),
+  psychological_term: psychological_term.trim(),
+  bridge_text: bridge_text.trim(),
+  tags: tags.trim(),            // falls tags ein String ist; sonst: tags,
+  visibility: visibility.trim(),
+  notes: notes.trim(),
+};
 
     setSaving(true);
     try {
