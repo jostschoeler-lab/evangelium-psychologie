@@ -26,15 +26,24 @@ export default function Menu() {
       <h1>NBJ – Suite</h1>
 
       <div style={rowStyle}>
-        {/* Meditation: statische Seite unter /nbj/ */}
+        {/* Statische Seiten im Projekt */}
         <a href="/nbj/" style={btnStyle}>Meditation (NBJ)</a>
 
-        {/* Formular: HashRouter-Route #/ep */}
+        {/* Formular bleibt auf deiner Hash-Route */}
         <a href="#/ep" style={btnStyle}>Formular (EP)</a>
 
-        {/* Statische Module unter public/… */}
         <a href="/spannungsmodell/" style={btnStyle}>Spannungsmodell</a>
-        <a href="/stuhldialog/" style={btnStyle}>Stuhldialog</a>
+
+        {/* HIER: Direkt zur Sandbox im neuen Tab */}
+        <a
+          href="https://dzr1l7z.csb.app/"
+          target="_blank"
+          rel="noopener"
+          style={btnStyle}
+        >
+          Stuhldialog
+        </a>
+
         <a href="/bibliothek/" style={btnStyle}>Bibliothek</a>
       </div>
     </main>
