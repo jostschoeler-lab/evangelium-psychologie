@@ -13,7 +13,10 @@ export default function Menu() {
         <button onClick={() => (window.location.hash = "#/spannungsmodell")}>
           Spannungsmodell
         </button>
-        <button onClick={() => (window.location.hash = "#/stuhldialog")}>
+       <button onClick={() => (window.location.href = "/stuhldialog/")}>
+  Stuhldialog
+</button>
+
           Stuhldialog
         </button>
         <button onClick={() => (window.location.hash = "#/bibliothek")}>
