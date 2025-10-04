@@ -81,7 +81,7 @@ export default function UnifiedEditor() {
       return;
     }
 
-    const entryEntry[] = {
+    const entry = {
       bible_reference: bible_reference.trim(),
       theological_explanation: theological_explanation.trim(),
       psychological_term: psychological_term.trim(),
