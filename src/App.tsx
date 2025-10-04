@@ -1,3 +1,5 @@
+import EpEditorPage from "./pages/EpEditorPage";
+
 // src/App.tsx  — clean build: v2
 
 import { useEffect, useMemo, useState } from "react";
@@ -36,6 +38,10 @@ function clearLocal() {
 }
 
 export default function App() {
+ // Neuer Editor über #/ep
+  if (typeof window !== "undefined" && window.location.hash === "#/ep") {
+    return <EpEditorPage />;
+  }
   // ---------- Formular-State ----------
   const [bible_reference, setBibleReference] = useState("");
   const [theological_explanation, setTheological] = useState("");
