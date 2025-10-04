@@ -26,73 +26,19 @@ function useLocalField(key: string, initial = "") {
 }
 
 export default function UnifiedEditor() {
-  // direkt unter "export default function UnifiedEditor() {"
-const [busy, setBusy] = useState(false);
-const [status, setStatus] = useState<string>("");
+  const [busy, setBusy] = useState(false);
+  const [status, setStatus] = useState<string>("");
 
-// speichern in Supabase
-async function handleSave() {
-  try {
-    setBusy(true);
-    setStatus("⏳ Speichere …");
-    await saveEntry({
-      bible_reference,
-      theological_explanation,
-      psychological_term,
-      bridge_text,
-      tags,
-      visibility,
-      notes,
-    });
-    setStatus("✅ Gespeichert.");
-  } catch (e: any) {
-    setStatus("❌ Fehler beim Speichern: " + (e?.message ?? String(e)));
-  } finally {
-    setBusy(false);
+  // optional: lokalen Entwurf löschen
+  function handleClearLocal() {
+    localStorage.removeItem("unified-editor@draft-v1");
+    setStatus("🧹 Lokaler Entwurf gelöscht.");
   }
-}
-
-// optional: laden (falls du loadEntry importiert hast)
-async function handleLoad() {
-  try {
-    setBusy(true);
-    setStatus("⏳ Lade …");
-    const row = await loadEntry(); // neueste Zeile
-    if (!row) { setStatus("ℹ️ Keine Einträge gefunden."); return; }
-    setBibleReference(row.bible_reference ?? "");
-    setTheological(row.theological_explanation ?? "");
-    setPsych(row.psychological_term ?? "");
-    setBridge(row.bridge_text ?? "");
-    setTags(row.tags ?? "");
-    setVisibility((row.visibility as any) ?? "Entwurf (lokal)");
-    setNotes(row.notes ?? "");
-    setStatus("✅ Geladen.");
-  } catch (e: any) {
-    setStatus("❌ Fehler beim Laden: " + (e?.message ?? String(e)));
-  } finally {
-    setBusy(false);
-  }
-}
-
-// optional: lokalen Entwurf löschen
-function handleClearLocal() {
-  localStorage.removeItem("unified-editor@draft-v1");
-  setStatus("🧹 Lokaler Entwurf gelöscht.");
-}
 
   // Alle Felder (mit localStorage-Persistenz)
-  const [bible_reference, setBibleReference] = useLocalField(
-    "ue:bible_reference",
-    ""
-  );
-  const [theological_explanation, setTheo] = useLocalField(
-    "ue:theological_explanation",
-    ""
-  );
-  const [psychological_term, setPsych] = useLocalField(
-    "ue:psychological_term",
-    ""
-  );
+  const [bible_reference, setBibleReference] = useLocalField("ue:bible_reference", "");
+  const [theological_explanation, setTheo] = useLocalField("ue:theological_explanation", "");
+  const [psychological_term, setPsych] = useLocalField("ue:psychological_term", "");
   const [bridge_text, setBridge] = useLocalField("ue:bridge_text", "");
   const [tags, setTags] = useLocalField("ue:tags", "");
   const [visibility, setVisibility] = useLocalField("ue:visibility", "draft");
@@ -103,18 +49,13 @@ function handleClearLocal() {
   const [message, setMessage] = useState<null | { type: "ok" | "error"; text: string }>(null);
 
   // Für simple Validierung
-  const isValid = useMemo(() => {
-    return bible_reference.trim().length > 0;
-  }, [bible_reference]);
+  const isValid = useMemo(() => bible_reference.trim().length > 0, [bible_reference]);
 
   async function handleSaveToCloud() {
     setMessage(null);
 
     if (!isValid) {
-      setMessage({
-        type: "error",
-        text: "Bitte mindestens 'Bibelstelle(n)' ausfüllen.",
-      });
+      setMessage({ type: "error", text: "Bitte mindestens 'Bibelstelle(n)' ausfüllen." });
       return;
     }
 
@@ -124,7 +65,7 @@ function handleClearLocal() {
       psychological_term: psychological_term.trim(),
       bridge_text: bridge_text.trim(),
       tags: tags.trim(),
-      visibility: visibility.trim(), // z.B. 'draft' | 'public' | 'private'
+      visibility: visibility.trim(), // 'draft' | 'public' | 'private'
       notes: notes.trim(),
     };
 
@@ -135,12 +76,34 @@ function handleClearLocal() {
     } catch (err: any) {
       setMessage({
         type: "error",
-        text:
-          "Speichern fehlgeschlagen: " +
-          (err?.message || "Unbekannter Fehler"),
+        text: "Speichern fehlgeschlagen: " + (err?.message || "Unbekannter Fehler"),
       });
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleLoad() {
+    try {
+      setBusy(true);
+      setStatus("⏳ Lade …");
+      const row = await loadEntry(); // neueste Zeile
+      if (!row) {
+        setStatus("ℹ️ Keine Einträge gefunden.");
+        return;
+      }
+      setBibleReference(row.bible_reference ?? "");
+      setTheo(row.theological_explanation ?? "");
+      setPsych(row.psychological_term ?? "");
+      setBridge(row.bridge_text ?? "");
+      setTags(row.tags ?? "");
+      setVisibility((row.visibility as any) ?? "Entwurf (lokal)");
+      setNotes(row.notes ?? "");
+      setStatus("✅ Geladen.");
+    } catch (e: any) {
+      setStatus("❌ Fehler beim Laden: " + (e?.message ?? String(e)));
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -165,6 +128,15 @@ function handleClearLocal() {
           {message.text}
         </div>
       )}
+
+      <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+        <button onClick={handleSaveToCloud} disabled={saving || !isValid}>
+          {saving ? "Speichere …" : "In die Cloud speichern"}
+        </button>
+        <button onClick={handleLoad} disabled={busy}>Aus Cloud laden</button>
+        <button onClick={handleClearLocal}>Lokalen Entwurf löschen</button>
+        <span style={{ marginLeft: 8, opacity: 0.8 }}>{status}</span>
+      </div>
 
       <label>
         <b>Bibelstelle(n)</b>
@@ -241,23 +213,6 @@ function handleClearLocal() {
           style={{ width: "100%", marginTop: 6, marginBottom: 20 }}
         />
       </label>
-
-      <button
-        onClick={handleSaveToCloud}
-        disabled={saving || !isValid}
-        style={{
-          padding: "10px 16px",
-          fontWeight: 600,
-          borderRadius: 8,
-          border: "1px solid #198754",
-          background: saving ? "#7bd3a3" : "#20c997",
-          color: "white",
-          cursor: saving ? "not-allowed" : "pointer",
-        }}
-        title={!isValid ? "Bitte 'Bibelstelle(n)' ausfüllen" : "In die Cloud speichern"}
-      >
-        {saving ? "Speichere …" : "In die Cloud speichern"}
-      </button>
     </div>
   );
 }
