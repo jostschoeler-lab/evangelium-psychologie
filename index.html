@@ -1,11 +1,57 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="de">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Evangelium–Psychologie</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NBJ – Suite</title>
+
+    <!-- Einheitliches Design aus public/assets -->
+    <link rel="stylesheet" href="/assets/styles/main.css" />
+
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 40px;
+        background-color: #fafafa;
+        color: #222;
+      }
+      h1 {
+        color: #2b4a8f;
+      }
+      .menu {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 20px;
+      }
+      .menu button {
+        padding: 10px 15px;
+        font-weight: bold;
+        cursor: pointer;
+        border-radius: 8px;
+        background: #2b4a8f;
+        color: white;
+        border: none;
+      }
+      .menu button:hover {
+        background: #3d5eb5;
+      }
+    </style>
   </head>
+
   <body>
+    <h1>NBJ – Suite</h1>
+
+    <!-- Hauptmenü -->
+    <div class="menu">
+      <button onclick="location.href='/nbj/'">Meditation (NBJ)</button>
+      <button onclick="location.href='/ep'">Formular (EP)</button>
+      <button onclick="location.href='/spannungsmodell/'">Spannungsmodell</button>
+      <button onclick="location.href='/stuhldialog/'">Stuhldialog</button>
+      <button onclick="location.href='/bibliothek/'">Bibliothek</button>
+    </div>
+
+    <!-- Hier wird der React-Teil für /ep geladen -->
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
