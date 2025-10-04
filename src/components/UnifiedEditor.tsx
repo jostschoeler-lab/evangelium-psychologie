@@ -2,18 +2,10 @@ import React, { useEffect, useMemo, useState } from "react";
 import { saveEntry, loadEntry, listEntries } from "../lib/storage";
 // TEMP: Typdefinition, damit der Build läuft.
 // Passe die Felder später an deine echten Spaltennamen an.
-type Entry = {
-  id?: string
-  bibelstellen?: string
-  theologie?: string
-  psych?: string
-  bruecke?: string
-  tags?: string[]
-  sichtbarkeit?: string
-  notiz?: string
-  created_at?: string
-  updated_at?: string
-}
+// ganz oben bei den Imports
+import type { Entry } from '../types/entry' // wenn du KEIN '@' Alias hast
+// oder: import type { Entry } from '@/types/entry'  // falls '@' als alias konfiguriert ist
+
 
 /**
  * Kleine Hilfsfunktion: liest/schreibt einen einzelnen Feldwert
