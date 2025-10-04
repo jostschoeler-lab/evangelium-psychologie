@@ -180,7 +180,41 @@ const entry = {
           style={{ width: "100%", marginTop: 6, marginBottom: 12 }}
         />
       </label>
+{/* NEUE FELDER */}
+<label>
+  <b>Kommentar (Psychologie) – kurz</b>
+  <textarea
+    value={psychology_comment}
+    onChange={(e) => setPsychologyComment(e.target.value)}
+    rows={4}
+    placeholder="Kurzer psychologischer Kommentar, z. B. Schema, Emotion, Verhalten …"
+    style={{ width: "100%", marginTop: 6, marginBottom: 12 }}
+  />
+</label>
 
+<details style={{ marginBottom: 12 }}>
+  <summary style={{ fontWeight: 700 }}>Theologischer Hintergrund (ausführlich)</summary>
+  <textarea
+    value={theological_background}
+    onChange={(e) => setTheoBg(e.target.value)}
+    rows={10}
+    placeholder="Biblische Bezüge, Auslegungen, theologische Vertiefung …"
+    style={{ width: "100%", marginTop: 6 }}
+  />
+</details>
+
+<details style={{ marginBottom: 12 }}>
+  <summary style={{ fontWeight: 700 }}>Psychologischer Hintergrund (ausführlich)</summary>
+  <textarea
+    value={psychological_background}
+    onChange={(e) => setPsychBg(e.target.value)}
+    rows={10}
+    placeholder="Psychologische Konzepte, Schematherapie, Grawe, Synergetik …"
+    style={{ width: "100%", marginTop: 6 }}
+  />
+</details>
+
+      
       <label>
         <b>Tags (mit Enter hinzufügen oder Liste durch Kommas)</b>
         <input
