@@ -1,21 +1,11 @@
 // src/components/UnifiedEditor.tsx
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { supabase } from "../lib/supabase";
+import React, { useEffect, useMemo, useState } from "react";
+import { saveEntry, loadEntry, EntryRow } from "../lib/storage";
 
-// Typ passend zu deiner Tabelle "entries"
-type EntryRow = {
-  id?: string;
-  created_at?: string;
-  bible_reference: string | null;
-  theological_explanation: string | null;
-  psychological_term: string | null;
-  bridge_text: string | null;
-  tags: string | null;       // bei dir ist "tags" ein TEXT-Feld
-  visibility: string | null; // "draft" | "public" | "private"
-  notes: string | null;
-};
-
-/** Kleiner Hook: Feldwerte zusätzlich lokal puffern */
+/**
+ * Kleiner Hook: liest/schreibt ein einzelnes Feld in localStorage,
+ * damit bei einem Reload Eingaben nicht verloren gehen.
+ */
 function useLocalField(key: string, initial = "") {
   const [value, setValue] = useState<string>(() => {
     try {
@@ -25,22 +15,24 @@ function useLocalField(key: string, initial = "") {
       return initial;
     }
   });
+
   useEffect(() => {
     try {
       localStorage.setItem(key, value);
     } catch {}
   }, [key, value]);
+
   return [value, setValue] as const;
 }
 
 export default function UnifiedEditor() {
-  // UI-Status
-  const [busy, setBusy] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [status, setStatus] = useState<string>("");
+  // Status/Info
+  const [busy, setBusy] = useState(false);          // für „Laden“
+  const [saving, setSaving] = useState(false);      // für „Speichern“
+  const [status, setStatus] = useState<string>(""); // kleine Statuszeile
   const [message, setMessage] = useState<null | { type: "ok" | "error"; text: string }>(null);
 
-  // Form-Felder (lokal gesichert)
+  // Alle Eingabefelder (werden in localStorage gesichert)
   const [bible_reference, setBibleReference] = useLocalField("ue:bible_reference", "");
   const [theological_explanation, setTheo] = useLocalField("ue:theological_explanation", "");
   const [psychological_term, setPsych] = useLocalField("ue:psychological_term", "");
@@ -49,83 +41,68 @@ export default function UnifiedEditor() {
   const [visibility, setVisibility] = useLocalField("ue:visibility", "draft");
   const [notes, setNotes] = useLocalField("ue:notes", "");
 
-  const formRef = useRef<HTMLFormElement>(null);
+  // Simple Validierung
   const isValid = useMemo(() => bible_reference.trim().length > 0, [bible_reference]);
 
-  // ---- SPEICHERN → SUPABASE -------------------------------------------------
+  // In Supabase speichern
   async function handleSaveToCloud() {
     setMessage(null);
+
     if (!isValid) {
       setMessage({ type: "error", text: "Bitte mindestens 'Bibelstelle(n)' ausfüllen." });
       return;
     }
 
-    const payload: EntryRow = {
-      bible_reference: bible_reference.trim() || null,
-      theological_explanation: theological_explanation.trim() || null,
-      psychological_term: psychological_term.trim() || null,
-      bridge_text: bridge_text.trim() || null,
-      tags: tags.trim() || null,
-      visibility: visibility.trim() || "draft",
-      notes: notes.trim() || null,
+    const entry: EntryRow = {
+      bible_reference: bible_reference.trim(),
+      theological_explanation: theological_explanation.trim(),
+      psychological_term: psychological_term.trim(),
+      bridge_text: bridge_text.trim(),
+      tags: tags.trim(),
+      visibility: visibility.trim(), // 'draft' | 'public' | 'private'
+      notes: notes.trim(),
     };
 
     setSaving(true);
     try {
-      const { data, error } = await supabase
-        .from("entries")
-        .insert(payload)
-        .select()
-        .single();
-
-      if (error) throw error;
-      setMessage({ type: "ok", text: `Gespeichert ✅ (ID: ${data.id})` });
-      setStatus("✅ Eintrag auf Server gespeichert.");
-      // Optional: nach Erfolg lokalen Entwurf lassen (oder löschen – deine Wahl)
-    } catch (e: any) {
-      setMessage({ type: "error", text: "Speichern fehlgeschlagen: " + (e?.message ?? String(e)) });
-      setStatus("❌ Fehler beim Speichern.");
-      console.error("Supabase insert error:", e);
+      await saveEntry(entry);
+      setMessage({ type: "ok", text: "Eintrag wurde in Supabase gespeichert ✅" });
+    } catch (err: any) {
+      setMessage({
+        type: "error",
+        text: "Speichern fehlgeschlagen: " + (err?.message || "Unbekannter Fehler"),
+      });
     } finally {
       setSaving(false);
     }
   }
 
-  // ---- LADEN (letzter Eintrag) ----------------------------------------------
+  // Neuesten Eintrag aus Supabase laden
   async function handleLoad() {
-    setMessage(null);
-    setBusy(true);
-    setStatus("⏳ Lade …");
     try {
-      const { data, error } = await supabase
-        .from("entries")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .single();
-
-      if (error && error.code !== "PGRST116") throw error; // PGRST116 = no rows
-      if (!data) {
+      setBusy(true);
+      setStatus("⏳ Lade …");
+      const row = await loadEntry();
+      if (!row) {
         setStatus("ℹ️ Keine Einträge gefunden.");
         return;
       }
-      setBibleReference(data.bible_reference ?? "");
-      setTheo(data.theological_explanation ?? "");
-      setPsych(data.psychological_term ?? "");
-      setBridge(data.bridge_text ?? "");
-      setTags(data.tags ?? "");
-      setVisibility((data.visibility as any) ?? "draft");
-      setNotes(data.notes ?? "");
+      setBibleReference(row.bible_reference ?? "");
+      setTheo(row.theological_explanation ?? "");
+      setPsych(row.psychological_term ?? "");
+      setBridge(row.bridge_text ?? "");
+      setTags(row.tags ?? "");
+      setVisibility((row.visibility as any) ?? "draft");
+      setNotes(row.notes ?? "");
       setStatus("✅ Geladen.");
     } catch (e: any) {
       setStatus("❌ Fehler beim Laden: " + (e?.message ?? String(e)));
-      console.error("Supabase load error:", e);
     } finally {
       setBusy(false);
     }
   }
 
-  // ---- LOKAL LÖSCHEN --------------------------------------------------------
+  // Lokale Entwürfe löschen
   function handleClearLocal() {
     try {
       localStorage.removeItem("ue:bible_reference");
@@ -143,14 +120,12 @@ export default function UnifiedEditor() {
 
   return (
     <div style={{ maxWidth: 980, margin: "0 auto", padding: "8px 12px" }}>
-      {/* Marker: neue Version */}
-      <h2>Unified-Editor (Bibel + Psych + Brücke) • v5</h2>
-      <p>
-        Alle Felder werden lokal gespeichert (localStorage).
-        <br />
-        Mit <b>„In die Cloud speichern“</b> schreibst du zusätzlich in Supabase (Tabelle <code>entries</code>).
-      </p>
+      {/* Marker, damit wir sicher sehen, dass das NEUE Build live ist */}
+      <h2>Unified-Editor (Bibel + Psych + Brücke) • v4</h2>
 
+      <p>Alle Felder werden lokal gespeichert (localStorage). Mit „In die Cloud speichern“ schreibst du in Supabase.</p>
+
+      {/* Meldung (grün/rot) */}
       {message && (
         <div
           style={{
@@ -167,6 +142,7 @@ export default function UnifiedEditor() {
         </div>
       )}
 
+      {/* Die drei Buttons ganz oben */}
       <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
         <button onClick={handleSaveToCloud} disabled={saving || !isValid}>
           {saving ? "Speichere …" : "In die Cloud speichern"}
@@ -176,83 +152,82 @@ export default function UnifiedEditor() {
         <span style={{ marginLeft: 8, opacity: 0.8 }}>{status}</span>
       </div>
 
-      <form ref={formRef}>
-        <label>
-          <b>Bibelstelle(n)</b>
-          <input
-            value={bible_reference}
-            onChange={(e) => setBibleReference(e.target.value)}
-            placeholder="z.B. 1. Petr 4,1–2"
-            style={{ width: "100%", marginTop: 6, marginBottom: 12 }}
-          />
-        </label>
+      {/* Felder */}
+      <label>
+        <b>Bibelstelle(n)</b>
+        <input
+          value={bible_reference}
+          onChange={(e) => setBibleReference(e.target.value)}
+          placeholder="z.B. 1. Petr 4,1–2"
+          style={{ width: "100%", marginTop: 6, marginBottom: 12 }}
+        />
+      </label>
 
-        <label>
-          <b>Theologische Auslegungen</b>
-          <textarea
-            value={theological_explanation}
-            onChange={(e) => setTheo(e.target.value)}
-            rows={6}
-            placeholder="Kurzkommentar oder Auslegung …"
-            style={{ width: "100%", marginTop: 6, marginBottom: 12 }}
-          />
-        </label>
+      <label>
+        <b>Theologische Auslegungen</b>
+        <textarea
+          value={theological_explanation}
+          onChange={(e) => setTheo(e.target.value)}
+          rows={6}
+          placeholder="Kurzkommentar oder Auslegung …"
+          style={{ width: "100%", marginTop: 6, marginBottom: 12 }}
+        />
+      </label>
 
-        <label>
-          <b>Psychologischer Begriff</b>
-          <input
-            value={psychological_term}
-            onChange={(e) => setPsych(e.target.value)}
-            placeholder="z.B. Akzeptanz, Bindung …"
-            style={{ width: "100%", marginTop: 6, marginBottom: 12 }}
-          />
-        </label>
+      <label>
+        <b>Psychologischer Begriff</b>
+        <input
+          value={psychological_term}
+          onChange={(e) => setPsych(e.target.value)}
+          placeholder="z.B. Akzeptanz, Bindung, …"
+          style={{ width: "100%", marginTop: 6, marginBottom: 12 }}
+        />
+      </label>
 
-        <label>
-          <b>Brückentext (Theologie ↔ Psychologie)</b>
-          <textarea
-            value={bridge_text}
-            onChange={(e) => setBridge(e.target.value)}
-            rows={5}
-            placeholder="Wie passt der psychologische Begriff zur Bibelstelle?"
-            style={{ width: "100%", marginTop: 6, marginBottom: 12 }}
-          />
-        </label>
+      <label>
+        <b>Brückentext (Theologie ↔ Psychologie)</b>
+        <textarea
+          value={bridge_text}
+          onChange={(e) => setBridge(e.target.value)}
+          rows={5}
+          placeholder="Wie passt der psychologische Begriff zur Bibelstelle?"
+          style={{ width: "100%", marginTop: 6, marginBottom: 12 }}
+        />
+      </label>
 
-        <label>
-          <b>Tags (Komma-getrennt)</b>
-          <input
-            value={tags}
-            onChange={(e) => setTags(e.target.value)}
-            placeholder="z.B. Trauer, Leiden, Bindung"
-            style={{ width: "100%", marginTop: 6, marginBottom: 12 }}
-          />
-        </label>
+      <label>
+        <b>Tags (mit Enter hinzufügen oder Liste durch Kommas)</b>
+        <input
+          value={tags}
+          onChange={(e) => setTags(e.target.value)}
+          placeholder="z.B. Trauer, Leiden, Schmerz, Bindung"
+          style={{ width: "100%", marginTop: 6, marginBottom: 12 }}
+        />
+      </label>
 
-        <label>
-          <b>Sichtbarkeit</b>
-          <select
-            value={visibility}
-            onChange={(e) => setVisibility(e.target.value)}
-            style={{ display: "block", marginTop: 6, marginBottom: 12 }}
-          >
-            <option value="draft">Entwurf (lokal)</option>
-            <option value="public">Öffentlich (später)</option>
-            <option value="private">Privat (nur Admin)</option>
-          </select>
-        </label>
+      <label>
+        <b>Sichtbarkeit</b>
+        <select
+          value={visibility}
+          onChange={(e) => setVisibility(e.target.value)}
+          style={{ display: "block", marginTop: 6, marginBottom: 12 }}
+        >
+          <option value="draft">Entwurf (lokal)</option>
+          <option value="public">Öffentlich (später)</option>
+          <option value="private">Privat (nur Admin)</option>
+        </select>
+      </label>
 
-        <label>
-          <b>Notiz</b>
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            rows={4}
-            placeholder="Spätere Gedanken, To-dos …"
-            style={{ width: "100%", marginTop: 6, marginBottom: 20 }}
-          />
-        </label>
-      </form>
+      <label>
+        <b>Notiz</b>
+        <textarea
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          rows={4}
+          placeholder="Spätere Gedanken, To-dos …"
+          style={{ width: "100%", marginTop: 6, marginBottom: 20 }}
+        />
+      </label>
     </div>
   );
 }
