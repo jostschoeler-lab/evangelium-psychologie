@@ -26,13 +26,13 @@ function useLocalField(key: string, initial = "") {
 }
 
 export default function UnifiedEditor() {
-  // Statusleisten
-  const [busy, setBusy] = useState(false);        // für "Laden"
-  const [saving, setSaving] = useState(false);    // für "Speichern"
-  const [status, setStatus] = useState<string>(""); // kleine Textzeile rechts
+  // Status/Info
+  const [busy, setBusy] = useState(false);          // für „Laden“
+  const [saving, setSaving] = useState(false);      // für „Speichern“
+  const [status, setStatus] = useState<string>(""); // kleine Statuszeile
   const [message, setMessage] = useState<null | { type: "ok" | "error"; text: string }>(null);
 
-  // Alle Eingabefelder (persistieren in localStorage)
+  // Alle Eingabefelder (werden in localStorage gesichert)
   const [bible_reference, setBibleReference] = useLocalField("ue:bible_reference", "");
   const [theological_explanation, setTheo] = useLocalField("ue:theological_explanation", "");
   const [psychological_term, setPsych] = useLocalField("ue:psychological_term", "");
@@ -41,10 +41,10 @@ export default function UnifiedEditor() {
   const [visibility, setVisibility] = useLocalField("ue:visibility", "draft");
   const [notes, setNotes] = useLocalField("ue:notes", "");
 
-  // Quick-Validierung: Bibelstelle muss gefüllt sein
+  // Simple Validierung
   const isValid = useMemo(() => bible_reference.trim().length > 0, [bible_reference]);
 
-  // Speichern in Supabase
+  // In Supabase speichern
   async function handleSaveToCloud() {
     setMessage(null);
 
@@ -77,12 +77,12 @@ export default function UnifiedEditor() {
     }
   }
 
-  // Letzten Eintrag aus Supabase laden (optional)
+  // Neuesten Eintrag aus Supabase laden
   async function handleLoad() {
     try {
       setBusy(true);
       setStatus("⏳ Lade …");
-      const row = await loadEntry(); // neueste Zeile
+      const row = await loadEntry();
       if (!row) {
         setStatus("ℹ️ Keine Einträge gefunden.");
         return;
@@ -102,7 +102,7 @@ export default function UnifiedEditor() {
     }
   }
 
-  // Lokalen Entwurf löschen
+  // Lokale Entwürfe löschen
   function handleClearLocal() {
     try {
       localStorage.removeItem("ue:bible_reference");
@@ -120,11 +120,12 @@ export default function UnifiedEditor() {
 
   return (
     <div style={{ maxWidth: 980, margin: "0 auto", padding: "8px 12px" }}>
- <h2>Unified-Editor (Bibel + Psych + Brücke) • v3</h2>
+      {/* Marker, damit wir sicher sehen, dass das NEUE Build live ist */}
+      <h2>Unified-Editor (Bibel + Psych + Brücke) • v4</h2>
 
       <p>Alle Felder werden lokal gespeichert (localStorage). Mit „In die Cloud speichern“ schreibst du in Supabase.</p>
 
-      {/* Status-Meldungen (grün/rot) */}
+      {/* Meldung (grün/rot) */}
       {message && (
         <div
           style={{
@@ -141,7 +142,7 @@ export default function UnifiedEditor() {
         </div>
       )}
 
-      {/* Buttons oben, damit du sie sofort siehst */}
+      {/* Die drei Buttons ganz oben */}
       <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
         <button onClick={handleSaveToCloud} disabled={saving || !isValid}>
           {saving ? "Speichere …" : "In die Cloud speichern"}
@@ -151,7 +152,7 @@ export default function UnifiedEditor() {
         <span style={{ marginLeft: 8, opacity: 0.8 }}>{status}</span>
       </div>
 
-      {/* Eingabefelder */}
+      {/* Felder */}
       <label>
         <b>Bibelstelle(n)</b>
         <input
