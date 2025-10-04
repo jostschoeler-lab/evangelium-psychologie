@@ -1,10 +1,10 @@
+// src/components/UnifiedEditor.tsx
 import React, { useEffect, useMemo, useState } from "react";
-import { saveEntry, loadEntry, listEntries, EntryRow } from "../lib/storage";
+import { saveEntry, loadEntry, EntryRow } from "../lib/storage";
 
 /**
- * Kleine Hilfsfunktion: liest/schreibt einen einzelnen Feldwert
- * aus/in localStorage, damit dir Eingaben bei einem Browser-Reload
- * nicht verloren gehen.
+ * Kleiner Hook: liest/schreibt ein einzelnes Feld in localStorage,
+ * damit bei einem Reload Eingaben nicht verloren gehen.
  */
 function useLocalField(key: string, initial = "") {
   const [value, setValue] = useState<string>(() => {
@@ -26,16 +26,13 @@ function useLocalField(key: string, initial = "") {
 }
 
 export default function UnifiedEditor() {
-  const [busy, setBusy] = useState(false);
-  const [status, setStatus] = useState<string>("");
+  // Statusleisten
+  const [busy, setBusy] = useState(false);        // für "Laden"
+  const [saving, setSaving] = useState(false);    // für "Speichern"
+  const [status, setStatus] = useState<string>(""); // kleine Textzeile rechts
+  const [message, setMessage] = useState<null | { type: "ok" | "error"; text: string }>(null);
 
-  // optional: lokalen Entwurf löschen
-  function handleClearLocal() {
-    localStorage.removeItem("unified-editor@draft-v1");
-    setStatus("🧹 Lokaler Entwurf gelöscht.");
-  }
-
-  // Alle Felder (mit localStorage-Persistenz)
+  // Alle Eingabefelder (persistieren in localStorage)
   const [bible_reference, setBibleReference] = useLocalField("ue:bible_reference", "");
   const [theological_explanation, setTheo] = useLocalField("ue:theological_explanation", "");
   const [psychological_term, setPsych] = useLocalField("ue:psychological_term", "");
@@ -44,13 +41,10 @@ export default function UnifiedEditor() {
   const [visibility, setVisibility] = useLocalField("ue:visibility", "draft");
   const [notes, setNotes] = useLocalField("ue:notes", "");
 
-  // UI-Status
-  const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState<null | { type: "ok" | "error"; text: string }>(null);
-
-  // Für simple Validierung
+  // Quick-Validierung: Bibelstelle muss gefüllt sein
   const isValid = useMemo(() => bible_reference.trim().length > 0, [bible_reference]);
 
+  // Speichern in Supabase
   async function handleSaveToCloud() {
     setMessage(null);
 
@@ -83,6 +77,7 @@ export default function UnifiedEditor() {
     }
   }
 
+  // Letzten Eintrag aus Supabase laden (optional)
   async function handleLoad() {
     try {
       setBusy(true);
@@ -97,7 +92,7 @@ export default function UnifiedEditor() {
       setPsych(row.psychological_term ?? "");
       setBridge(row.bridge_text ?? "");
       setTags(row.tags ?? "");
-      setVisibility((row.visibility as any) ?? "Entwurf (lokal)");
+      setVisibility((row.visibility as any) ?? "draft");
       setNotes(row.notes ?? "");
       setStatus("✅ Geladen.");
     } catch (e: any) {
@@ -107,12 +102,28 @@ export default function UnifiedEditor() {
     }
   }
 
+  // Lokalen Entwurf löschen
+  function handleClearLocal() {
+    try {
+      localStorage.removeItem("ue:bible_reference");
+      localStorage.removeItem("ue:theological_explanation");
+      localStorage.removeItem("ue:psychological_term");
+      localStorage.removeItem("ue:bridge_text");
+      localStorage.removeItem("ue:tags");
+      localStorage.removeItem("ue:visibility");
+      localStorage.removeItem("ue:notes");
+      setStatus("🧹 Lokaler Entwurf gelöscht.");
+    } catch {
+      setStatus("⚠️ Konnte lokalen Entwurf nicht löschen.");
+    }
+  }
+
   return (
     <div style={{ maxWidth: 980, margin: "0 auto", padding: "8px 12px" }}>
       <h2>Unified-Editor (Bibel + Psych + Brücke)</h2>
       <p>Alle Felder werden lokal gespeichert (localStorage). Mit „In die Cloud speichern“ schreibst du in Supabase.</p>
 
-      {/* Status / Meldungen */}
+      {/* Status-Meldungen (grün/rot) */}
       {message && (
         <div
           style={{
@@ -129,7 +140,8 @@ export default function UnifiedEditor() {
         </div>
       )}
 
-      <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+      {/* Buttons oben, damit du sie sofort siehst */}
+      <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
         <button onClick={handleSaveToCloud} disabled={saving || !isValid}>
           {saving ? "Speichere …" : "In die Cloud speichern"}
         </button>
@@ -138,6 +150,7 @@ export default function UnifiedEditor() {
         <span style={{ marginLeft: 8, opacity: 0.8 }}>{status}</span>
       </div>
 
+      {/* Eingabefelder */}
       <label>
         <b>Bibelstelle(n)</b>
         <input
