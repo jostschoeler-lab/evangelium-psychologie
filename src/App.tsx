@@ -1,7 +1,16 @@
-import React from "react";
-import EpEditorPage from "./pages/EpEditorPage";
+import { HashRouter, Routes, Route } from "react-router-dom";
+import Menu from "./pages/Menu";
+import NBJ from "./pages/NBJ";
+import EP from "./pages/EP";
 
 export default function App() {
-  console.log("APP_MINIMAL v3"); // debug marker
-  return <EpEditorPage />;
+  return (
+    <HashRouter>
+      <Routes>
+        <Route path="/" element={<Menu />} />
+        <Route path="/nbj" element={<NBJ />} />
+        <Route path="/ep" element={<EP />} />
+      </Routes>
+    </HashRouter>
+  );
 }
