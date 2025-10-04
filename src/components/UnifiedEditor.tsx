@@ -60,7 +60,12 @@ export default function UnifiedEditor() {
   const [tags, setTags] = useLocalField("ue:tags", "");
   const [visibility, setVisibility] = useLocalField("ue:visibility", "draft");
   const [notes, setNotes] = useLocalField("ue:notes", "");
+// NEU: Zusatzfelder
+const [psychology_comment, setPsychologyComment] = useLocalField("ue:psychology_comment", "");
+const [theological_background, setTheoBg] = useLocalField("ue:theological_background", "");
+const [psychological_background, setPsychBg] = useLocalField("ue:psychological_background", "");
 
+  
   // UI-Status
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<null | { type: "ok" | "error"; text: string }>(null);
