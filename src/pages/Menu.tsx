@@ -1,18 +1,25 @@
-import { useNavigate } from "react-router-dom";
-
 export default function Menu() {
-  const nav = useNavigate();
   return (
-    <div style={{maxWidth:920, margin:"24px auto", padding:"16px"}}>
+    <main style={{ padding: 40, fontFamily: "Arial, sans-serif" }}>
       <h1>NBJ – Suite</h1>
-      <div style={{display:"flex", gap:12, flexWrap:"wrap", marginTop:12}}>
-        <button onClick={()=>nav("/nbj")} style={{padding:"10px 16px", fontWeight:700}}>
+
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginTop: 20 }}>
+        <button onClick={() => (window.location.hash = "#/nbj")}>
           Meditation (NBJ)
         </button>
-        <button onClick={()=>nav("/ep")} style={{padding:"10px 16px", fontWeight:700}}>
-          Formular / Bibliothek (EP)
+        <button onClick={() => (window.location.hash = "#/ep")}>
+          Formular (EP)
+        </button>
+        <button onClick={() => (window.location.hash = "#/spannungsmodell")}>
+          Spannungsmodell
+        </button>
+        <button onClick={() => (window.location.hash = "#/stuhldialog")}>
+          Stuhldialog
+        </button>
+        <button onClick={() => (window.location.hash = "#/bibliothek")}>
+          Bibliothek
         </button>
       </div>
-    </div>
+    </main>
   );
 }
