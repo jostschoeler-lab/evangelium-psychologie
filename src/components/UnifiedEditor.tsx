@@ -120,7 +120,8 @@ export default function UnifiedEditor() {
 
   return (
     <div style={{ maxWidth: 980, margin: "0 auto", padding: "8px 12px" }}>
-      <h2>Unified-Editor (Bibel + Psych + Brücke)</h2>
+ <h2>Unified-Editor (Bibel + Psych + Brücke) • v3</h2>
+
       <p>Alle Felder werden lokal gespeichert (localStorage). Mit „In die Cloud speichern“ schreibst du in Supabase.</p>
 
       {/* Status-Meldungen (grün/rot) */}
