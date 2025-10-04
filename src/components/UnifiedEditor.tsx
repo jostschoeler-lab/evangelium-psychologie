@@ -1,4 +1,8 @@
 // @ts-nocheck
+// für TYP-Referenzen wie  : Entry
+type Entry = any
+// für evtl. JSX wie <Entry .../>  (falls irgendwo vorhanden)
+const Entry: any = null as any
 
 import React, { useEffect, useMemo, useState } from "react";
 import { saveEntry, loadEntry, listEntries } from "../lib/storage";
