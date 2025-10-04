@@ -64,7 +64,7 @@ export default function UnifiedEditor() {
       return;
     }
 
-    const entry: Entry = {
+    const entry: EntryRow = {
       bible_reference: bible_reference.trim(),
       theological_explanation: theological_explanation.trim(),
       psychological_term: psychological_term.trim(),
