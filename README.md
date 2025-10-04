@@ -1,3 +1,6 @@
+Rollback auf ab48243 – bestätigt
+
+
 # Not-Bedürfnis-Jesus – Modularer App-Prototyp
 
 Startergerüst (React + Vite + TypeScript + i18n) mit einfachem Sprach-Switcher (DE/EN/NO) und Basis-Struktur für spätere Module (Bibel, Psychologie, Crosslinks).
