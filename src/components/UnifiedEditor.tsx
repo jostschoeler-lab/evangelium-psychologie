@@ -26,6 +26,60 @@ function useLocalField(key: string, initial = "") {
 }
 
 export default function UnifiedEditor() {
+  // direkt unter "export default function UnifiedEditor() {"
+const [busy, setBusy] = useState(false);
+const [status, setStatus] = useState<string>("");
+
+// speichern in Supabase
+async function handleSave() {
+  try {
+    setBusy(true);
+    setStatus("⏳ Speichere …");
+    await saveEntry({
+      bible_reference,
+      theological_explanation,
+      psychological_term,
+      bridge_text,
+      tags,
+      visibility,
+      notes,
+    });
+    setStatus("✅ Gespeichert.");
+  } catch (e: any) {
+    setStatus("❌ Fehler beim Speichern: " + (e?.message ?? String(e)));
+  } finally {
+    setBusy(false);
+  }
+}
+
+// optional: laden (falls du loadEntry importiert hast)
+async function handleLoad() {
+  try {
+    setBusy(true);
+    setStatus("⏳ Lade …");
+    const row = await loadEntry(); // neueste Zeile
+    if (!row) { setStatus("ℹ️ Keine Einträge gefunden."); return; }
+    setBibleReference(row.bible_reference ?? "");
+    setTheological(row.theological_explanation ?? "");
+    setPsych(row.psychological_term ?? "");
+    setBridge(row.bridge_text ?? "");
+    setTags(row.tags ?? "");
+    setVisibility((row.visibility as any) ?? "Entwurf (lokal)");
+    setNotes(row.notes ?? "");
+    setStatus("✅ Geladen.");
+  } catch (e: any) {
+    setStatus("❌ Fehler beim Laden: " + (e?.message ?? String(e)));
+  } finally {
+    setBusy(false);
+  }
+}
+
+// optional: lokalen Entwurf löschen
+function handleClearLocal() {
+  localStorage.removeItem("unified-editor@draft-v1");
+  setStatus("🧹 Lokaler Entwurf gelöscht.");
+}
+
   // Alle Felder (mit localStorage-Persistenz)
   const [bible_reference, setBibleReference] = useLocalField(
     "ue:bible_reference",
