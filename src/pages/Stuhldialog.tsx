@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 type RoleKey = "ICH" | "KIND" | "ANKLAEGER" | "JESUS" | "COPING";
@@ -7,8 +7,13 @@ type RoleMeta = {
   label: string;
   color: string;
   defaultImg: string;
-  desc: string;
-  subpoints: string[];
+};
+
+type ChatEntry = {
+  id: string;
+  role: RoleKey;
+  text: string;
+  ts: number;
 };
 
 const asset = (file: string) => `/stuhldialog/${file}`;
@@ -18,36 +23,26 @@ const ROLES: Record<RoleKey, RoleMeta> = {
     label: "Jesus – Hohepriester / Gnadenstuhl",
     color: "#059669",
     defaultImg: asset("jesus.png"),
-    desc: "Liebe, Wahrheit, Gnade, Trost, Hoffnung, Verwandlung.",
-    subpoints: ["Liebe", "Wahrheit", "Gnade", "Trost", "Hoffnung", "Verwandlung"],
   },
   ANKLAEGER: {
     label: "Ankläger / Strenge Eltern",
     color: "#DC2626",
     defaultImg: asset("anklaeger.png"),
-    desc: "Kritisch, strafend, fordernd – ohne Verdammnis transformieren.",
-    subpoints: ["Kritisch", "Strafend", "Überfordernd", "Fordernd", "Introjekt", "Modell"],
   },
   KIND: {
     label: "Inneres Kind & Bedürfnisse",
     color: "#2563EB",
     defaultImg: asset("kind.png"),
-    desc: "Roh & echt; braucht Sicherheit, Trost, Verbundenheit.",
-    subpoints: ["Verletzlich", "Wütend", "Impulsiv", "Ängstlich", "Sensitiv", "Spielerisch"],
   },
   ICH: {
     label: "Ich / Erwachsener",
     color: "#EAB308",
     defaultImg: asset("erwachsener.png"),
-    desc: "Integration, Selbstregulation, Grenzen, Neubewertung.",
-    subpoints: ["Selbstregulation", "Distanzierung", "Kooperation", "Selbstfürsorge", "Grenzen setzen", "Neubewertung"],
   },
   COPING: {
     label: "Bewältigungsstrategien",
     color: "#8B5CF6",
     defaultImg: asset("coping.png"),
-    desc: "Unterwerfung, Vermeidung, Selbstberuhigung, Überkompensation …",
-    subpoints: ["Unterwerfung", "Vermeidung", "Selbstberuhigung", "Überkompensation", "Perfektionismus", "Rückzug"],
   },
 };
 
@@ -59,15 +54,26 @@ const GRID_POSITIONS: Record<RoleKey, { row: number; column: number }> = {
   COPING: { row: 3, column: 2 },
 };
 
-const CARD_WIDTH = 220;
+const CARD_WIDTH = 210;
 const GRID_COLUMN_GAP = 48;
 const GRID_ROW_GAP = 56;
+const CHAT_STORAGE_KEY = "stuhldialog_chat_entries";
 
 export default function Stuhldialog() {
-  const [active, setActive] = useState<RoleKey>("JESUS");
-  const meta = useMemo(() => ROLES[active], [active]);
+  const [active, setActive] = useState<RoleKey | null>(null);
+  const [draft, setDraft] = useState("");
+  const [chatEntries, setChatEntries] = useState<ChatEntry[]>(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      const raw = window.localStorage.getItem(CHAT_STORAGE_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      if (!Array.isArray(parsed)) return [];
+      return parsed.filter((entry) => entry && typeof entry.text === "string");
+    } catch {
+      return [];
+    }
+  });
   const [nbjFeel, setNbjFeel] = useState<{ value: string; ts?: number } | null>(null);
-  const [notes, setNotes] = useState<string>("");
 
   const loadNbjFeel = useCallback(() => {
     if (typeof window === "undefined") return;
@@ -107,6 +113,34 @@ export default function Stuhldialog() {
     return () => window.removeEventListener("storage", handler);
   }, [loadNbjFeel]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(chatEntries));
+  }, [chatEntries]);
+
+  const handleSubmit = () => {
+    if (!active) return;
+    const text = draft.trim();
+    if (!text) return;
+    const entry: ChatEntry = {
+      id: `entry-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      role: active,
+      text,
+      ts: Date.now(),
+    };
+    setChatEntries((prev) => [entry, ...prev]);
+    setDraft("");
+    setActive(null);
+  };
+
+  const handleCancel = () => {
+    setDraft("");
+    setActive(null);
+  };
+
+  const activeRole = active ? ROLES[active] : null;
+  const isSubmitDisabled = !activeRole || draft.trim().length === 0;
+
   return (
     <main
       style={{
@@ -143,7 +177,7 @@ export default function Stuhldialog() {
         Modus-Board – fünf Bilder frei angeordnet
       </h1>
       <p style={{ textAlign: "center", color: "#6B7280", margin: "6px 0 18px" }}>
-        Wähle eine Karte, um Beschreibung und Stichpunkte zu sehen.
+        Wähle eine Karte, um eine Nachricht für diesen Modus zu schreiben.
       </p>
 
       <section
@@ -169,7 +203,7 @@ export default function Stuhldialog() {
           return (
             <article
               key={role}
-              onClick={() => setActive(role)}
+              onClick={() => setActive((prev) => (prev === role ? null : role))}
               style={{
                 gridRow: placement.row,
                 gridColumn: placement.column,
@@ -235,27 +269,142 @@ export default function Stuhldialog() {
           border: "1px solid #E5E7EB",
           borderRadius: 12,
           background: "#FFFFFF",
+          minHeight: 190,
+          display: "flex",
+          alignItems: "center",
         }}
       >
-        <label style={{ display: "block", fontWeight: 700, color: "#0F172A" }} htmlFor="modus-notes">
-          Notizen zu den Karten
-        </label>
-        <textarea
-          id="modus-notes"
-          value={notes}
-          onChange={(event) => setNotes(event.target.value)}
-          placeholder="Gedanken, Beobachtungen oder Impulse…"
-          style={{
-            marginTop: 10,
-            width: "100%",
-            minHeight: 120,
-            padding: 12,
-            borderRadius: 12,
-            border: "1px solid #CBD5E1",
-            fontSize: 15,
-            lineHeight: 1.4,
-          }}
-        />
+        {activeRole ? (
+          <div style={{ display: "flex", gap: 16, width: "100%", alignItems: "flex-start" }}>
+            <div
+              style={{
+                width: 64,
+                height: 64,
+                borderRadius: "50%",
+                overflow: "hidden",
+                flexShrink: 0,
+                border: `3px solid ${activeRole.color}`,
+                background: "#F8FAFC",
+              }}
+            >
+              <img
+                src={activeRole.defaultImg}
+                alt={activeRole.label}
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
+            </div>
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8 }}>
+              <div style={{ fontWeight: 700, color: activeRole.color }}>{activeRole.label}</div>
+              <textarea
+                value={draft}
+                onChange={(event) => setDraft(event.target.value)}
+                placeholder="Schreibe hier, was dieser Modus sagt oder fühlt…"
+                style={{
+                  border: `2px solid ${activeRole.color}`,
+                  borderRadius: 12,
+                  padding: 12,
+                  minHeight: 110,
+                  fontSize: 15,
+                  lineHeight: 1.4,
+                  outline: "none",
+                  resize: "vertical",
+                }}
+              />
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+                <button
+                  onClick={handleCancel}
+                  style={{
+                    padding: "8px 14px",
+                    borderRadius: 10,
+                    border: "1px solid #CBD5E1",
+                    background: "#F1F5F9",
+                    cursor: "pointer",
+                  }}
+                >
+                  Abbrechen
+                </button>
+                <button
+                  onClick={handleSubmit}
+                  disabled={isSubmitDisabled}
+                  style={{
+                    padding: "8px 18px",
+                    borderRadius: 10,
+                    border: "none",
+                    background: isSubmitDisabled ? "#CBD5E1" : activeRole.color,
+                    color: "#FFF",
+                    cursor: isSubmitDisabled ? "not-allowed" : "pointer",
+                    fontWeight: 600,
+                    transition: "background 0.2s ease",
+                  }}
+                >
+                  Speichern
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div style={{ textAlign: "center", width: "100%", color: "#64748B" }}>
+            Wähle eine Karte aus, um eine Nachricht zu verfassen.
+          </div>
+        )}
+      </section>
+
+      <section
+        style={{
+          marginTop: 18,
+          padding: 16,
+          border: "1px solid #E5E7EB",
+          borderRadius: 12,
+          background: "#FFFFFF",
+          display: "grid",
+          gap: 12,
+        }}
+      >
+        <div style={{ fontWeight: 700, color: "#0F172A" }}>Verlauf</div>
+        {chatEntries.length === 0 ? (
+          <p style={{ color: "#64748B", margin: 0 }}>Noch keine Einträge gespeichert.</p>
+        ) : (
+          chatEntries.map((entry) => {
+            const info = ROLES[entry.role];
+            return (
+              <div
+                key={entry.id}
+                style={{
+                  display: "flex",
+                  gap: 14,
+                  alignItems: "flex-start",
+                  padding: 12,
+                  borderRadius: 12,
+                  border: "1px solid #E2E8F0",
+                  background: "#F8FAFC",
+                }}
+              >
+                <div
+                  style={{
+                    width: 56,
+                    height: 56,
+                    borderRadius: "50%",
+                    overflow: "hidden",
+                    border: `3px solid ${info.color}`,
+                    flexShrink: 0,
+                    background: "#FFF",
+                  }}
+                >
+                  <img
+                    src={info.defaultImg}
+                    alt={info.label}
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 700, color: info.color }}>{info.label}</div>
+                  <p style={{ margin: "6px 0 4px", whiteSpace: "pre-wrap", color: "#1F2937" }}>{entry.text}</p>
+                  <div style={{ color: "#94A3B8", fontSize: 12 }}>{new Date(entry.ts).toLocaleString()}</div>
+                </div>
+              </div>
+            );
+          })
+        )}
       </section>
 
       <section
