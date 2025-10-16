@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { presetDialogue } from "../data/stuhldialogPreset";
 
 type RoleKey = "ICH" | "KIND" | "ANKLAEGER" | "JESUS" | "COPING";
 
@@ -69,26 +70,15 @@ const GRID_ROW_GAP = 56;
 const CHAT_STORAGE_KEY = "stuhldialog_chat_entries";
 const NBJ_STORAGE_KEY = "nbj_entries";
 
-const PRESET_ENTRIES: ChatEntry[] = [
-  {
-    id: "preset-1",
-    role: "ANKLAEGER",
-    text: "Again you return to fear. Scripture says, \"Fear not!\" You have fought too little and believed too little. This fear should be gone by now.",
-    ts: Date.now() - 1000 * 60 * 15,
-  },
-  {
-    id: "preset-2",
-    role: "ICH",
-    text: "Yes… I feel this fear. It feels as though the ground is disappearing beneath my feet, and I feel abandoned. I long so deeply for safety—for a place where I am protected.",
-    ts: Date.now() - 1000 * 60 * 14,
-  },
-  {
-    id: "preset-3",
-    role: "ANKLAEGER",
-    text: "You are far too weak in faith. With so much fear you cannot please God. You should be stronger, otherwise God takes no pleasure in you.",
-    ts: Date.now() - 1000 * 60 * 13,
-  },
-];
+const PRESET_ENTRIES: ChatEntry[] = (() => {
+  const base = Date.now();
+  return presetDialogue.map((entry, index) => ({
+    id: entry.id,
+    role: entry.role,
+    text: entry.text,
+    ts: base - (presetDialogue.length - index) * 60_000,
+  }));
+})();
 
 export default function Stuhldialog() {
   const [active, setActive] = useState<RoleKey | null>(null);
