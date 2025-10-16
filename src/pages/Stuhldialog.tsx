@@ -10,7 +10,7 @@ type RoleMeta = {
   subpoints: string[];
 };
 
-type NodeState = {
+type CardLayout = {
   x: number;
   y: number;
   cardScale: number;
@@ -19,8 +19,6 @@ type NodeState = {
   imgOffY: number;
   textSize: number;
   textOffX: number;
-  menuOpen: boolean;
-  selectedSub: number | null;
 };
 
 const STAGE_W = 1100;
@@ -104,7 +102,7 @@ const ROLES: Record<RoleKey, RoleMeta> = {
   },
 };
 
-const DEFAULTS: Record<RoleKey, NodeState> = {
+const DEFAULT_LAYOUT: Record<RoleKey, CardLayout> = {
   JESUS: {
     x: 296,
     y: 166,
@@ -114,8 +112,6 @@ const DEFAULTS: Record<RoleKey, NodeState> = {
     imgOffY: -23,
     textSize: 15,
     textOffX: 0,
-    menuOpen: false,
-    selectedSub: null,
   },
   ANKLAEGER: {
     x: 93,
@@ -126,8 +122,6 @@ const DEFAULTS: Record<RoleKey, NodeState> = {
     imgOffY: -18,
     textSize: 15,
     textOffX: 0,
-    menuOpen: false,
-    selectedSub: null,
   },
   KIND: {
     x: 296,
@@ -138,8 +132,6 @@ const DEFAULTS: Record<RoleKey, NodeState> = {
     imgOffY: -11,
     textSize: 15,
     textOffX: 0,
-    menuOpen: false,
-    selectedSub: null,
   },
   ICH: {
     x: 500,
@@ -150,8 +142,6 @@ const DEFAULTS: Record<RoleKey, NodeState> = {
     imgOffY: -10,
     textSize: 15,
     textOffX: -10,
-    menuOpen: false,
-    selectedSub: null,
   },
   COPING: {
     x: 296,
@@ -162,58 +152,35 @@ const DEFAULTS: Record<RoleKey, NodeState> = {
     imgOffY: -8,
     textSize: 12,
     textOffX: -15,
-    menuOpen: false,
-    selectedSub: null,
   },
 };
 
 export default function Stuhldialog() {
   const [active, setActive] = useState<RoleKey>("JESUS");
 
-  const [nodes, setNodes] = useState<Record<RoleKey, NodeState>>({
-    ICH: { ...DEFAULTS.ICH },
-    KIND: { ...DEFAULTS.KIND },
-    ANKLAEGER: { ...DEFAULTS.ANKLAEGER },
-    JESUS: { ...DEFAULTS.JESUS },
-    COPING: { ...DEFAULTS.COPING },
-  });
-
-  const [imgSrc, setImgSrc] = useState<Record<RoleKey, string>>({
-    ICH: ROLES.ICH.defaultImg,
-    KIND: ROLES.KIND.defaultImg,
-    ANKLAEGER: ROLES.ANKLAEGER.defaultImg,
-    JESUS: ROLES.JESUS.defaultImg,
-    COPING: ROLES.COPING.defaultImg,
-  });
+  const layout = DEFAULT_LAYOUT;
+  const imgSrc = useMemo(
+    () => ({
+      ICH: ROLES.ICH.defaultImg,
+      KIND: ROLES.KIND.defaultImg,
+      ANKLAEGER: ROLES.ANKLAEGER.defaultImg,
+      JESUS: ROLES.JESUS.defaultImg,
+      COPING: ROLES.COPING.defaultImg,
+    }),
+    []
+  );
 
   const meta = useMemo(() => ROLES[active], [active]);
-  const state = nodes[active];
+  const selectedLayout = layout[active];
+  const [openMenus, setOpenMenus] = useState<{
+    role: RoleKey | null;
+    selected: Partial<Record<RoleKey, number>>;
+  }>({
+    role: null,
+    selected: {},
+  });
 
-  const setNode = (key: RoleKey, patch: Partial<NodeState>) => {
-    setNodes((prev) => ({ ...prev, [key]: { ...prev[key], ...patch } }));
-  };
-
-  const toggleMenu = (key: RoleKey) => {
-    setNodes((prev) => {
-      const next = { ...prev };
-      (Object.keys(next) as RoleKey[]).forEach((role) => {
-        next[role] = {
-          ...next[role],
-          menuOpen: role === key ? !prev[key].menuOpen : false,
-        };
-      });
-      return next;
-    });
-  };
-
-  const onPickFile = (role: RoleKey, file: File | null) => {
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      setImgSrc((prev) => ({ ...prev, [role]: String(reader.result ?? "") }));
-    };
-    reader.readAsDataURL(file);
-  };
+  const menuSelected = openMenus.selected[active] ?? null;
 
   return (
     <main
@@ -252,8 +219,9 @@ export default function Stuhldialog() {
       >
         {(Object.keys(ROLES) as RoleKey[]).map((role) => {
           const info = ROLES[role];
-          const node = nodes[role];
+          const node = layout[role];
           const isActive = active === role;
+          const isMenuOpen = openMenus.role === role;
 
           const cardW = CARD_W * node.cardScale;
           const cardH = CARD_H * node.cardScale;
@@ -264,13 +232,10 @@ export default function Stuhldialog() {
               key={role}
               onClick={() => {
                 setActive(role);
-                setNodes((prev) => {
-                  const next = { ...prev };
-                  (Object.keys(next) as RoleKey[]).forEach((rk) => {
-                    if (rk !== role) next[rk] = { ...next[rk], menuOpen: false };
-                  });
-                  return next;
-                });
+                setOpenMenus((prev) => ({
+                  role,
+                  selected: prev.selected,
+                }));
               }}
               title={info.label}
               style={{
@@ -305,7 +270,10 @@ export default function Stuhldialog() {
                 <button
                   onClick={(event) => {
                     event.stopPropagation();
-                    toggleMenu(role);
+                    setOpenMenus((prev) => ({
+                      role: prev.role === role ? null : role,
+                      selected: prev.selected,
+                    }));
                   }}
                   title="Unterpunkte"
                   style={{
@@ -346,7 +314,7 @@ export default function Stuhldialog() {
                   }}
                 />
 
-                {node.menuOpen && (
+                {isMenuOpen && (
                   <menu
                     onClick={(event) => event.stopPropagation()}
                     style={{
@@ -363,11 +331,16 @@ export default function Stuhldialog() {
                     }}
                   >
                     {info.subpoints.map((point, idx) => {
-                      const selected = node.selectedSub === idx;
+                      const selected = openMenus.selected[role] === idx;
                       return (
                         <button
                           key={point}
-                          onClick={() => setNode(role, { selectedSub: idx, menuOpen: false })}
+                          onClick={() =>
+                            setOpenMenus((prev) => ({
+                              role: null,
+                              selected: { ...prev.selected, [role]: idx },
+                            }))
+                          }
                           style={{
                             display: "block",
                             width: "100%",
@@ -423,157 +396,11 @@ export default function Stuhldialog() {
       >
         <div style={{ fontWeight: 700, color: meta.color }}>
           Aktiv: {meta.label}
-          {state.selectedSub != null ? ` — ${meta.subpoints[state.selectedSub]}` : ""}
+          {menuSelected != null ? ` — ${meta.subpoints[menuSelected]}` : ""}
         </div>
-
-        <div
-          style={{
-            marginTop: 10,
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-            gap: 16,
-          }}
-        >
-          <Group title="Position & Gesamtgröße">
-            <Range label="X" min={0} max={STAGE_W} value={state.x} onChange={(value) => setNode(active, { x: value })} />
-            <Range label="Y" min={0} max={STAGE_H} value={state.y} onChange={(value) => setNode(active, { y: value })} />
-            <Range
-              label="Elementgröße"
-              min={0.4}
-              max={1.4}
-              step={0.01}
-              value={state.cardScale}
-              onChange={(value) => setNode(active, { cardScale: value })}
-            />
-          </Group>
-
-          <Group title="Bild – Größe & Position">
-            <Range
-              label="Bildgröße"
-              min={0.6}
-              max={1.6}
-              step={0.01}
-              value={state.imgScale}
-              onChange={(value) => setNode(active, { imgScale: value })}
-            />
-            <Range
-              label="Bild X"
-              min={-150}
-              max={150}
-              value={state.imgOffX}
-              onChange={(value) => setNode(active, { imgOffX: value })}
-            />
-            <Range
-              label="Bild Y"
-              min={-150}
-              max={150}
-              value={state.imgOffY}
-              onChange={(value) => setNode(active, { imgOffY: value })}
-            />
-          </Group>
-
-          <Group title="Label – Größe & X-Position">
-            <Range
-              label="Textgröße"
-              min={12}
-              max={28}
-              value={state.textSize}
-              onChange={(value) => setNode(active, { textSize: value })}
-            />
-            <Range
-              label="Text X"
-              min={-200}
-              max={200}
-              value={state.textOffX}
-              onChange={(value) => setNode(active, { textOffX: value })}
-            />
-          </Group>
-
-          <Group title="Bildquelle">
-            <div style={{ display: "grid", gap: 8 }}>
-              <input
-                type="text"
-                value={imgSrc[active]}
-                onChange={(event) =>
-                  setImgSrc((prev) => ({ ...prev, [active]: event.target.value }))
-                }
-                placeholder="/stuhldialog/jesus.png oder https://…"
-                style={{
-                  padding: 8,
-                  borderRadius: 8,
-                  border: "1px solid #CBD5E1",
-                }}
-              />
-              <input
-                key={active}
-                type="file"
-                accept="image/*"
-                onChange={(event) => onPickFile(active, event.target.files?.[0] ?? null)}
-              />
-              <div style={{ fontSize: 12, color: "#64748B" }}>
-                Für dauerhaft: Dateien in <code>/stuhldialog</code> oder eigene URLs verwenden.
-              </div>
-            </div>
-          </Group>
-        </div>
-
         <p style={{ color: "#374151", marginTop: 8 }}>{meta.desc}</p>
       </section>
     </main>
-  );
-}
-
-type GroupProps = {
-  title: string;
-  children: React.ReactNode;
-};
-
-function Group({ title, children }: GroupProps) {
-  return (
-    <div
-      style={{
-        background: "#FFF",
-        border: "1px solid #E5E7EB",
-        borderRadius: 12,
-        padding: 12,
-      }}
-    >
-      <div style={{ fontWeight: 700, marginBottom: 8, color: "#0F172A" }}>{title}</div>
-      <div style={{ display: "grid", gap: 10 }}>{children}</div>
-    </div>
-  );
-}
-
-type RangeProps = {
-  label: string;
-  min: number;
-  max: number;
-  value: number;
-  step?: number;
-  onChange: (value: number) => void;
-};
-
-function Range({ label, min, max, value, step = 1, onChange }: RangeProps) {
-  return (
-    <label
-      style={{
-        display: "grid",
-        gridTemplateColumns: "120px 1fr 70px",
-        alignItems: "center",
-        gap: 8,
-      }}
-    >
-      <span style={{ color: "#334155" }}>{label}</span>
-      <input
-        type="range"
-        min={min}
-        max={max}
-        step={step}
-        value={value}
-        onChange={(event) => onChange(Number(event.target.value))}
-      />
-      <span style={{ fontVariantNumeric: "tabular-nums", color: "#0F172A" }}>{value}</span>
-    </label>
   );
 }
 
