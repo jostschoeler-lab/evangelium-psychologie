@@ -18,15 +18,9 @@ export default function Menu() {
         <Link to="/bibliothek" style={btnStyle}>Bibliothek</Link>
         <Link to="/ep" style={btnStyle}>Formular (EP)</Link>
 
-        {/* Stuhldialog: Sandbox in neuem Tab */}
-        <a
-          href="https://dzr1l7z.csb.app/?v=4"
-          target="_blank"
-          rel="noopener"
-          style={btnStyle}
-        >
-          Stuhldialog (Sandbox)
-        </a>
+        <Link to="/stuhldialog" style={btnStyle}>
+          Stuhldialog
+        </Link>
       </div>
     </main>
   );
