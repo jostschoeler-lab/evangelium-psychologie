@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 export default function Menu() {
   const pageStyle: React.CSSProperties = { padding: 40, fontFamily: "Arial, sans-serif" };
   const rowStyle: React.CSSProperties = { display: "flex", flexWrap: "wrap", gap: 12, marginTop: 20 };
@@ -11,10 +13,10 @@ export default function Menu() {
       <h1>NBJ – Suite • v4</h1>
 
       <div style={rowStyle}>
-        <a href="/nbj/" style={btnStyle}>Meditation (NBJ)</a>
-        <a href="/spannungsmodell/" style={btnStyle}>Spannungsmodell</a>
-        <a href="/bibliothek/" style={btnStyle}>Bibliothek</a>
-        <a href="#/ep" style={btnStyle}>Formular (EP)</a>
+        <Link to="/nbj" style={btnStyle}>Meditation (NBJ)</Link>
+        <Link to="/spannungsmodell" style={btnStyle}>Spannungsmodell</Link>
+        <Link to="/bibliothek" style={btnStyle}>Bibliothek</Link>
+        <Link to="/ep" style={btnStyle}>Formular (EP)</Link>
 
         {/* Stuhldialog: Sandbox in neuem Tab */}
         <a

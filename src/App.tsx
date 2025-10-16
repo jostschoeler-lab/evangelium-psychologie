@@ -1,4 +1,19 @@
-import Stuhldialog from "./pages/Stuhldialog";
+import { Routes, Route, Navigate } from "react-router-dom";
+import Menu from "./pages/Menu";
+import NBJ from "./pages/NBJ";
+import Spannungsmodell from "./pages/Spannungsmodell";
+import Bibliothek from "./pages/Bibliothek";
+import EP from "./pages/EP";
+
 export default function App() {
-  return <Stuhldialog />;
+  return (
+    <Routes>
+      <Route path="/" element={<Menu />} />
+      <Route path="/nbj/*" element={<NBJ />} />
+      <Route path="/spannungsmodell" element={<Spannungsmodell />} />
+      <Route path="/bibliothek" element={<Bibliothek />} />
+      <Route path="/ep" element={<EP />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
 }
