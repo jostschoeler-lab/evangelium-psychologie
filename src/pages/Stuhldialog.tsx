@@ -59,8 +59,9 @@ const GRID_POSITIONS: Record<RoleKey, { row: number; column: number }> = {
   COPING: { row: 3, column: 2 },
 };
 
-const CARD_MAX_WIDTH = 280;
-const GRID_GAP = 36;
+const CARD_WIDTH = 220;
+const GRID_COLUMN_GAP = 48;
+const GRID_ROW_GAP = 56;
 
 export default function Stuhldialog() {
   const [active, setActive] = useState<RoleKey>("JESUS");
@@ -108,12 +109,16 @@ export default function Stuhldialog() {
       <section
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(3, minmax(180px, 1fr))",
-          gridTemplateRows: "repeat(3, minmax(180px, 1fr))",
-          gap: GRID_GAP,
+          gridTemplateColumns: `repeat(3, minmax(${CARD_WIDTH}px, 1fr))`,
+          gridTemplateRows: "repeat(3, minmax(160px, 1fr))",
+          columnGap: GRID_COLUMN_GAP,
+          rowGap: GRID_ROW_GAP,
           justifyItems: "center",
           alignItems: "center",
           padding: "16px 0",
+          width: "100%",
+          maxWidth: 960,
+          margin: "0 auto",
         }}
       >
         {(Object.keys(ROLES) as RoleKey[]).map((role) => {
@@ -128,8 +133,8 @@ export default function Stuhldialog() {
               style={{
                 gridRow: placement.row,
                 gridColumn: placement.column,
-                width: "100%",
-                maxWidth: CARD_MAX_WIDTH,
+                width: CARD_WIDTH,
+                justifySelf: "center",
                 padding: 16,
                 borderRadius: 18,
                 background: "#FFF",
