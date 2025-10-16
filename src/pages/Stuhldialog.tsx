@@ -86,7 +86,7 @@ const PRESET_ENTRIES: ChatEntry[] = [
     id: "preset-3",
     role: "ANKLAEGER",
     text: "You are far too weak in faith. With so much fear you cannot please God. You should be stronger, otherwise God takes no pleasure in you.",
-    ts: Date.Now() - 1000 * 60 * 13,
+    ts: Date.now() - 1000 * 60 * 13,
   },
 ];
 
