@@ -9,13 +9,6 @@ type RoleMeta = {
   defaultImg: string;
 };
 
-type ChatEntry = {
-  id: string;
-  role: RoleKey;
-  text: string;
-  ts: number;
-};
-
 const asset = (file: string) => `/stuhldialog/${file}`;
 
 const ROLES: Record<RoleKey, RoleMeta> = {
@@ -58,6 +51,23 @@ const CARD_WIDTH = 210;
 const GRID_COLUMN_GAP = 48;
 const GRID_ROW_GAP = 56;
 const CHAT_STORAGE_KEY = "stuhldialog_chat_entries";
+const NBJ_STORAGE_KEY = "nbj_entries";
+
+type ChatEntry = {
+  id: string;
+  role: RoleKey;
+  text: string;
+  ts: number;
+};
+
+type MeditationEntry = {
+  ts?: number;
+  f?: string;
+  n?: string;
+  j?: string;
+  o?: string;
+  draft?: boolean;
+};
 
 export default function Stuhldialog() {
   const [active, setActive] = useState<RoleKey | null>(null);
@@ -73,45 +83,39 @@ export default function Stuhldialog() {
       return [];
     }
   });
-  const [nbjFeel, setNbjFeel] = useState<{ value: string; ts?: number } | null>(null);
+  const [meditations, setMeditations] = useState<MeditationEntry[]>([]);
 
-  const loadNbjFeel = useCallback(() => {
+  const loadMeditations = useCallback(() => {
     if (typeof window === "undefined") return;
     try {
-      const raw = window.localStorage.getItem("nbj_entries");
+      const raw = window.localStorage.getItem(NBJ_STORAGE_KEY);
       if (!raw) {
-        setNbjFeel(null);
+        setMeditations([]);
         return;
       }
       const entries = JSON.parse(raw);
-      if (!Array.isArray(entries) || entries.length === 0) {
-        setNbjFeel(null);
+      if (!Array.isArray(entries)) {
+        setMeditations([]);
         return;
       }
-      const preferred = entries.find((entry: any) => entry && !entry.draft);
-      const current = (preferred ?? entries[0]) as { f?: string; ts?: number } | undefined;
-      const value = (current?.f ?? "").trim();
-      if (!value) {
-        setNbjFeel(null);
-        return;
-      }
-      setNbjFeel({ value, ts: current?.ts });
+      const filtered = (entries as MeditationEntry[]).filter((entry) => entry && !entry.draft);
+      setMeditations(filtered);
     } catch {
-      setNbjFeel(null);
+      setMeditations([]);
     }
   }, []);
 
   useEffect(() => {
-    loadNbjFeel();
+    loadMeditations();
     if (typeof window === "undefined") return;
     const handler = (event: StorageEvent) => {
-      if (event.key === "nbj_entries") {
-        loadNbjFeel();
+      if (event.key === NBJ_STORAGE_KEY) {
+        loadMeditations();
       }
     };
     window.addEventListener("storage", handler);
     return () => window.removeEventListener("storage", handler);
-  }, [loadNbjFeel]);
+  }, [loadMeditations]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -414,20 +418,45 @@ export default function Stuhldialog() {
           border: "1px solid #E5E7EB",
           borderRadius: 12,
           background: "#FFF9F4",
+          display: "grid",
+          gap: 12,
         }}
       >
-        <div style={{ fontWeight: 700, color: "#DC2626" }}>Gefühl(e) aus NBJ</div>
-        {nbjFeel ? (
-          <>
-            <p style={{ color: "#1F2937", marginTop: 8, whiteSpace: "pre-wrap" }}>{nbjFeel.value}</p>
-            {nbjFeel.ts ? (
-              <p style={{ color: "#64748B", fontSize: 12, marginTop: 4 }}>
-                Zuletzt aktualisiert: {new Date(nbjFeel.ts).toLocaleString()}
-              </p>
-            ) : null}
-          </>
+        <div style={{ fontWeight: 700, color: "#DC2626" }}>Meditationen</div>
+        {meditations.length === 0 ? (
+          <p style={{ color: "#64748B", margin: 0 }}>Noch keine Meditationseinträge gespeichert.</p>
         ) : (
-          <p style={{ color: "#64748B", marginTop: 8 }}>Noch kein Gefühlseintrag gespeichert.</p>
+          meditations.map((entry) => (
+            <div
+              key={entry.ts ?? Math.random()}
+              style={{
+                border: "1px solid #FECACA",
+                borderRadius: 12,
+                padding: 12,
+                background: "#FFF",
+                display: "grid",
+                gap: 8,
+              }}
+            >
+              <div style={{ color: "#DC2626", fontWeight: 600 }}>
+                {entry.ts ? new Date(entry.ts).toLocaleString() : "Entwurf"}
+              </div>
+              <div style={{ color: "#1F2937", whiteSpace: "pre-wrap" }}>
+                <strong>Gefühl(e):</strong> {entry.f?.trim() || "—"}
+              </div>
+              <div style={{ color: "#1F2937", whiteSpace: "pre-wrap" }}>
+                <strong>Bedürfnis(se):</strong> {entry.n?.trim() || "—"}
+              </div>
+              <div style={{ color: "#1F2937", whiteSpace: "pre-wrap" }}>
+                <strong>Mit Jesus erlebt:</strong> {entry.j?.trim() || "—"}
+              </div>
+              {entry.o?.trim() ? (
+                <div style={{ color: "#1F2937", whiteSpace: "pre-wrap" }}>
+                  <strong>Weitere Notizen:</strong> {entry.o.trim()}
+                </div>
+              ) : null}
+            </div>
+          ))
         )}
       </section>
     </main>
