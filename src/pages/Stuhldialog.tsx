@@ -253,7 +253,6 @@ export default function Stuhldialog() {
                   selected: prev.selected,
                 }));
               }}
-              title={info.label}
               style={{
                 position: "absolute",
                 left: node.x,
