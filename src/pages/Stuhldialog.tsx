@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
 type RoleKey = "ICH" | "KIND" | "ANKLAEGER" | "JESUS" | "COPING";
@@ -66,6 +66,45 @@ const GRID_ROW_GAP = 56;
 export default function Stuhldialog() {
   const [active, setActive] = useState<RoleKey>("JESUS");
   const meta = useMemo(() => ROLES[active], [active]);
+  const [nbjFeel, setNbjFeel] = useState<{ value: string; ts?: number } | null>(null);
+
+  const loadNbjFeel = useCallback(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const raw = window.localStorage.getItem("nbj_entries");
+      if (!raw) {
+        setNbjFeel(null);
+        return;
+      }
+      const entries = JSON.parse(raw);
+      if (!Array.isArray(entries) || entries.length === 0) {
+        setNbjFeel(null);
+        return;
+      }
+      const preferred = entries.find((entry: any) => entry && !entry.draft);
+      const current = (preferred ?? entries[0]) as { f?: string; ts?: number } | undefined;
+      const value = (current?.f ?? "").trim();
+      if (!value) {
+        setNbjFeel(null);
+        return;
+      }
+      setNbjFeel({ value, ts: current?.ts });
+    } catch {
+      setNbjFeel(null);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadNbjFeel();
+    if (typeof window === "undefined") return;
+    const handler = (event: StorageEvent) => {
+      if (event.key === "nbj_entries") {
+        loadNbjFeel();
+      }
+    };
+    window.addEventListener("storage", handler);
+    return () => window.removeEventListener("storage", handler);
+  }, [loadNbjFeel]);
 
   return (
     <main
@@ -211,6 +250,30 @@ export default function Stuhldialog() {
             <li key={point}>{point}</li>
           ))}
         </ul>
+      </section>
+
+      <section
+        style={{
+          marginTop: 18,
+          padding: 16,
+          border: "1px solid #E5E7EB",
+          borderRadius: 12,
+          background: "#FFF9F4",
+        }}
+      >
+        <div style={{ fontWeight: 700, color: "#DC2626" }}>Gefühl(e) aus NBJ</div>
+        {nbjFeel ? (
+          <>
+            <p style={{ color: "#1F2937", marginTop: 8, whiteSpace: "pre-wrap" }}>{nbjFeel.value}</p>
+            {nbjFeel.ts ? (
+              <p style={{ color: "#64748B", fontSize: 12, marginTop: 4 }}>
+                Zuletzt aktualisiert: {new Date(nbjFeel.ts).toLocaleString()}
+              </p>
+            ) : null}
+          </>
+        ) : (
+          <p style={{ color: "#64748B", marginTop: 8 }}>Noch kein Gefühlseintrag gespeichert.</p>
+        )}
       </section>
     </main>
   );
