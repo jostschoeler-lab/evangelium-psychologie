@@ -8,11 +8,11 @@ export const presetDialogueEnglish: Array<{
   {
     id: "preset-1",
     role: "ANKLAEGER",
-    text: "Again you return to fear. Scripture says, “Fear not!” You have fought too little and believed too little. This fear should be gone by now.",
+    text: "Again you return to fear. Scripture says, ‘Fear not!’ You have fought too little and believed too little. This fear should be gone by now.",
   },
   {
     id: "preset-2",
-    role: "ICH",
+    role: "KIND",
     text: "Yes… I feel this fear. It is as though the ground is disappearing beneath my feet and I am abandoned. I long so deeply for safety—for a place where I am protected.",
   },
   {
@@ -22,7 +22,7 @@ export const presetDialogueEnglish: Array<{
   },
   {
     id: "preset-4",
-    role: "ICH",
+    role: "KIND",
     text: "Then it must be true… and I am ashamed. Yet deep inside I know I need security. As a child I often did not receive it. Now I notice how vulnerable I am.",
   },
   {
@@ -32,7 +32,7 @@ export const presetDialogueEnglish: Array<{
   },
   {
     id: "preset-6",
-    role: "ICH",
+    role: "KIND",
     text: "You say you give me safety… yet I still feel the fear. It does not disappear immediately. May I stay close to you even while I am this weak?",
   },
   {
@@ -42,17 +42,17 @@ export const presetDialogueEnglish: Array<{
   },
   {
     id: "preset-8",
-    role: "ICH",
+    role: "KIND",
     text: "So the fear does not need to vanish right away? I can remain afraid and still be safe in you? If I experience that again and again, trust grows—even while I am still weak?",
   },
   {
     id: "preset-9",
     role: "JESUS",
-    text: "Exactly. Your need for safety is met, not suppressed. Each time you bring your fear to me, trust grows and you are transformed. That is how fear loses its power—not because it vanishes immediately, but because you learn to be secure in me even while it is still present. Remember Paul: he asked that the messenger of Satan be removed. I answered, “My grace is sufficient for you.” Afterwards Paul could even rejoice in his weakness, for then my strength rested on him all the more.",
+    text: "Exactly. Your need for safety is met, not suppressed. Each time you bring your fear to me, trust grows and you are transformed. That is how fear loses its power—not because it vanishes immediately, but because you learn to be secure in me even while it is still present. Remember Paul: he asked that the messenger of Satan be removed. I answered, ‘My grace is sufficient for you.’ Afterwards Paul could even rejoice in his weakness, for then my strength rested on him all the more.",
   },
   {
     id: "preset-10",
-    role: "ICH",
+    role: "KIND",
     text: "It is new for me that I might even rejoice in fear, and that I do not have to strive to get rid of it. Yet Johan Oskar Smith also sings that suffering is sweet; I never understood that before.",
   },
 ];

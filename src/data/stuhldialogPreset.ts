@@ -13,7 +13,7 @@ export const presetDialogue: Array<{
   },
   {
     id: "preset-2",
-    role: "ICH",
+    role: "KIND",
     text:
       "Ja … ich spüre die Angst. Es fühlt sich an, als würde mir der Boden unter den Füßen weggezogen und ich bin verlassen. Ich sehne mich so sehr nach Geborgenheit, nach einem Ort, an dem ich geschützt bin.",
   },
@@ -25,7 +25,7 @@ export const presetDialogue: Array<{
   },
   {
     id: "preset-4",
-    role: "ICH",
+    role: "KIND",
     text:
       "Dann wird es wohl stimmen … und ich schäme mich. Aber tief in mir weiß ich, dass ich Sicherheit brauche. Als Kind habe ich sie oft nicht bekommen. Jetzt merke ich, wie verletzlich ich bin.",
   },
@@ -37,7 +37,7 @@ export const presetDialogue: Array<{
   },
   {
     id: "preset-6",
-    role: "ICH",
+    role: "KIND",
     text:
       "Du sagst, dass du mir Sicherheit gibst … und doch spüre ich die Angst immer noch. Sie verschwindet nicht sofort. Darf ich trotzdem bei dir bleiben, so schwach wie ich bin?",
   },
@@ -49,7 +49,7 @@ export const presetDialogue: Array<{
   },
   {
     id: "preset-8",
-    role: "ICH",
+    role: "KIND",
     text:
       "Die Angst muss also gar nicht sofort verschwinden? Ich kann mich fürchten und trotzdem bei dir sicher sein? Wenn ich das immer wieder erfahre, wächst das Vertrauen – selbst wenn ich noch schwach bin?",
   },
@@ -61,7 +61,7 @@ export const presetDialogue: Array<{
   },
   {
     id: "preset-10",
-    role: "ICH",
+    role: "KIND",
     text:
       "Es ist neu für mich, dass ich mich sogar über die Angst freuen kann und nicht kämpfen muss, um sie loszuwerden. Aber Johan Oskar Smith singt ja auch, dass Leiden süß sind. Das habe ich vorher nie verstanden.",
   },
