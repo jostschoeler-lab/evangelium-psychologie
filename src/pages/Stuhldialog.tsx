@@ -72,51 +72,21 @@ const NBJ_STORAGE_KEY = "nbj_entries";
 const PRESET_ENTRIES: ChatEntry[] = [
   {
     id: "preset-1",
-    role: "KIND",
-    text: "Mir ist so schwer ums Herz. Ich fühle mich alleine gelassen und habe Angst, dass mich niemand versteht.",
+    role: "ANKLAEGER",
+    text: "Again you return to fear. Scripture says, \"Fear not!\" You have fought too little and believed too little. This fear should be gone by now.",
     ts: Date.now() - 1000 * 60 * 15,
   },
   {
     id: "preset-2",
-    role: "ANKLAEGER",
-    text: "Jetzt reiß dich zusammen! Du solltest längst stärker sein. Niemand kann ständig Rücksicht auf dich nehmen.",
+    role: "ICH",
+    text: "Yes… I feel this fear. It feels as though the ground is disappearing beneath my feet, and I feel abandoned. I long so deeply for safety—for a place where I am protected.",
     ts: Date.now() - 1000 * 60 * 14,
   },
   {
     id: "preset-3",
-    role: "ICH",
-    text: "Ich höre euch beide. Kind, dein Schmerz ist echt. Ankläger, wir brauchen eine andere Art, mit dieser Angst umzugehen.",
-    ts: Date.now() - 1000 * 60 * 12,
-  },
-  {
-    id: "preset-4",
-    role: "JESUS",
-    text: "Ich bin bei dir. Deine Schwachheit schreckt mich nicht. Lass mich deine Angst tragen, Schritt für Schritt.",
-    ts: Date.now() - 1000 * 60 * 11,
-  },
-  {
-    id: "preset-5",
-    role: "COPING",
-    text: "Vielleicht ziehe ich mich zurück und lenke mich ab, damit der Druck weggeht…",
-    ts: Date.now() - 1000 * 60 * 10,
-  },
-  {
-    id: "preset-6",
-    role: "ICH",
-    text: "Coping, wir danken dir für den Schutz. Aber diesmal wollen wir bleiben und fühlen. Wir sind nicht alleine.",
-    ts: Date.now() - 1000 * 60 * 9,
-  },
-  {
-    id: "preset-7",
-    role: "KIND",
-    text: "Wenn Jesus wirklich nahe ist, dann traue ich mich, diese Angst auszusprechen. Ich wünsche mir Geborgenheit.",
-    ts: Date.now() - 1000 * 60 * 7,
-  },
-  {
-    id: "preset-8",
-    role: "JESUS",
-    text: "Ich gebe dir meinen Frieden. Du darfst dich auf meine Schultern lehnen und langsam weitergehen.",
-    ts: Date.now() - 1000 * 60 * 6,
+    role: "ANKLAEGER",
+    text: "You are far too weak in faith. With so much fear you cannot please God. You should be stronger, otherwise God takes no pleasure in you.",
+    ts: Date.Now() - 1000 * 60 * 13,
   },
 ];
 
