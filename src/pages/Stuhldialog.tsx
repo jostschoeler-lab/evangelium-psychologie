@@ -11,166 +11,59 @@ type RoleMeta = {
   subpoints: string[];
 };
 
-type CardLayout = {
-  x: number;
-  y: number;
-  cardScale: number;
-  imgScale: number;
-  imgOffX: number;
-  imgOffY: number;
-  textSize: number;
-  textOffX: number;
-};
-
-const STAGE_W = 1100;
-const STAGE_H = 700;
-const CARD_W = 280;
-const CARD_H = 280;
-const IMG_BOX = 220;
-
 const asset = (file: string) => `/stuhldialog/${file}`;
 
 const ROLES: Record<RoleKey, RoleMeta> = {
-  ICH: {
-    label: "Ich / Erwachsener",
-    color: "#EAB308",
-    defaultImg: asset("erwachsener.png"),
-    desc: "Integration, Selbstregulation, Grenzen, Neubewertung.",
-    subpoints: [
-      "Selbstregulation",
-      "Distanzierung",
-      "Kooperation",
-      "Selbstfürsorge",
-      "Grenzen setzen",
-      "Neubewertung",
-    ],
-  },
-  KIND: {
-    label: "Inneres Kind & Bedürfnisse",
-    color: "#2563EB",
-    defaultImg: asset("kind.png"),
-    desc: "Roh & echt; braucht Sicherheit, Trost, Verbundenheit.",
-    subpoints: [
-      "Verletzlich",
-      "Wütend",
-      "Impulsiv",
-      "Ängstlich",
-      "Sensitiv",
-      "Spielerisch",
-    ],
+  JESUS: {
+    label: "Jesus – Hohepriester / Gnadenstuhl",
+    color: "#059669",
+    defaultImg: asset("jesus.png"),
+    desc: "Liebe, Wahrheit, Gnade, Trost, Hoffnung, Verwandlung.",
+    subpoints: ["Liebe", "Wahrheit", "Gnade", "Trost", "Hoffnung", "Verwandlung"],
   },
   ANKLAEGER: {
     label: "Ankläger / Strenge Eltern",
     color: "#DC2626",
     defaultImg: asset("anklaeger.png"),
     desc: "Kritisch, strafend, fordernd – ohne Verdammnis transformieren.",
-    subpoints: [
-      "Kritisch",
-      "Strafend",
-      "Überfordernd",
-      "Fordernd",
-      "Introjekt",
-      "Modell",
-    ],
+    subpoints: ["Kritisch", "Strafend", "Überfordernd", "Fordernd", "Introjekt", "Modell"],
   },
-  JESUS: {
-    label: "Jesus – Hohepriester / Gnadenstuhl",
-    color: "#059669",
-    defaultImg: asset("jesus.png"),
-    desc: "Liebe, Wahrheit, Gnade, Trost, Hoffnung, Verwandlung.",
-    subpoints: [
-      "Liebe",
-      "Wahrheit",
-      "Gnade",
-      "Trost",
-      "Hoffnung",
-      "Verwandlung",
-    ],
+  KIND: {
+    label: "Inneres Kind & Bedürfnisse",
+    color: "#2563EB",
+    defaultImg: asset("kind.png"),
+    desc: "Roh & echt; braucht Sicherheit, Trost, Verbundenheit.",
+    subpoints: ["Verletzlich", "Wütend", "Impulsiv", "Ängstlich", "Sensitiv", "Spielerisch"],
+  },
+  ICH: {
+    label: "Ich / Erwachsener",
+    color: "#EAB308",
+    defaultImg: asset("erwachsener.png"),
+    desc: "Integration, Selbstregulation, Grenzen, Neubewertung.",
+    subpoints: ["Selbstregulation", "Distanzierung", "Kooperation", "Selbstfürsorge", "Grenzen setzen", "Neubewertung"],
   },
   COPING: {
     label: "Bewältigungsstrategien",
     color: "#8B5CF6",
     defaultImg: asset("coping.png"),
     desc: "Unterwerfung, Vermeidung, Selbstberuhigung, Überkompensation …",
-    subpoints: [
-      "Unterwerfung",
-      "Vermeidung",
-      "Selbstberuhigung",
-      "Überkompensation",
-      "Perfektionismus",
-      "Rückzug",
-    ],
+    subpoints: ["Unterwerfung", "Vermeidung", "Selbstberuhigung", "Überkompensation", "Perfektionismus", "Rückzug"],
   },
 };
 
-const DEFAULT_LAYOUT: Record<RoleKey, CardLayout> = {
-  JESUS: {
-    x: 296,
-    y: 166,
-    cardScale: 0.56,
-    imgScale: 0.93,
-    imgOffX: -1,
-    imgOffY: -23,
-    textSize: 15,
-    textOffX: 0,
-  },
-  ANKLAEGER: {
-    x: 93,
-    y: 414,
-    cardScale: 0.44,
-    imgScale: 0.98,
-    imgOffX: 0,
-    imgOffY: -18,
-    textSize: 15,
-    textOffX: 0,
-  },
-  KIND: {
-    x: 296,
-    y: 391,
-    cardScale: 0.58,
-    imgScale: 1.04,
-    imgOffX: 1,
-    imgOffY: -11,
-    textSize: 15,
-    textOffX: 0,
-  },
-  ICH: {
-    x: 500,
-    y: 408,
-    cardScale: 0.42,
-    imgScale: 1,
-    imgOffX: 0,
-    imgOffY: -10,
-    textSize: 15,
-    textOffX: -10,
-  },
-  COPING: {
-    x: 296,
-    y: 611,
-    cardScale: 0.4,
-    imgScale: 1.08,
-    imgOffX: -1,
-    imgOffY: -8,
-    textSize: 12,
-    textOffX: -15,
-  },
+const GRID_POSITIONS: Record<RoleKey, { row: number; column: number }> = {
+  JESUS: { row: 1, column: 2 },
+  ANKLAEGER: { row: 2, column: 1 },
+  KIND: { row: 2, column: 2 },
+  ICH: { row: 2, column: 3 },
+  COPING: { row: 3, column: 2 },
 };
+
+const CARD_MAX_WIDTH = 280;
+const GRID_GAP = 36;
 
 export default function Stuhldialog() {
   const [active, setActive] = useState<RoleKey>("JESUS");
-
-  const layout = DEFAULT_LAYOUT;
-  const imgSrc = useMemo(
-    () => ({
-      ICH: ROLES.ICH.defaultImg,
-      KIND: ROLES.KIND.defaultImg,
-      ANKLAEGER: ROLES.ANKLAEGER.defaultImg,
-      JESUS: ROLES.JESUS.defaultImg,
-      COPING: ROLES.COPING.defaultImg,
-    }),
-    []
-  );
-
   const meta = useMemo(() => ROLES[active], [active]);
 
   return (
@@ -197,6 +90,7 @@ export default function Stuhldialog() {
           <span aria-hidden="true">←</span> Zurück
         </Link>
       </div>
+
       <h1
         style={{
           fontSize: 24,
@@ -205,47 +99,39 @@ export default function Stuhldialog() {
           margin: 0,
         }}
       >
-        Modus-Board – fünf Bilder frei anordnen
+        Modus-Board – fünf Bilder frei angeordnet
       </h1>
-      <div style={{ textAlign: "center", color: "#6B7280", margin: "6px 0 14px" }}>
-        Klick auf eine Karte zum Aktivieren.
-      </div>
+      <p style={{ textAlign: "center", color: "#6B7280", margin: "6px 0 18px" }}>
+        Wähle eine Karte, um Beschreibung und Stichpunkte zu sehen.
+      </p>
 
       <section
         style={{
-          position: "relative",
-          width: STAGE_W,
-          height: STAGE_H,
-          margin: "0 auto",
-          border: "1px dashed #E5E7EB",
-          borderRadius: 12,
-          background: "#FFFFFF",
-          overflow: "hidden",
+          display: "grid",
+          gridTemplateColumns: "repeat(3, minmax(180px, 1fr))",
+          gridTemplateRows: "repeat(3, minmax(180px, 1fr))",
+          gap: GRID_GAP,
+          justifyItems: "center",
+          alignItems: "center",
+          padding: "16px 0",
         }}
       >
         {(Object.keys(ROLES) as RoleKey[]).map((role) => {
           const info = ROLES[role];
-          const node = layout[role];
           const isActive = active === role;
-
-          const cardW = CARD_W * node.cardScale;
-          const cardH = CARD_H * node.cardScale;
-          const imgBox = IMG_BOX * node.cardScale;
+          const placement = GRID_POSITIONS[role];
 
           return (
             <article
               key={role}
-              onClick={() => {
-                setActive(role);
-              }}
+              onClick={() => setActive(role)}
               style={{
-                position: "absolute",
-                left: node.x,
-                top: node.y,
-                transform: "translate(-50%, -50%)",
-                width: cardW,
-                height: cardH + 44,
-                borderRadius: 16,
+                gridRow: placement.row,
+                gridColumn: placement.column,
+                width: "100%",
+                maxWidth: CARD_MAX_WIDTH,
+                padding: 16,
+                borderRadius: 18,
                 background: "#FFF",
                 border: isActive ? `3px solid ${info.color}` : "2px solid #CBD5E1",
                 boxShadow: isActive
@@ -253,53 +139,45 @@ export default function Stuhldialog() {
                   : "0 8px 18px rgba(0,0,0,0.08)",
                 cursor: "pointer",
                 userSelect: "none",
+                display: "flex",
+                flexDirection: "column",
+                gap: 14,
+                alignItems: "center",
+                transition: "transform 0.18s ease, box-shadow 0.18s ease",
+                transform: isActive ? "translateY(-6px)" : "translateY(0)",
               }}
             >
               <div
                 style={{
-                  position: "relative",
                   width: "100%",
-                  height: cardH,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  overflow: "visible",
+                  aspectRatio: "1 / 1",
+                  borderRadius: 12,
+                  overflow: "hidden",
+                  background: "#F8FAFC",
                 }}
               >
                 <img
-                  src={imgSrc[role]}
+                  src={info.defaultImg}
                   alt={info.label}
-                  style={{
-                    width: imgBox,
-                    height: imgBox,
-                    objectFit: "contain",
-                    transform: `translate(${node.imgOffX}px, ${node.imgOffY}px) scale(${node.imgScale})`,
-                  }}
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
                   onError={(event) => {
                     event.currentTarget.style.opacity = "0";
                   }}
                 />
-
               </div>
 
-              <footer
+              <div
                 style={{
-                  position: "absolute",
-                  left: cardW / 2 + node.textOffX,
-                  bottom: 6,
-                  transform: "translate(-50%, 0)",
-                  fontSize: node.textSize,
-                  fontWeight: 700,
-                  color: isActive ? info.color : "#374151",
-                  pointerEvents: "none",
-                  lineHeight: 1.12,
+                  width: "100%",
                   textAlign: "center",
-                  whiteSpace: "normal",
-                  width: "90%",
+                  fontWeight: 700,
+                  fontSize: 16,
+                  color: isActive ? info.color : "#374151",
+                  lineHeight: 1.2,
                 }}
               >
                 {info.label}
-              </footer>
+              </div>
             </article>
           );
         })}
@@ -307,17 +185,27 @@ export default function Stuhldialog() {
 
       <section
         style={{
-          marginTop: 14,
-          padding: 12,
+          marginTop: 18,
+          padding: 16,
           border: "1px solid #E5E7EB",
           borderRadius: 12,
           background: "#F3F4F6",
         }}
       >
-        <div style={{ fontWeight: 700, color: meta.color }}>
-          Aktiv: {meta.label}
-        </div>
+        <div style={{ fontWeight: 700, color: meta.color }}>Aktiv: {meta.label}</div>
         <p style={{ color: "#374151", marginTop: 8 }}>{meta.desc}</p>
+        <ul
+          style={{
+            marginTop: 8,
+            paddingLeft: 18,
+            color: "#1F2937",
+            lineHeight: 1.4,
+          }}
+        >
+          {meta.subpoints.map((point) => (
+            <li key={point}>{point}</li>
+          ))}
+        </ul>
       </section>
     </main>
   );
