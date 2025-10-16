@@ -4,6 +4,7 @@ import NBJ from "./pages/NBJ";
 import Spannungsmodell from "./pages/Spannungsmodell";
 import Bibliothek from "./pages/Bibliothek";
 import EP from "./pages/EP";
+import Stuhldialog from "./pages/Stuhldialog";
 
 export default function App() {
   return (
@@ -13,6 +14,7 @@ export default function App() {
       <Route path="/spannungsmodell" element={<Spannungsmodell />} />
       <Route path="/bibliothek" element={<Bibliothek />} />
       <Route path="/ep" element={<EP />} />
+      <Route path="/stuhldialog" element={<Stuhldialog />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
