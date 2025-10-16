@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { presetDialogue } from "../data/stuhldialogPreset";
+import { presetDialogues, type PresetKey } from "../data/stuhldialogPreset";
 
 type RoleKey = "ICH" | "KIND" | "ANKLAEGER" | "JESUS" | "COPING";
 
@@ -56,6 +56,14 @@ const ROLES: Record<RoleKey, RoleMeta> = {
   },
 };
 
+const ROLE_VOICE_SETTINGS: Record<RoleKey, { lang: string; pitch: number; rate: number }> = {
+  JESUS: { lang: "de-DE", pitch: 0.9, rate: 0.95 },
+  ANKLAEGER: { lang: "de-DE", pitch: 0.85, rate: 1.05 },
+  KIND: { lang: "de-DE", pitch: 1.2, rate: 1.05 },
+  ICH: { lang: "de-DE", pitch: 1.0, rate: 1.0 },
+  COPING: { lang: "de-DE", pitch: 1.0, rate: 1.05 },
+};
+
 const GRID_POSITIONS: Record<RoleKey, { row: number; column: number }> = {
   JESUS: { row: 1, column: 2 },
   ANKLAEGER: { row: 2, column: 1 },
@@ -70,20 +78,11 @@ const GRID_ROW_GAP = 56;
 const CHAT_STORAGE_KEY = "stuhldialog_chat_entries";
 const NBJ_STORAGE_KEY = "nbj_entries";
 
-const PRESET_ENTRIES: ChatEntry[] = (() => {
-  const base = Date.now();
-  return presetDialogue.map((entry, index) => ({
-    id: entry.id,
-    role: entry.role,
-    text: entry.text,
-    ts: base - (presetDialogue.length - index) * 60_000,
-  }));
-})();
-
 export default function Stuhldialog() {
   const [active, setActive] = useState<RoleKey | null>(null);
   const [draft, setDraft] = useState("");
   const [activeTab, setActiveTab] = useState<"preset" | "custom">("preset");
+  const [selectedPreset, setSelectedPreset] = useState<PresetKey>("angst");
   const [chatEntries, setChatEntries] = useState<ChatEntry[]>(() => {
     if (typeof window === "undefined") return [];
     try {
@@ -156,7 +155,153 @@ export default function Stuhldialog() {
 
   const activeRole = active ? ROLES[active] : null;
   const isSubmitDisabled = !activeRole || draft.trim().length === 0;
-  const visibleEntries = activeTab === "preset" ? PRESET_ENTRIES : chatEntries;
+
+  const presetOptions = useMemo(
+    () => Object.entries(presetDialogues) as Array<[PresetKey, (typeof presetDialogues)[PresetKey]]>,
+    []
+  );
+
+  useEffect(() => {
+    if (!presetDialogues[selectedPreset] && presetOptions.length > 0) {
+      setSelectedPreset(presetOptions[0][0]);
+    }
+  }, [selectedPreset, presetOptions]);
+
+  const currentPreset = presetDialogues[selectedPreset];
+
+  const presetEntries = useMemo<ChatEntry[]>(() => {
+    if (!currentPreset) return [];
+    const base = Date.now();
+    const { entries } = currentPreset;
+    return entries.map((entry, index) => ({
+      id: entry.id,
+      role: entry.role,
+      text: entry.text,
+      ts: base - (entries.length - index) * 60_000,
+    }));
+  }, [currentPreset]);
+
+  const dictationSupported =
+    typeof window !== "undefined" &&
+    Boolean((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
+  const speechSynthesisSupported = typeof window !== "undefined" && "speechSynthesis" in window;
+
+  const recognitionRef = useRef<any>(null);
+  const dictationBaseRef = useRef<string>("");
+  const [isDictating, setIsDictating] = useState(false);
+
+  useEffect(() => {
+    if (!dictationSupported || typeof window === "undefined") return;
+    const SpeechRecognitionClass =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognitionClass) return;
+    const recognition = new SpeechRecognitionClass();
+    recognition.lang = "de-DE";
+    recognition.interimResults = true;
+    recognition.continuous = true;
+    recognition.onresult = (event: any) => {
+      let transcript = "";
+      for (let i = 0; i < event.results.length; i += 1) {
+        transcript += event.results[i][0].transcript;
+      }
+      setDraft(dictationBaseRef.current + transcript.trim());
+    };
+    recognition.onend = () => setIsDictating(false);
+    recognition.onerror = () => setIsDictating(false);
+    recognitionRef.current = recognition;
+    return () => {
+      try {
+        recognition.stop();
+      } catch {
+        /* ignore */
+      }
+      recognitionRef.current = null;
+    };
+  }, [dictationSupported]);
+
+  useEffect(() => {
+    return () => {
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.stop();
+        } catch {
+          /* ignore */
+        }
+      }
+    };
+  }, []);
+
+  const toggleDictation = useCallback(() => {
+    if (!dictationSupported) return;
+    const recognition = recognitionRef.current;
+    if (!recognition) return;
+    if (!isDictating) {
+      const trimmed = draft.trim();
+      dictationBaseRef.current = trimmed.length > 0 ? `${trimmed} ` : "";
+      try {
+        recognition.start();
+        setIsDictating(true);
+      } catch {
+        /* ignore */
+      }
+    } else {
+      try {
+        recognition.stop();
+      } catch {
+        /* ignore */
+      }
+    }
+  }, [dictationSupported, draft, isDictating]);
+
+  const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
+
+  useEffect(() => {
+    if (!speechSynthesisSupported || typeof window === "undefined") return;
+    const synth = window.speechSynthesis as any;
+    const loadVoices = () => {
+      const voices: SpeechSynthesisVoice[] = synth.getVoices?.() ?? [];
+      if (voices.length > 0) {
+        setAvailableVoices(voices);
+      }
+    };
+    loadVoices();
+    if (typeof synth.addEventListener === "function") {
+      synth.addEventListener("voiceschanged", loadVoices);
+      return () => synth.removeEventListener("voiceschanged", loadVoices);
+    }
+    const original = synth.onvoiceschanged;
+    synth.onvoiceschanged = loadVoices;
+    return () => {
+      synth.onvoiceschanged = original;
+    };
+  }, [speechSynthesisSupported]);
+
+  const speakEntry = useCallback(
+    (entry: ChatEntry) => {
+      if (!speechSynthesisSupported || typeof window === "undefined" || !entry.text) return;
+      const synth = window.speechSynthesis;
+      const settings = ROLE_VOICE_SETTINGS[entry.role];
+      const voice =
+        availableVoices.find((v) =>
+          v.lang?.toLowerCase().startsWith(settings.lang.toLowerCase())
+        ) ??
+        availableVoices.find((v) => v.lang?.toLowerCase().startsWith("de")) ??
+        availableVoices[0];
+
+      synth.cancel();
+      const utterance = new SpeechSynthesisUtterance(entry.text);
+      utterance.lang = settings.lang;
+      utterance.pitch = settings.pitch;
+      utterance.rate = settings.rate;
+      if (voice) {
+        utterance.voice = voice;
+      }
+      synth.speak(utterance);
+    },
+    [availableVoices, speechSynthesisSupported]
+  );
+
+  const visibleEntries = activeTab === "preset" ? presetEntries : chatEntries;
 
   return (
     <main
@@ -196,46 +341,6 @@ export default function Stuhldialog() {
       <p style={{ textAlign: "center", color: "#6B7280", margin: "6px 0 18px" }}>
         Wähle eine Karte und schreibe einen Modus-Dialog – oder nutze den Beispiel-Verlauf.
       </p>
-
-      <div
-        style={{
-          display: "inline-flex",
-          borderRadius: 999,
-          background: "#E2E8F0",
-          padding: 4,
-          margin: "0 auto 18px",
-          gap: 4,
-        }}
-      >
-        <button
-          onClick={() => setActiveTab("preset")}
-          style={{
-            padding: "8px 18px",
-            borderRadius: 999,
-            border: "none",
-            cursor: "pointer",
-            fontWeight: 600,
-            background: activeTab === "preset" ? "#1D4ED8" : "transparent",
-            color: activeTab === "preset" ? "#FFF" : "#1E293B",
-          }}
-        >
-          Beispiel-Dialog
-        </button>
-        <button
-          onClick={() => setActiveTab("custom")}
-          style={{
-            padding: "8px 18px",
-            borderRadius: 999,
-            border: "none",
-            cursor: "pointer",
-            fontWeight: 600,
-            background: activeTab === "custom" ? "#1D4ED8" : "transparent",
-            color: activeTab === "custom" ? "#FFF" : "#1E293B",
-          }}
-        >
-          Eigenen Dialog erstellen
-        </button>
-      </div>
 
       <section
         style={{
@@ -326,44 +431,65 @@ export default function Stuhldialog() {
           margin: "12px auto 14px",
         }}
       >
-        <div
+      <div
+        style={{
+          display: "inline-flex",
+          borderRadius: 14,
+          background: "#E2E8F0",
+          padding: 4,
+          gap: 4,
+        }}
+      >
+        <button
+          onClick={() => setActiveTab("preset")}
           style={{
-            display: "inline-flex",
-            borderRadius: 14,
-            background: "#E2E8F0",
-            padding: 4,
-            gap: 4,
+            padding: "8px 20px",
+            borderRadius: 10,
+            border: "none",
+            cursor: "pointer",
+            fontWeight: 600,
+            background: activeTab === "preset" ? "#1D4ED8" : "transparent",
+            color: activeTab === "preset" ? "#FFF" : "#1E293B",
           }}
         >
-          <button
-            onClick={() => setActiveTab("preset")}
+          Beispiel
+        </button>
+        <button
+          onClick={() => setActiveTab("custom")}
+          style={{
+            padding: "8px 20px",
+            borderRadius: 10,
+            border: "none",
+            cursor: "pointer",
+            fontWeight: 600,
+            background: activeTab === "custom" ? "#1D4ED8" : "transparent",
+            color: activeTab === "custom" ? "#FFF" : "#1E293B",
+          }}
+        >
+          Eigenen Dialog erstellen
+        </button>
+      </div>
+
+        {activeTab === "preset" && (
+          <select
+            value={selectedPreset}
+            onChange={(event) => setSelectedPreset(event.target.value as PresetKey)}
             style={{
-              padding: "8px 20px",
+              padding: "8px 14px",
               borderRadius: 10,
-              border: "none",
-              cursor: "pointer",
-              fontWeight: 600,
-              background: activeTab === "preset" ? "#1D4ED8" : "transparent",
-              color: activeTab === "preset" ? "#FFF" : "#1E293B",
+              border: "1px solid #CBD5E1",
+              background: "#FFF",
+              fontSize: 14,
+              minWidth: 220,
             }}
           >
-            Beispiel
-          </button>
-          <button
-            onClick={() => setActiveTab("custom")}
-            style={{
-              padding: "8px 20px",
-              borderRadius: 10,
-              border: "none",
-              cursor: "pointer",
-              fontWeight: 600,
-              background: activeTab === "custom" ? "#1D4ED8" : "transparent",
-              color: activeTab === "custom" ? "#FFF" : "#1E293B",
-            }}
-          >
-            Eigenen Dialog erstellen
-          </button>
-        </div>
+            {presetOptions.map(([key, config]) => (
+              <option value={key} key={key}>
+                {config.label}
+              </option>
+            ))}
+          </select>
+        )}
       </div>
 
       {activeTab === "custom" && (
@@ -465,7 +591,11 @@ export default function Stuhldialog() {
           gap: 12,
         }}
       >
-        <div style={{ fontWeight: 700, color: "#0F172A" }}>Verlauf</div>
+        <div style={{ fontWeight: 700, color: "#0F172A" }}>
+          {activeTab === "preset"
+            ? `Beispiel – ${currentPreset?.label ?? "Auswahl"}`
+            : "Verlauf"}
+        </div>
         {visibleEntries.length === 0 ? (
           <p style={{ color: "#64748B", margin: 0 }}>Noch keine Einträge gespeichert.</p>
         ) : (
@@ -502,7 +632,25 @@ export default function Stuhldialog() {
                   />
                 </div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 700, color: info.color }}>{info.label}</div>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontWeight: 700, color: info.color }}>{info.label}</span>
+                    {speechSynthesisSupported && (
+                      <button
+                        onClick={() => speakEntry(entry)}
+                        style={{
+                          border: "none",
+                          background: "transparent",
+                          cursor: "pointer",
+                          fontSize: 20,
+                          lineHeight: 1,
+                          padding: 4,
+                        }}
+                        title="Vorlesen"
+                      >
+                        🔊
+                      </button>
+                    )}
+                  </div>
                   <p style={{ margin: "6px 0 4px", whiteSpace: "pre-wrap", color: "#1F2937" }}>{entry.text}</p>
                   <div style={{ color: "#94A3B8", fontSize: 12 }}>{new Date(entry.ts).toLocaleString()}</div>
                 </div>
