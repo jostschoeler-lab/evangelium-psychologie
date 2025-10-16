@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 
 type RoleKey = "ICH" | "KIND" | "ANKLAEGER" | "JESUS" | "COPING";
 
@@ -191,6 +192,21 @@ export default function Stuhldialog() {
         margin: "0 auto",
       }}
     >
+      <div style={{ marginBottom: 12 }}>
+        <Link
+          to="/"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+            color: "#2563EB",
+            textDecoration: "none",
+            fontWeight: 600,
+          }}
+        >
+          <span aria-hidden="true">←</span> Zurück
+        </Link>
+      </div>
       <h1
         style={{
           fontSize: 24,
