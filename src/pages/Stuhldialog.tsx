@@ -67,6 +67,7 @@ export default function Stuhldialog() {
   const [active, setActive] = useState<RoleKey>("JESUS");
   const meta = useMemo(() => ROLES[active], [active]);
   const [nbjFeel, setNbjFeel] = useState<{ value: string; ts?: number } | null>(null);
+  const [notes, setNotes] = useState<string>("");
 
   const loadNbjFeel = useCallback(() => {
     if (typeof window === "undefined") return;
@@ -233,23 +234,28 @@ export default function Stuhldialog() {
           padding: 16,
           border: "1px solid #E5E7EB",
           borderRadius: 12,
-          background: "#F3F4F6",
+          background: "#FFFFFF",
         }}
       >
-        <div style={{ fontWeight: 700, color: meta.color }}>Aktiv: {meta.label}</div>
-        <p style={{ color: "#374151", marginTop: 8 }}>{meta.desc}</p>
-        <ul
+        <label style={{ display: "block", fontWeight: 700, color: "#0F172A" }} htmlFor="modus-notes">
+          Notizen zu den Karten
+        </label>
+        <textarea
+          id="modus-notes"
+          value={notes}
+          onChange={(event) => setNotes(event.target.value)}
+          placeholder="Gedanken, Beobachtungen oder Impulse…"
           style={{
-            marginTop: 8,
-            paddingLeft: 18,
-            color: "#1F2937",
+            marginTop: 10,
+            width: "100%",
+            minHeight: 120,
+            padding: 12,
+            borderRadius: 12,
+            border: "1px solid #CBD5E1",
+            fontSize: 15,
             lineHeight: 1.4,
           }}
-        >
-          {meta.subpoints.map((point) => (
-            <li key={point}>{point}</li>
-          ))}
-        </ul>
+        />
       </section>
 
       <section
