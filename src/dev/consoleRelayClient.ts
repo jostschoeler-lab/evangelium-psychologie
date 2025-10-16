@@ -17,14 +17,13 @@ if (import.meta.env.DEV && import.meta.hot) {
 
   levels.forEach((level) => {
     const orig = console[level].bind(console) as (...a: any[]) => void;
-    console[level] = (...args: any[]) => {
+    console[level] = ((...args: any[]) => {
       try {
         import.meta.hot!.send("console", { level, args: args.map(safe) });
       } catch {
         // ignore relay errors
       }
       orig(...args);
-    } as any;
+    }) as any;
   });
 }
-

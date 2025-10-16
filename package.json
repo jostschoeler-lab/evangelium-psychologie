@@ -7,19 +7,19 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview --port 4173",
-    "typecheck": "tsc -b"
+    "typecheck": "tsc -b",
+    "verify": "node scripts/verify.js"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.46.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.26.1"
   },
   "devDependencies": {
-    "vite": "^5.4.0",
+    "@types/react": "^18.2.45",
+    "@types/react-dom": "^18.2.18",
     "@vitejs/plugin-react": "^4.2.0",
     "typescript": "^5.4.0",
-    "@types/react": "^18.2.45",
-    "@types/react-dom": "^18.2.18"
+    "vite": "^5.4.0"
   }
 }

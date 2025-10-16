@@ -62,7 +62,10 @@ export default function UnifiedEditor() {
     setSaving(true);
     try {
       await saveEntry(entry as any);
-      setMessage({ type: "ok", text: "Eintrag wurde in Supabase gespeichert." });
+      setMessage({
+        type: "ok",
+        text: "Eintrag wurde lokal im Browser gespeichert.",
+      });
     } catch (err: any) {
       setMessage({ type: "error", text: "Speichern fehlgeschlagen: " + (err?.message || "Unbekannter Fehler") });
     } finally {
@@ -211,11 +214,10 @@ export default function UnifiedEditor() {
           color: "white",
           cursor: saving ? "not-allowed" : "pointer",
         }}
-        title={!isValid ? "Bitte 'Bibelstelle(n)' ausfüllen" : "In die Cloud speichern"}
+        title={!isValid ? "Bitte 'Bibelstelle(n)' ausfüllen" : "Eintrag lokal speichern"}
       >
-        {saving ? "Speichere …" : "In die Cloud speichern"}
+        {saving ? "Speichere lokal …" : "Lokal speichern"}
       </button>
     </div>
   );
 }
-
