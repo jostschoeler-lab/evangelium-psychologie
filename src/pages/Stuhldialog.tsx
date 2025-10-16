@@ -9,6 +9,22 @@ type RoleMeta = {
   defaultImg: string;
 };
 
+type ChatEntry = {
+  id: string;
+  role: RoleKey;
+  text: string;
+  ts: number;
+};
+
+type MeditationEntry = {
+  ts?: number;
+  f?: string;
+  n?: string;
+  j?: string;
+  o?: string;
+  draft?: boolean;
+};
+
 const asset = (file: string) => `/stuhldialog/${file}`;
 
 const ROLES: Record<RoleKey, RoleMeta> = {
@@ -53,25 +69,61 @@ const GRID_ROW_GAP = 56;
 const CHAT_STORAGE_KEY = "stuhldialog_chat_entries";
 const NBJ_STORAGE_KEY = "nbj_entries";
 
-type ChatEntry = {
-  id: string;
-  role: RoleKey;
-  text: string;
-  ts: number;
-};
-
-type MeditationEntry = {
-  ts?: number;
-  f?: string;
-  n?: string;
-  j?: string;
-  o?: string;
-  draft?: boolean;
-};
+const PRESET_ENTRIES: ChatEntry[] = [
+  {
+    id: "preset-1",
+    role: "KIND",
+    text: "Mir ist so schwer ums Herz. Ich fühle mich alleine gelassen und habe Angst, dass mich niemand versteht.",
+    ts: Date.now() - 1000 * 60 * 15,
+  },
+  {
+    id: "preset-2",
+    role: "ANKLAEGER",
+    text: "Jetzt reiß dich zusammen! Du solltest längst stärker sein. Niemand kann ständig Rücksicht auf dich nehmen.",
+    ts: Date.now() - 1000 * 60 * 14,
+  },
+  {
+    id: "preset-3",
+    role: "ICH",
+    text: "Ich höre euch beide. Kind, dein Schmerz ist echt. Ankläger, wir brauchen eine andere Art, mit dieser Angst umzugehen.",
+    ts: Date.now() - 1000 * 60 * 12,
+  },
+  {
+    id: "preset-4",
+    role: "JESUS",
+    text: "Ich bin bei dir. Deine Schwachheit schreckt mich nicht. Lass mich deine Angst tragen, Schritt für Schritt.",
+    ts: Date.now() - 1000 * 60 * 11,
+  },
+  {
+    id: "preset-5",
+    role: "COPING",
+    text: "Vielleicht ziehe ich mich zurück und lenke mich ab, damit der Druck weggeht…",
+    ts: Date.now() - 1000 * 60 * 10,
+  },
+  {
+    id: "preset-6",
+    role: "ICH",
+    text: "Coping, wir danken dir für den Schutz. Aber diesmal wollen wir bleiben und fühlen. Wir sind nicht alleine.",
+    ts: Date.now() - 1000 * 60 * 9,
+  },
+  {
+    id: "preset-7",
+    role: "KIND",
+    text: "Wenn Jesus wirklich nahe ist, dann traue ich mich, diese Angst auszusprechen. Ich wünsche mir Geborgenheit.",
+    ts: Date.now() - 1000 * 60 * 7,
+  },
+  {
+    id: "preset-8",
+    role: "JESUS",
+    text: "Ich gebe dir meinen Frieden. Du darfst dich auf meine Schultern lehnen und langsam weitergehen.",
+    ts: Date.now() - 1000 * 60 * 6,
+  },
+];
 
 export default function Stuhldialog() {
   const [active, setActive] = useState<RoleKey | null>(null);
   const [draft, setDraft] = useState("");
+  const [activeTab, setActiveTab] = useState<"preset" | "custom">("preset");
   const [chatEntries, setChatEntries] = useState<ChatEntry[]>(() => {
     if (typeof window === "undefined") return [];
     try {
@@ -144,6 +196,7 @@ export default function Stuhldialog() {
 
   const activeRole = active ? ROLES[active] : null;
   const isSubmitDisabled = !activeRole || draft.trim().length === 0;
+  const visibleEntries = activeTab === "preset" ? PRESET_ENTRIES : chatEntries;
 
   return (
     <main
@@ -181,8 +234,48 @@ export default function Stuhldialog() {
         Modus-Board – fünf Bilder frei angeordnet
       </h1>
       <p style={{ textAlign: "center", color: "#6B7280", margin: "6px 0 18px" }}>
-        Wähle eine Karte, um eine Nachricht für diesen Modus zu schreiben.
+        Wähle eine Karte und schreibe einen Modus-Dialog – oder nutze den Beispiel-Verlauf.
       </p>
+
+      <div
+        style={{
+          display: "inline-flex",
+          borderRadius: 999,
+          background: "#E2E8F0",
+          padding: 4,
+          margin: "0 auto 18px",
+          gap: 4,
+        }}
+      >
+        <button
+          onClick={() => setActiveTab("preset")}
+          style={{
+            padding: "8px 18px",
+            borderRadius: 999,
+            border: "none",
+            cursor: "pointer",
+            fontWeight: 600,
+            background: activeTab === "preset" ? "#1D4ED8" : "transparent",
+            color: activeTab === "preset" ? "#FFF" : "#1E293B",
+          }}
+        >
+          Beispiel-Dialog
+        </button>
+        <button
+          onClick={() => setActiveTab("custom")}
+          style={{
+            padding: "8px 18px",
+            borderRadius: 999,
+            border: "none",
+            cursor: "pointer",
+            fontWeight: 600,
+            background: activeTab === "custom" ? "#1D4ED8" : "transparent",
+            color: activeTab === "custom" ? "#FFF" : "#1E293B",
+          }}
+        >
+          Eigenen Dialog erstellen
+        </button>
+      </div>
 
       <section
         style={{
@@ -266,92 +359,140 @@ export default function Stuhldialog() {
         })}
       </section>
 
-      <section
+      <div
         style={{
-          marginTop: 18,
-          padding: 16,
-          border: "1px solid #E5E7EB",
-          borderRadius: 12,
-          background: "#FFFFFF",
-          minHeight: 190,
           display: "flex",
-          alignItems: "center",
+          justifyContent: "center",
+          margin: "12px auto 14px",
         }}
       >
-        {activeRole ? (
-          <div style={{ display: "flex", gap: 16, width: "100%", alignItems: "flex-start" }}>
-            <div
-              style={{
-                width: 64,
-                height: 64,
-                borderRadius: "50%",
-                overflow: "hidden",
-                flexShrink: 0,
-                border: `3px solid ${activeRole.color}`,
-                background: "#F8FAFC",
-              }}
-            >
-              <img
-                src={activeRole.defaultImg}
-                alt={activeRole.label}
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-              />
-            </div>
-            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8 }}>
-              <div style={{ fontWeight: 700, color: activeRole.color }}>{activeRole.label}</div>
-              <textarea
-                value={draft}
-                onChange={(event) => setDraft(event.target.value)}
-                placeholder="Schreibe hier, was dieser Modus sagt oder fühlt…"
+        <div
+          style={{
+            display: "inline-flex",
+            borderRadius: 14,
+            background: "#E2E8F0",
+            padding: 4,
+            gap: 4,
+          }}
+        >
+          <button
+            onClick={() => setActiveTab("preset")}
+            style={{
+              padding: "8px 20px",
+              borderRadius: 10,
+              border: "none",
+              cursor: "pointer",
+              fontWeight: 600,
+              background: activeTab === "preset" ? "#1D4ED8" : "transparent",
+              color: activeTab === "preset" ? "#FFF" : "#1E293B",
+            }}
+          >
+            Beispiel
+          </button>
+          <button
+            onClick={() => setActiveTab("custom")}
+            style={{
+              padding: "8px 20px",
+              borderRadius: 10,
+              border: "none",
+              cursor: "pointer",
+              fontWeight: 600,
+              background: activeTab === "custom" ? "#1D4ED8" : "transparent",
+              color: activeTab === "custom" ? "#FFF" : "#1E293B",
+            }}
+          >
+            Eigenen Dialog erstellen
+          </button>
+        </div>
+      </div>
+
+      {activeTab === "custom" && (
+        <section
+          style={{
+            marginTop: 10,
+            padding: 16,
+            border: "1px solid #E5E7EB",
+            borderRadius: 12,
+            background: "#FFFFFF",
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
+          {activeRole ? (
+            <div style={{ display: "flex", gap: 16, width: "100%", alignItems: "flex-start" }}>
+              <div
                 style={{
-                  border: `2px solid ${activeRole.color}`,
-                  borderRadius: 12,
-                  padding: 12,
-                  minHeight: 110,
-                  fontSize: 15,
-                  lineHeight: 1.4,
-                  outline: "none",
-                  resize: "vertical",
+                  width: 64,
+                  height: 64,
+                  borderRadius: "50%",
+                  overflow: "hidden",
+                  flexShrink: 0,
+                  border: `3px solid ${activeRole.color}`,
+                  background: "#F8FAFC",
                 }}
-              />
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
-                <button
-                  onClick={handleCancel}
+              >
+                <img
+                  src={activeRole.defaultImg}
+                  alt={activeRole.label}
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
+              </div>
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8 }}>
+                <div style={{ fontWeight: 700, color: activeRole.color }}>{activeRole.label}</div>
+                <textarea
+                  value={draft}
+                  onChange={(event) => setDraft(event.target.value)}
+                  placeholder="Schreibe hier, was dieser Modus sagt oder fühlt…"
                   style={{
-                    padding: "8px 14px",
-                    borderRadius: 10,
-                    border: "1px solid #CBD5E1",
-                    background: "#F1F5F9",
-                    cursor: "pointer",
+                    border: `2px solid ${activeRole.color}`,
+                    borderRadius: 12,
+                    padding: 12,
+                    minHeight: 110,
+                    fontSize: 15,
+                    lineHeight: 1.4,
+                    outline: "none",
+                    resize: "vertical",
                   }}
-                >
-                  Abbrechen
-                </button>
-                <button
-                  onClick={handleSubmit}
-                  disabled={isSubmitDisabled}
-                  style={{
-                    padding: "8px 18px",
-                    borderRadius: 10,
-                    border: "none",
-                    background: isSubmitDisabled ? "#CBD5E1" : activeRole.color,
-                    color: "#FFF",
-                    cursor: isSubmitDisabled ? "not-allowed" : "pointer",
-                    fontWeight: 600,
-                    transition: "background 0.2s ease",
-                  }}
-                >
-                  Speichern
-                </button>
+                />
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+                  <button
+                    onClick={handleCancel}
+                    style={{
+                      padding: "8px 14px",
+                      borderRadius: 10,
+                      border: "1px solid #CBD5E1",
+                      background: "#F1F5F9",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Abbrechen
+                  </button>
+                  <button
+                    onClick={handleSubmit}
+                    disabled={isSubmitDisabled}
+                    style={{
+                      padding: "8px 18px",
+                      borderRadius: 10,
+                      border: "none",
+                      background: isSubmitDisabled ? "#CBD5E1" : activeRole.color,
+                      color: "#FFF",
+                      cursor: isSubmitDisabled ? "not-allowed" : "pointer",
+                      fontWeight: 600,
+                      transition: "background 0.2s ease",
+                    }}
+                  >
+                    Speichern
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        ) : (
-          <div style={{ textAlign: "center", width: "100%", color: "#64748B" }}>
-            Wähle eine Karte aus, um eine Nachricht zu verfassen.
-          </div>
-        )}
-      </section>
+          ) : (
+            <div style={{ textAlign: "center", width: "100%", color: "#64748B" }}>
+              Wähle eine Karte aus, um eine Nachricht zu verfassen.
+            </div>
+          )}
+        </section>
+      )}
 
       <section
         style={{
@@ -365,10 +506,10 @@ export default function Stuhldialog() {
         }}
       >
         <div style={{ fontWeight: 700, color: "#0F172A" }}>Verlauf</div>
-        {chatEntries.length === 0 ? (
+        {visibleEntries.length === 0 ? (
           <p style={{ color: "#64748B", margin: 0 }}>Noch keine Einträge gespeichert.</p>
         ) : (
-          chatEntries.map((entry) => {
+          visibleEntries.map((entry) => {
             const info = ROLES[entry.role];
             return (
               <div
@@ -411,54 +552,56 @@ export default function Stuhldialog() {
         )}
       </section>
 
-      <section
-        style={{
-          marginTop: 18,
-          padding: 16,
-          border: "1px solid #E5E7EB",
-          borderRadius: 12,
-          background: "#FFF9F4",
-          display: "grid",
-          gap: 12,
-        }}
-      >
-        <div style={{ fontWeight: 700, color: "#DC2626" }}>Meditationen</div>
-        {meditations.length === 0 ? (
-          <p style={{ color: "#64748B", margin: 0 }}>Noch keine Meditationseinträge gespeichert.</p>
-        ) : (
-          meditations.map((entry) => (
-            <div
-              key={entry.ts ?? Math.random()}
-              style={{
-                border: "1px solid #FECACA",
-                borderRadius: 12,
-                padding: 12,
-                background: "#FFF",
-                display: "grid",
-                gap: 8,
-              }}
-            >
-              <div style={{ color: "#DC2626", fontWeight: 600 }}>
-                {entry.ts ? new Date(entry.ts).toLocaleString() : "Entwurf"}
-              </div>
-              <div style={{ color: "#1F2937", whiteSpace: "pre-wrap" }}>
-                <strong>Gefühl(e):</strong> {entry.f?.trim() || "—"}
-              </div>
-              <div style={{ color: "#1F2937", whiteSpace: "pre-wrap" }}>
-                <strong>Bedürfnis(se):</strong> {entry.n?.trim() || "—"}
-              </div>
-              <div style={{ color: "#1F2937", whiteSpace: "pre-wrap" }}>
-                <strong>Mit Jesus erlebt:</strong> {entry.j?.trim() || "—"}
-              </div>
-              {entry.o?.trim() ? (
-                <div style={{ color: "#1F2937", whiteSpace: "pre-wrap" }}>
-                  <strong>Weitere Notizen:</strong> {entry.o.trim()}
+      {activeTab === "custom" && (
+        <section
+          style={{
+            marginTop: 18,
+            padding: 16,
+            border: "1px solid #E5E7EB",
+            borderRadius: 12,
+            background: "#FFF9F4",
+            display: "grid",
+            gap: 12,
+          }}
+        >
+          <div style={{ fontWeight: 700, color: "#DC2626" }}>Meditationen</div>
+          {meditations.length === 0 ? (
+            <p style={{ color: "#64748B", margin: 0 }}>Noch keine Meditationseinträge gespeichert.</p>
+          ) : (
+            meditations.map((entry) => (
+              <div
+                key={entry.ts ?? Math.random()}
+                style={{
+                  border: "1px solid #FECACA",
+                  borderRadius: 12,
+                  padding: 12,
+                  background: "#FFF",
+                  display: "grid",
+                  gap: 8,
+                }}
+              >
+                <div style={{ color: "#DC2626", fontWeight: 600 }}>
+                  {entry.ts ? new Date(entry.ts).toLocaleString() : "Entwurf"}
                 </div>
-              ) : null}
-            </div>
-          ))
-        )}
-      </section>
+                <div style={{ color: "#1F2937", whiteSpace: "pre-wrap" }}>
+                  <strong>Gefühl(e):</strong> {entry.f?.trim() || "—"}
+                </div>
+                <div style={{ color: "#1F2937", whiteSpace: "pre-wrap" }}>
+                  <strong>Bedürfnis(se):</strong> {entry.n?.trim() || "—"}
+                </div>
+                <div style={{ color: "#1F2937", whiteSpace: "pre-wrap" }}>
+                  <strong>Mit Jesus erlebt:</strong> {entry.j?.trim() || "—"}
+                </div>
+                {entry.o?.trim() ? (
+                  <div style={{ color: "#1F2937", whiteSpace: "pre-wrap" }}>
+                    <strong>Weitere Notizen:</strong> {entry.o.trim()}
+                  </div>
+                ) : null}
+              </div>
+            ))
+          )}
+        </section>
+      )}
     </main>
   );
 }
