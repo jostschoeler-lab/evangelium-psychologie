@@ -172,16 +172,6 @@ export default function Stuhldialog() {
   );
 
   const meta = useMemo(() => ROLES[active], [active]);
-  const selectedLayout = layout[active];
-  const [openMenus, setOpenMenus] = useState<{
-    role: RoleKey | null;
-    selected: Partial<Record<RoleKey, number>>;
-  }>({
-    role: null,
-    selected: {},
-  });
-
-  const menuSelected = openMenus.selected[active] ?? null;
 
   return (
     <main
@@ -218,7 +208,7 @@ export default function Stuhldialog() {
         Modus-Board – fünf Bilder frei anordnen
       </h1>
       <div style={{ textAlign: "center", color: "#6B7280", margin: "6px 0 14px" }}>
-        Klick auf eine Karte zum Aktivieren. (•••) öffnet 6 Unterpunkte.
+        Klick auf eine Karte zum Aktivieren.
       </div>
 
       <section
@@ -237,7 +227,6 @@ export default function Stuhldialog() {
           const info = ROLES[role];
           const node = layout[role];
           const isActive = active === role;
-          const isMenuOpen = openMenus.role === role;
 
           const cardW = CARD_W * node.cardScale;
           const cardH = CARD_H * node.cardScale;
@@ -248,10 +237,6 @@ export default function Stuhldialog() {
               key={role}
               onClick={() => {
                 setActive(role);
-                setOpenMenus((prev) => ({
-                  role,
-                  selected: prev.selected,
-                }));
               }}
               style={{
                 position: "absolute",
@@ -270,45 +255,11 @@ export default function Stuhldialog() {
                 userSelect: "none",
               }}
             >
-              <header
-                style={{
-                  height: 34,
-                  padding: "6px 10px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "flex-end",
-                  borderBottom: "1px solid #F1F5F9",
-                  borderTopLeftRadius: 16,
-                  borderTopRightRadius: 16,
-                }}
-              >
-                <button
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    setOpenMenus((prev) => ({
-                      role: prev.role === role ? null : role,
-                      selected: prev.selected,
-                    }));
-                  }}
-                  title="Unterpunkte"
-                  style={{
-                    border: "none",
-                    background: "transparent",
-                    fontSize: 18,
-                    lineHeight: 1,
-                    padding: "2px 4px",
-                    cursor: "pointer",
-                  }}
-                >
-                  •••
-                </button>
-              </header>
-
               <div
                 style={{
                   position: "relative",
                   width: "100%",
-                  height: cardH - 34,
+                  height: cardH,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -329,52 +280,6 @@ export default function Stuhldialog() {
                   }}
                 />
 
-                {isMenuOpen && (
-                  <menu
-                    onClick={(event) => event.stopPropagation()}
-                    style={{
-                      position: "absolute",
-                      top: 8,
-                      right: 8,
-                      minWidth: 180,
-                      background: "#FFF",
-                      border: "1px solid #E5E7EB",
-                      borderRadius: 10,
-                      boxShadow: "0 12px 32px rgba(0,0,0,0.18)",
-                      padding: 6,
-                      zIndex: 5,
-                    }}
-                  >
-                    {info.subpoints.map((point, idx) => {
-                      const selected = openMenus.selected[role] === idx;
-                      return (
-                        <button
-                          key={point}
-                          onClick={() =>
-                            setOpenMenus((prev) => ({
-                              role: null,
-                              selected: { ...prev.selected, [role]: idx },
-                            }))
-                          }
-                          style={{
-                            display: "block",
-                            width: "100%",
-                            textAlign: "left",
-                            background: selected ? hexToRgba(info.color, 0.12) : "transparent",
-                            color: "#111827",
-                            border: "none",
-                            padding: "8px 10px",
-                            borderRadius: 8,
-                            cursor: "pointer",
-                            fontSize: 14,
-                          }}
-                        >
-                          {point}
-                        </button>
-                      );
-                    })}
-                  </menu>
-                )}
               </div>
 
               <footer
@@ -411,7 +316,6 @@ export default function Stuhldialog() {
       >
         <div style={{ fontWeight: 700, color: meta.color }}>
           Aktiv: {meta.label}
-          {menuSelected != null ? ` — ${meta.subpoints[menuSelected]}` : ""}
         </div>
         <p style={{ color: "#374151", marginTop: 8 }}>{meta.desc}</p>
       </section>
