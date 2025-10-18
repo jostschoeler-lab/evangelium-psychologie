@@ -15,6 +15,9 @@ export type EntryRow = {
   tags: string | null;
   visibility: string | null;
   notes: string | null;
+  psychology_comment: string | null;
+  theological_background: string | null;
+  psychological_background: string | null;
 };
 
 export type EntryDraft = {
@@ -25,6 +28,9 @@ export type EntryDraft = {
   tags?: string;
   visibility?: string;
   notes?: string;
+  psychology_comment?: string;
+  theological_background?: string;
+  psychological_background?: string;
 };
 
 /**
@@ -40,6 +46,9 @@ export async function saveEntry(draft: EntryDraft): Promise<EntryRow> {
     tags: draft.tags ?? null,
     visibility: draft.visibility ?? null,
     notes: draft.notes ?? null,
+    psychology_comment: draft.psychology_comment ?? null,
+    theological_background: draft.theological_background ?? null,
+    psychological_background: draft.psychological_background ?? null,
   };
 
   const { data, error } = await supabase
