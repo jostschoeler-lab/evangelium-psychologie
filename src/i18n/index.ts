@@ -11,7 +11,7 @@ const messages: Record<Lang, Record<string, string>> = {
 
     "home.welcome": "Wähle oben „Editor“, um Inhalte zu erfassen.",
 
-    "editor.title": "Unified-Editor (Bibel + Psych + Brücke)",
+    "editor.title": "Crosslink Explorer (Bibel + Psych + Brücke)",
     "editor.hint": "Alle Felder werden lokal gespeichert (localStorage).",
     "editor.fields.bibleRef": "Bibelstelle(n)",
     "editor.fields.bibleView": "Theologische Auslegungen",
@@ -33,7 +33,7 @@ const messages: Record<Lang, Record<string, string>> = {
     "nav.home": "Home",
     "nav.editor": "Editor",
     "home.welcome": "Choose “Editor” to start entering content.",
-    "editor.title": "Unified Editor (Bible + Psych + Bridge)",
+    "editor.title": "Crosslink Explorer (Bible + Psych + Bridge)",
     "editor.hint": "All fields are stored locally (localStorage).",
     "editor.fields.bibleRef": "Bible reference(s)",
     "editor.fields.bibleView": "Theological notes",
@@ -55,7 +55,7 @@ const messages: Record<Lang, Record<string, string>> = {
     "nav.home": "Start",
     "nav.editor": "Editor",
     "home.welcome": "Velg «Editor» for å begynne å registrere innhold.",
-    "editor.title": "Felles-editor (Bibel + Psyk + Bro)",
+    "editor.title": "Crosslink Explorer (Bibel + Psyk + Bro)",
     "editor.hint": "Alle felt lagres lokalt (localStorage).",
     "editor.fields.bibleRef": "Bibelsted(er)",
     "editor.fields.bibleView": "Teologiske notater",
