@@ -13,7 +13,7 @@ export default function Menu() {
       <h1>NBJ – Suite • v4</h1>
 
       <div style={rowStyle}>
-        <Link to="/nbj" style={btnStyle}>Meditation (NBJ)</Link>
+        <Link to="/nbj" style={btnStyle}>Meditation</Link>
         <Link to="/spannungsmodell" style={btnStyle}>Spannungsmodell</Link>
         <Link to="/bibliothek" style={btnStyle}>Bibliothek</Link>
         <Link to="/ep" style={btnStyle}>Crosslinks (EP)</Link>
