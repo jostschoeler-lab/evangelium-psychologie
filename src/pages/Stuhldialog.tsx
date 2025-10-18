@@ -254,6 +254,8 @@ export default function Stuhldialog() {
   }, [dictationSupported, draft, isDictating]);
 
   const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [activeSpeechId, setActiveSpeechId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!speechSynthesisSupported || typeof window === "undefined") return;
@@ -525,21 +527,50 @@ export default function Stuhldialog() {
               </div>
               <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8 }}>
                 <div style={{ fontWeight: 700, color: activeRole.color }}>{activeRole.label}</div>
-                <textarea
-                  value={draft}
-                  onChange={(event) => setDraft(event.target.value)}
-                  placeholder="Schreibe hier, was dieser Modus sagt oder fühlt…"
-                  style={{
-                    border: `2px solid ${activeRole.color}`,
-                    borderRadius: 12,
-                    padding: 12,
-                    minHeight: 110,
-                    fontSize: 15,
-                    lineHeight: 1.4,
-                    outline: "none",
-                    resize: "vertical",
-                  }}
-                />
+                <div style={{ display: "flex", gap: 8, alignItems: "stretch" }}>
+                  <textarea
+                    value={draft}
+                    onChange={(event) => setDraft(event.target.value)}
+                    placeholder="Schreibe hier, was dieser Modus sagt oder fühlt…"
+                    style={{
+                      border: `2px solid ${activeRole.color}`,
+                      borderRadius: 12,
+                      padding: 12,
+                      minHeight: 110,
+                      fontSize: 15,
+                      lineHeight: 1.4,
+                      outline: "none",
+                      resize: "vertical",
+                      flex: 1,
+                    }}
+                  />
+                  <button
+                    onClick={toggleDictation}
+                    disabled={!dictationSupported}
+                    style={{
+                      width: 48,
+                      borderRadius: 12,
+                      border: "1px solid #CBD5E1",
+                      background: dictationSupported
+                        ? isDictating
+                          ? "#FDE68A"
+                          : "#FFF"
+                        : "#E2E8F0",
+                      cursor: dictationSupported ? "pointer" : "not-allowed",
+                      fontSize: 18,
+                    }}
+                    title={
+                      dictationSupported
+                        ? isDictating
+                          ? "Diktat beenden"
+                          : "Per Mikrofon diktieren"
+                        : "Spracherkennung wird nicht unterstützt"
+                    }
+                    aria-pressed={isDictating}
+                  >
+                    {isDictating ? "■" : "🎤"}
+                  </button>
+                </div>
                 <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
                   <button
                     onClick={handleCancel}
@@ -570,6 +601,17 @@ export default function Stuhldialog() {
                     Speichern
                   </button>
                 </div>
+                {dictationSupported ? (
+                  <div style={{ color: "#64748B", fontSize: 12 }}>
+                    {isDictating
+                      ? "Diktat läuft … tippe erneut auf das Mikrofon, um zu stoppen."
+                      : "Klicke auf das Mikrofon, um zu diktieren."}
+                  </div>
+                ) : (
+                  <div style={{ color: "#94A3B8", fontSize: 12 }}>
+                    Spracherkennung wird von deinem Browser nicht unterstützt.
+                  </div>
+                )}
               </div>
             </div>
           ) : (
@@ -610,8 +652,12 @@ export default function Stuhldialog() {
                   alignItems: "flex-start",
                   padding: 12,
                   borderRadius: 12,
-                  border: "1px solid #E2E8F0",
-                  background: "#F8FAFC",
+                  border:
+                    activeSpeechId === entry.id ? `1px solid ${info.color}` : "1px solid #E2E8F0",
+                  background: activeSpeechId === entry.id ? "#DBEAFE" : "#F8FAFC",
+                  boxShadow:
+                    activeSpeechId === entry.id ? `0 0 0 3px ${hexToRgba(info.color, 0.18)}` : "none",
+                  transition: "background 0.2s ease, box-shadow 0.2s ease, border 0.2s ease",
                 }}
               >
                 <div
