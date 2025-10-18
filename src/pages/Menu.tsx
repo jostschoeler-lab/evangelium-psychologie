@@ -16,7 +16,7 @@ export default function Menu() {
         <Link to="/nbj" style={btnStyle}>Meditation (NBJ)</Link>
         <Link to="/spannungsmodell" style={btnStyle}>Spannungsmodell</Link>
         <Link to="/bibliothek" style={btnStyle}>Bibliothek</Link>
-        <Link to="/ep" style={btnStyle}>Crosslinks (EP)</Link>
+        <Link to="/ep" style={btnStyle}>Crosslinks</Link>
 
         <Link to="/stuhldialog" style={btnStyle}>
           Stuhldialog
