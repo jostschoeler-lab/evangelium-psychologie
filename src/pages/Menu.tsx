@@ -10,7 +10,7 @@ export default function Menu() {
 
   return (
     <main style={pageStyle}>
-      <h1>NBJ – Suite • v4</h1>
+      <h1>Kombination Evangelium und Psychologie</h1>
 
       <div style={rowStyle}>
         <Link to="/nbj" style={btnStyle}>Meditation</Link>
