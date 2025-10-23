@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 type NeedContent = {
   resonance: string[];
@@ -13,6 +13,8 @@ type SavedChat = {
   assistantResponse: string;
   createdAt: string;
 };
+
+type DictationField = "problem" | "personalNeed" | "childhoodExperience" | "meditationNotes";
 
 const needs: Record<string, NeedContent> = {
   "Gesehen / gehört / gewürdigt werden": {
@@ -129,11 +131,143 @@ export default function Bibliothek() {
   const [personalNeed, setPersonalNeed] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [meditationNotes, setMeditationNotes] = useState("");
-  const [listeningField, setListeningField] = useState<string | null>(null);
+  const [listeningField, setListeningField] = useState<DictationField | null>(null);
   const [childhoodExperience, setChildhoodExperience] = useState("");
   const [chatUserInput, setChatUserInput] = useState("");
   const [chatAssistantResponse, setChatAssistantResponse] = useState("");
   const [savedChats, setSavedChats] = useState<SavedChat[]>([]);
+
+  const dictationSupported =
+    typeof window !== "undefined" &&
+    Boolean((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
+
+  const recognitionRef = useRef<any>(null);
+  const activeFieldRef = useRef<DictationField | null>(null);
+  const pendingFieldRef = useRef<DictationField | null>(null);
+  const pendingBaseRef = useRef<string>("");
+  const dictationBaseRef = useRef<Record<DictationField, string>>({
+    problem: "",
+    personalNeed: "",
+    childhoodExperience: "",
+    meditationNotes: ""
+  });
+
+  const setFieldValue = useCallback(
+    (field: DictationField, value: string) => {
+      switch (field) {
+        case "problem":
+          setProblem(value);
+          break;
+        case "personalNeed":
+          setPersonalNeed(value);
+          break;
+        case "childhoodExperience":
+          setChildhoodExperience(value);
+          break;
+        case "meditationNotes":
+          setMeditationNotes(value);
+          break;
+        default:
+          break;
+      }
+    },
+    [setProblem, setPersonalNeed, setChildhoodExperience, setMeditationNotes]
+  );
+
+  const startRecognition = useCallback(
+    (field: DictationField, baseValue: string) => {
+      if (!dictationSupported) return;
+      const recognition = recognitionRef.current;
+      if (!recognition) return;
+      dictationBaseRef.current[field] = baseValue;
+      activeFieldRef.current = field;
+      setListeningField(field);
+      try {
+        recognition.start();
+      } catch {
+        /* ignore */
+      }
+    },
+    [dictationSupported, setListeningField]
+  );
+
+  useEffect(() => {
+    if (!dictationSupported) return;
+    const SpeechRecognitionClass =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognitionClass) return;
+
+    const recognition = new SpeechRecognitionClass();
+    recognition.lang = "de-DE";
+    recognition.interimResults = true;
+    recognition.continuous = true;
+
+    recognition.onresult = (event: any) => {
+      const field = activeFieldRef.current;
+      if (!field) return;
+
+      const transcript = Array.from(event.results)
+        .map((result: any) => result[0]?.transcript ?? "")
+        .join(" ")
+        .trim();
+
+      const base = dictationBaseRef.current[field] ?? "";
+      if (!transcript && !base) {
+        return;
+      }
+      const combined = `${base}${transcript}`.trim();
+      setFieldValue(field, combined);
+    };
+
+    recognition.onstart = () => {
+      const field = activeFieldRef.current;
+      if (field) {
+        setListeningField(field);
+      }
+    };
+
+    recognition.onend = () => {
+      const field = activeFieldRef.current;
+      if (field) {
+        dictationBaseRef.current[field] = "";
+      }
+      activeFieldRef.current = null;
+      setListeningField(null);
+
+      if (pendingFieldRef.current) {
+        const nextField = pendingFieldRef.current;
+        const nextBase = pendingBaseRef.current;
+        pendingFieldRef.current = null;
+        pendingBaseRef.current = "";
+        startRecognition(nextField, nextBase);
+      }
+    };
+
+    recognition.onerror = () => {
+      if (activeFieldRef.current) {
+        dictationBaseRef.current[activeFieldRef.current] = "";
+      }
+      activeFieldRef.current = null;
+      pendingFieldRef.current = null;
+      pendingBaseRef.current = "";
+      setListeningField(null);
+    };
+
+    recognitionRef.current = recognition;
+
+    return () => {
+      recognition.onresult = null;
+      recognition.onstart = null;
+      recognition.onend = null;
+      recognition.onerror = null;
+      try {
+        recognition.stop();
+      } catch {
+        /* ignore */
+      }
+      recognitionRef.current = null;
+    };
+  }, [dictationSupported, setFieldValue, startRecognition]);
 
   useEffect(() => {
     const stored = localStorage.getItem("bibliothekSavedChats");
@@ -264,56 +398,105 @@ ${closingDetails.map((detail) => `- ${detail}`).join("\n")}
     setSavedChats((previous) => previous.filter((chat) => chat.id !== id));
   };
 
-  const handleDictation = (
-    field: "problem" | "personalNeed" | "childhoodExperience" | "meditationNotes",
-    setter: Dispatch<SetStateAction<string>>
-  ) => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    const SpeechRecognition =
-      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-
-    if (!SpeechRecognition) {
-      alert("Spracherkennung wird von diesem Browser nicht unterstützt.");
-      return;
-    }
-
-    const recognition = new SpeechRecognition();
-    recognition.lang = "de-DE";
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
-
-    recognition.onstart = () => {
-      setListeningField(field);
-    };
-
-    recognition.onerror = () => {
-      setListeningField(null);
-    };
-
-    recognition.onend = () => {
-      setListeningField(null);
-    };
-
-    recognition.onresult = (event: any) => {
-      const transcript = Array.from(event.results)
-        .map((result: any) => result[0]?.transcript ?? "")
-        .join(" ")
-        .trim();
-
-      if (!transcript) {
+  const handleDictation = useCallback(
+    (field: DictationField) => {
+      if (!dictationSupported) {
+        alert("Spracherkennung wird von diesem Browser nicht unterstützt.");
         return;
       }
 
-      setter((previous) => {
-        const previousValue = (previous ?? "").trim();
-        return previousValue ? `${previousValue} ${transcript}`.trim() : transcript;
-      });
-    };
+      const recognition = recognitionRef.current;
+      if (!recognition) {
+        alert("Die Spracherkennung konnte nicht gestartet werden.");
+        return;
+      }
 
-    recognition.start();
+      const currentValue = (() => {
+        switch (field) {
+          case "problem":
+            return problem;
+          case "personalNeed":
+            return personalNeed;
+          case "childhoodExperience":
+            return childhoodExperience;
+          case "meditationNotes":
+            return meditationNotes;
+          default:
+            return "";
+        }
+      })();
+
+      const trimmed = currentValue.trim();
+      const baseValue = trimmed.length > 0 ? `${trimmed} ` : "";
+
+      if (listeningField === field) {
+        pendingFieldRef.current = null;
+        pendingBaseRef.current = "";
+        try {
+          recognition.stop();
+        } catch {
+          /* ignore */
+        }
+        return;
+      }
+
+      if (listeningField) {
+        pendingFieldRef.current = field;
+        pendingBaseRef.current = baseValue;
+        try {
+          recognition.stop();
+        } catch {
+          /* ignore */
+        }
+        return;
+      }
+
+      startRecognition(field, baseValue);
+    },
+    [dictationSupported, listeningField, problem, personalNeed, childhoodExperience, meditationNotes, startRecognition]
+  );
+
+  const DictationButton = ({ field, ariaLabel }: { field: DictationField; ariaLabel: string }) => {
+    const isActive = listeningField === field;
+    const isDisabled = !dictationSupported;
+
+    return (
+      <button
+        type="button"
+        onClick={() => handleDictation(field)}
+        disabled={isDisabled}
+        style={{
+          backgroundColor: isDisabled ? "#95a5a6" : isActive ? "#20bf6b" : "#4b7bec",
+          color: "#fff",
+          border: "none",
+          borderRadius: "6px",
+          padding: "0 0.75rem",
+          cursor: isDisabled ? "not-allowed" : "pointer",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "0.4rem",
+          fontSize: "0.95rem",
+          fontWeight: 600,
+          minWidth: "5.5rem",
+          height: "100%",
+          transition: "background-color 0.2s ease-in-out"
+        }}
+        aria-label={ariaLabel}
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          aria-hidden="true"
+          style={{ width: "1.25rem", height: "1.25rem" }}
+        >
+          <path d="M12 1.5a3 3 0 00-3 3v6a3 3 0 106 0v-6a3 3 0 00-3-3z" />
+          <path d="M5.25 10.5a.75.75 0 011.5 0 5.25 5.25 0 0010.5 0 .75.75 0 011.5 0 6.75 6.75 0 01-6 6.708v2.292h3a.75.75 0 010 1.5h-7.5a.75.75 0 010-1.5h3v-2.292a6.75 6.75 0 01-6-6.708z" />
+        </svg>
+        <span>Diktat</span>
+      </button>
+    );
   };
 
   return (
@@ -373,28 +556,14 @@ ${closingDetails.map((detail) => `- ${detail}`).join("\n")}
               border: "1px solid #ccc"
             }}
           />
-          <button
-            type="button"
-            onClick={() => handleDictation("problem", setProblem)}
-            style={{
-              backgroundColor: listeningField === "problem" ? "#20bf6b" : "#4b7bec",
-              color: "#fff",
-              border: "none",
-              borderRadius: "6px",
-              padding: "0 0.75rem",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "1.25rem",
-              minWidth: "3rem",
-              height: "100%"
-            }}
-            aria-label="Anliegen diktieren"
-          >
-            🎤
-          </button>
+          <DictationButton field="problem" ariaLabel="Anliegen diktieren" />
         </div>
+        {!dictationSupported && (
+          <p style={{ marginTop: "-0.5rem", marginBottom: "1.5rem", color: "#c0392b" }}>
+            Hinweis: Dein Browser unterstützt keine Spracherkennung. Bitte nutze Chrome oder Edge
+            auf dem Desktop, um die Diktierfunktion verwenden zu können.
+          </p>
+        )}
 
         <label htmlFor="need" style={{ display: "block", fontWeight: 600 }}>
           2️⃣ Welches Bedürfnis ist betroffen?
@@ -531,28 +700,7 @@ ${closingDetails.map((detail) => `- ${detail}`).join("\n")}
                   border: "1px solid #ccc"
                 }}
               />
-              <button
-                type="button"
-                onClick={() => handleDictation("personalNeed", setPersonalNeed)}
-                style={{
-                  backgroundColor:
-                    listeningField === "personalNeed" ? "#20bf6b" : "#4b7bec",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "6px",
-                  padding: "0 0.75rem",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: "1.25rem",
-                  minWidth: "3rem",
-                  height: "100%"
-                }}
-                aria-label="Persönlichen Schritt diktieren"
-              >
-                🎤
-              </button>
+              <DictationButton field="personalNeed" ariaLabel="Persönlichen Schritt diktieren" />
             </div>
           <p style={{ marginTop: "1rem", fontWeight: 600 }}>
             Hast du dieses Gefühl oder Bedürfnis schon einmal in der Kindheit erlebt?
@@ -580,28 +728,10 @@ ${closingDetails.map((detail) => `- ${detail}`).join("\n")}
                 border: "1px solid #ccc"
               }}
             />
-            <button
-              type="button"
-              onClick={() => handleDictation("childhoodExperience", setChildhoodExperience)}
-              style={{
-                backgroundColor:
-                  listeningField === "childhoodExperience" ? "#20bf6b" : "#4b7bec",
-                color: "#fff",
-                border: "none",
-                borderRadius: "6px",
-                padding: "0 0.75rem",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: "1.25rem",
-                minWidth: "3rem",
-                height: "100%"
-              }}
-              aria-label="Kindheitserinnerungen diktieren"
-            >
-              🎤
-            </button>
+            <DictationButton
+              field="childhoodExperience"
+              ariaLabel="Kindheitserinnerungen diktieren"
+            />
           </div>
           <button
             onClick={handlePersonalJesus}
@@ -647,28 +777,7 @@ ${closingDetails.map((detail) => `- ${detail}`).join("\n")}
                   border: "1px solid #ccc"
                 }}
               />
-              <button
-                type="button"
-                onClick={() => handleDictation("meditationNotes", setMeditationNotes)}
-                style={{
-                  backgroundColor:
-                    listeningField === "meditationNotes" ? "#20bf6b" : "#4b7bec",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "6px",
-                  padding: "0 0.75rem",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: "1.25rem",
-                  minWidth: "3rem",
-                  height: "100%"
-                }}
-                aria-label="Meditationsnotizen diktieren"
-              >
-                🎤
-              </button>
+              <DictationButton field="meditationNotes" ariaLabel="Meditationsnotizen diktieren" />
             </div>
             <h3 style={{ color: "#2c3e50", marginTop: "1.5rem" }}>📝 Schlusskommentar</h3>
             <p>
