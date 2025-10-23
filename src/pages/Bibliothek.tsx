@@ -165,6 +165,28 @@ export default function Bibliothek() {
     window.open(`https://chat.openai.com/?q=${prompt}`, "_blank", "noopener,noreferrer");
   };
 
+  const handleClosingComment = () => {
+    if (!meditationNotes.trim()) {
+      alert("Bitte schreibe zuerst auf, was Jesus dir gesagt hat.");
+      return;
+    }
+
+    const prompt = encodeURIComponent(
+      "Du bist geistliche*r Begleiter*in, der/die eine kurze Würdigung und einen praktischen Tipp gibt. " +
+        "Lies die Notizen, was eine Person von Jesus gehört hat, und antworte mit einem Abschlusskommentar. " +
+        "1) Bedanke dich bei Jesus und anerkenne voller Wertschätzung, was er der Person zugesprochen hat. " +
+        "2) Gib einen konkreten, warmen Vorschlag, wie die Person diese Worte im Alltag wachhalten kann – z.B. durch kleine Erinnerungen, kurze Gebete, Meditationen, das Bitten um den Geist der Weisheit und Offenbarung oder die Augen des Herzens. " +
+        "Schreibe maximal zwei kurze Absätze und sprich die Person in der Du-Form an. " +
+        "Notizen der Person: " +
+        meditationNotes +
+        (personalNeed.trim()
+          ? " Zusätzliche Beschreibung des Bedürfnisses: " + personalNeed.trim()
+          : "")
+    );
+
+    window.open(`https://chat.openai.com/?q=${prompt}`, "_blank", "noopener,noreferrer");
+  };
+
   return (
     <main
       style={{
@@ -380,6 +402,28 @@ export default function Bibliothek() {
                 border: "1px solid #ccc"
               }}
             />
+            <h3 style={{ color: "#2c3e50", marginTop: "1.5rem" }}>📝 Schlusskommentar</h3>
+            <p>
+              Bitte Jesus dafür, was er dir gesagt hat, und lass dir von ChatGPT einen
+              warmen Abschlussimpuls schenken, wie du seine Worte im Alltag wachhalten
+              kannst.
+            </p>
+            <button
+              onClick={handleClosingComment}
+              style={{
+                width: "100%",
+                backgroundColor: meditationNotes.trim() ? "#20bf6b" : "#aacfbf",
+                color: "#fff",
+                border: "none",
+                borderRadius: "6px",
+                padding: "0.6rem 1rem",
+                cursor: meditationNotes.trim() ? "pointer" : "not-allowed",
+                fontSize: "1rem"
+              }}
+              disabled={!meditationNotes.trim()}
+            >
+              🌟 Anerkennung & Alltagstipp anfordern
+            </button>
           </div>
         ) : null}
       </section>
