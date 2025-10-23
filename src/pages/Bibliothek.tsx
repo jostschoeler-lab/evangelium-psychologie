@@ -207,18 +207,33 @@ export default function Bibliothek() {
       return;
     }
 
-    const prompt = encodeURIComponent(
-      "Du bist geistliche*r Begleiter*in, der/die eine kurze Würdigung und einen praktischen Tipp gibt. " +
-        "Lies die Notizen, was eine Person von Jesus gehört hat, und antworte mit einem Abschlusskommentar. " +
-        "1) Bedanke dich bei Jesus und anerkenne voller Wertschätzung, was er der Person zugesprochen hat. " +
-        "2) Gib einen konkreten, warmen Vorschlag, wie die Person diese Worte im Alltag wachhalten kann – z.B. durch kleine Erinnerungen, kurze Gebete, Meditationen, das Bitten um den Geist der Weisheit und Offenbarung oder die Augen des Herzens. " +
-        "Schreibe maximal zwei kurze Absätze und sprich die Person in der Du-Form an. " +
-        "Notizen der Person: " +
-        meditationNotes +
-        (personalNeed.trim()
-          ? " Zusätzliche Beschreibung des Bedürfnisses: " + personalNeed.trim()
-          : "")
-    );
+    const closingDetails = [
+      problem.trim() ? `Was die Person gerade beschäftigt: ${problem.trim()}` : "",
+      selectedNeed ? `Ausgewähltes Bedürfnis: ${selectedNeed}` : "",
+      personalNeed.trim()
+        ? `Persönliche Beschreibung des Bedürfnisses: ${personalNeed.trim()}`
+        : "",
+      childhoodExperience.trim()
+        ? `Kindheitserfahrungen zu diesem Gefühl/Bedürfnis: ${childhoodExperience.trim()}`
+        : "",
+      `Worte Jesu aus der Meditation: ${meditationNotes.trim()}`
+    ].filter(Boolean);
+
+    const promptText = `
+Du bist geistliche*r Begleiter*in, der/die eine kurze Würdigung und einen praktischen Tipp gibt.
+Lies die Angaben einer Person und antworte mit einem Abschlusskommentar.
+1) Bedanke dich bei Jesus und anerkenne voller Wertschätzung, was er der Person zugesprochen hat.
+2) Gib einen konkreten, warmen Vorschlag, wie die Person diese Worte im Alltag wachhalten kann – z.B. durch kleine Erinnerungen, kurze Gebete, Meditationen, das Bitten um den Geist der Weisheit und Offenbarung oder die Augen des Herzens.
+3) Verknüpfe Anerkennung und Alltagstipp ausdrücklich mit ihrer persönlichen Bedürfnisbeschreibung, den Kindheitserfahrungen und den Worten, wie Jesus das Bedürfnis stillt.
+Erkläre, dass unser Verstand Jesu Worte sofort verstehen kann, während Unbewusstes und Gefühle manchmal länger brauchen – so können Leid und schwere Gefühle vorerst bleiben, ähnlich wie bei Paulus und seinem Pfahl im Fleisch, bis Gottes Gnade ihre Kraft zeigt.
+Baue mehrere Bibelverse ein (z.B. aus Römer 8, 2. Korinther 12, 1. Petrus 4, Hebräer 4 oder andere passende Stellen), die das Mitleiden mit Jesus, Glauben, Geduld und das Reifen durch Leid betonen.
+Schreibe maximal zwei kurze Absätze und sprich die Person in der Du-Form an.
+
+Angaben der Person:
+${closingDetails.map((detail) => `- ${detail}`).join("\n")}
+    `.trim();
+
+    const prompt = encodeURIComponent(promptText);
 
     window.open(`https://chat.openai.com/?q=${prompt}`, "_blank", "noopener,noreferrer");
   };
