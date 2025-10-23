@@ -156,6 +156,7 @@ export default function Bibliothek() {
         "Antworte als Jesus – liebevoll, wahrhaftig, ermutigend. " +
         "Zeige, wie dieses Bedürfnis in der Beziehung zu mir gestillt wird, " +
         "nicht durch äußere Umstände, sondern durch die Gemeinschaft mit mir. " +
+        "Schlage außerdem 2–3 Bibelverse vor, die unterstützen, wie ich dieses Bedürfnis mit dir erlebe, und nenne die genaue Bibelstelle. " +
         "Sprich in der Du-Form, sanft und persönlich, mit Wärme. " +
         "Beschreibung des Bedürfnisses: " +
         personalNeed
