@@ -129,6 +129,7 @@ export default function Bibliothek() {
   const [personalNeed, setPersonalNeed] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [meditationNotes, setMeditationNotes] = useState("");
+  const [childhoodExperience, setChildhoodExperience] = useState("");
   const [chatUserInput, setChatUserInput] = useState("");
   const [chatAssistantResponse, setChatAssistantResponse] = useState("");
   const [savedChats, setSavedChats] = useState<SavedChat[]>([]);
@@ -423,13 +424,32 @@ export default function Bibliothek() {
                 marginTop: "0.5rem",
                 marginBottom: "1rem",
                 borderRadius: "6px",
-                border: "1px solid #ccc"
-              }}
-            />
-            <button
-              onClick={handlePersonalJesus}
-              style={{
-                width: "100%",
+              border: "1px solid #ccc"
+            }}
+          />
+          <p style={{ marginTop: "1rem", fontWeight: 600 }}>
+            Hast du dieses Gefühl oder Bedürfnis schon einmal in der Kindheit erlebt?
+          </p>
+          <textarea
+            id="childhoodExperience"
+            value={childhoodExperience}
+            onChange={(event) => setChildhoodExperience(event.target.value)}
+            rows={3}
+            placeholder="Beschreibe hier deine Erinnerungen aus der Kindheit."
+            style={{
+              width: "100%",
+              fontSize: "1rem",
+              padding: "0.5rem",
+              marginTop: "0.5rem",
+              marginBottom: "1rem",
+              borderRadius: "6px",
+              border: "1px solid #ccc"
+            }}
+          />
+          <button
+            onClick={handlePersonalJesus}
+            style={{
+              width: "100%",
                 backgroundColor: "#4b7bec",
                 color: "#fff",
                 border: "none",
