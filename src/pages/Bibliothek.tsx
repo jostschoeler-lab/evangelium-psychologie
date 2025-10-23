@@ -121,6 +121,7 @@ export default function Bibliothek() {
   const [showResult, setShowResult] = useState(false);
   const [personalNeed, setPersonalNeed] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [meditationNotes, setMeditationNotes] = useState("");
 
   const selectedNeedData = useMemo(() => {
     if (!selectedNeed) {
@@ -358,6 +359,27 @@ export default function Bibliothek() {
             >
               💬 Frage Jesus, wie er dein Bedürfnis stillt
             </button>
+            <p style={{ marginTop: "1rem" }}>
+              🙏 Setze dich im Glauben auf den Gnadenthron, wo Jesus als barmherziger
+              Hohepriester sitzt. Stell dir vor, was er dir als Hohepriester sagt und
+              wie er dir jetzt Gnade schenkt. Meditiere 1–2 Minuten über seine Worte
+              und schreibe auf, was Jesus dir gesagt hat.
+            </p>
+            <textarea
+              id="meditationNotes"
+              value={meditationNotes}
+              onChange={(event) => setMeditationNotes(event.target.value)}
+              rows={4}
+              placeholder="Was hat Jesus dir in dieser Meditation zugesprochen?"
+              style={{
+                width: "100%",
+                fontSize: "1rem",
+                padding: "0.5rem",
+                marginTop: "0.5rem",
+                borderRadius: "6px",
+                border: "1px solid #ccc"
+              }}
+            />
           </div>
         ) : null}
       </section>
