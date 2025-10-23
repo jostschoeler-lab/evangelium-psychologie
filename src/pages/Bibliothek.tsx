@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from "react";
 
 type NeedContent = {
   resonance: string[];
@@ -129,6 +129,7 @@ export default function Bibliothek() {
   const [personalNeed, setPersonalNeed] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [meditationNotes, setMeditationNotes] = useState("");
+  const [listeningField, setListeningField] = useState<string | null>(null);
   const [childhoodExperience, setChildhoodExperience] = useState("");
   const [chatUserInput, setChatUserInput] = useState("");
   const [chatAssistantResponse, setChatAssistantResponse] = useState("");
@@ -263,6 +264,58 @@ ${closingDetails.map((detail) => `- ${detail}`).join("\n")}
     setSavedChats((previous) => previous.filter((chat) => chat.id !== id));
   };
 
+  const handleDictation = (
+    field: "problem" | "personalNeed" | "childhoodExperience" | "meditationNotes",
+    setter: Dispatch<SetStateAction<string>>
+  ) => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const SpeechRecognition =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      alert("Spracherkennung wird von diesem Browser nicht unterstützt.");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = "de-DE";
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => {
+      setListeningField(field);
+    };
+
+    recognition.onerror = () => {
+      setListeningField(null);
+    };
+
+    recognition.onend = () => {
+      setListeningField(null);
+    };
+
+    recognition.onresult = (event: any) => {
+      const transcript = Array.from(event.results)
+        .map((result: any) => result[0]?.transcript ?? "")
+        .join(" ")
+        .trim();
+
+      if (!transcript) {
+        return;
+      }
+
+      setter((previous) => {
+        const previousValue = (previous ?? "").trim();
+        return previousValue ? `${previousValue} ${transcript}`.trim() : transcript;
+      });
+    };
+
+    recognition.start();
+  };
+
   return (
     <main
       style={{
@@ -297,22 +350,51 @@ ${closingDetails.map((detail) => `- ${detail}`).join("\n")}
         <label htmlFor="problem" style={{ display: "block", fontWeight: 600 }}>
           1️⃣ Was beschäftigt dich gerade?
         </label>
-        <textarea
-          id="problem"
-          value={problem}
-          onChange={(event) => setProblem(event.target.value)}
-          rows={3}
-          placeholder="Schreibe hier dein Anliegen..."
+        <div
           style={{
-            width: "100%",
-            fontSize: "1rem",
-            padding: "0.5rem",
+            display: "flex",
+            gap: "0.5rem",
+            alignItems: "stretch",
             marginTop: "0.5rem",
-            marginBottom: "1rem",
-            borderRadius: "6px",
-            border: "1px solid #ccc"
+            marginBottom: "1rem"
           }}
-        />
+        >
+          <textarea
+            id="problem"
+            value={problem}
+            onChange={(event) => setProblem(event.target.value)}
+            rows={3}
+            placeholder="Schreibe hier dein Anliegen..."
+            style={{
+              flex: 1,
+              fontSize: "1rem",
+              padding: "0.5rem",
+              borderRadius: "6px",
+              border: "1px solid #ccc"
+            }}
+          />
+          <button
+            type="button"
+            onClick={() => handleDictation("problem", setProblem)}
+            style={{
+              backgroundColor: listeningField === "problem" ? "#20bf6b" : "#4b7bec",
+              color: "#fff",
+              border: "none",
+              borderRadius: "6px",
+              padding: "0 0.75rem",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "1.25rem",
+              minWidth: "3rem",
+              height: "100%"
+            }}
+            aria-label="Anliegen diktieren"
+          >
+            🎤
+          </button>
+        </div>
 
         <label htmlFor="need" style={{ display: "block", fontWeight: 600 }}>
           2️⃣ Welches Bedürfnis ist betroffen?
@@ -426,41 +508,101 @@ ${closingDetails.map((detail) => `- ${detail}`).join("\n")}
             </div>
 
             <h3 style={{ color: "#2c3e50" }}>🕊️ Dein persönlicher Schritt</h3>
-            <textarea
-              id="personalNeed"
-              value={personalNeed}
-              onChange={(event) => setPersonalNeed(event.target.value)}
-              rows={3}
-              placeholder="Wie würdest du dein Bedürfnis mit eigenen Worten beschreiben?"
+            <div
               style={{
-                width: "100%",
-                fontSize: "1rem",
-                padding: "0.5rem",
+                display: "flex",
+                gap: "0.5rem",
+                alignItems: "stretch",
                 marginTop: "0.5rem",
-                marginBottom: "1rem",
-                borderRadius: "6px",
-              border: "1px solid #ccc"
-            }}
-          />
+                marginBottom: "1rem"
+              }}
+            >
+              <textarea
+                id="personalNeed"
+                value={personalNeed}
+                onChange={(event) => setPersonalNeed(event.target.value)}
+                rows={3}
+                placeholder="Wie würdest du dein Bedürfnis mit eigenen Worten beschreiben?"
+                style={{
+                  flex: 1,
+                  fontSize: "1rem",
+                  padding: "0.5rem",
+                  borderRadius: "6px",
+                  border: "1px solid #ccc"
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => handleDictation("personalNeed", setPersonalNeed)}
+                style={{
+                  backgroundColor:
+                    listeningField === "personalNeed" ? "#20bf6b" : "#4b7bec",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "6px",
+                  padding: "0 0.75rem",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: "1.25rem",
+                  minWidth: "3rem",
+                  height: "100%"
+                }}
+                aria-label="Persönlichen Schritt diktieren"
+              >
+                🎤
+              </button>
+            </div>
           <p style={{ marginTop: "1rem", fontWeight: 600 }}>
             Hast du dieses Gefühl oder Bedürfnis schon einmal in der Kindheit erlebt?
           </p>
-          <textarea
-            id="childhoodExperience"
-            value={childhoodExperience}
-            onChange={(event) => setChildhoodExperience(event.target.value)}
-            rows={3}
-            placeholder="Beschreibe hier deine Erinnerungen aus der Kindheit."
+          <div
             style={{
-              width: "100%",
-              fontSize: "1rem",
-              padding: "0.5rem",
+              display: "flex",
+              gap: "0.5rem",
+              alignItems: "stretch",
               marginTop: "0.5rem",
-              marginBottom: "1rem",
-              borderRadius: "6px",
-              border: "1px solid #ccc"
+              marginBottom: "1rem"
             }}
-          />
+          >
+            <textarea
+              id="childhoodExperience"
+              value={childhoodExperience}
+              onChange={(event) => setChildhoodExperience(event.target.value)}
+              rows={3}
+              placeholder="Beschreibe hier deine Erinnerungen aus der Kindheit."
+              style={{
+                flex: 1,
+                fontSize: "1rem",
+                padding: "0.5rem",
+                borderRadius: "6px",
+                border: "1px solid #ccc"
+              }}
+            />
+            <button
+              type="button"
+              onClick={() => handleDictation("childhoodExperience", setChildhoodExperience)}
+              style={{
+                backgroundColor:
+                  listeningField === "childhoodExperience" ? "#20bf6b" : "#4b7bec",
+                color: "#fff",
+                border: "none",
+                borderRadius: "6px",
+                padding: "0 0.75rem",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "1.25rem",
+                minWidth: "3rem",
+                height: "100%"
+              }}
+              aria-label="Kindheitserinnerungen diktieren"
+            >
+              🎤
+            </button>
+          </div>
           <button
             onClick={handlePersonalJesus}
             style={{
@@ -482,21 +624,52 @@ ${closingDetails.map((detail) => `- ${detail}`).join("\n")}
               wie er dir jetzt Gnade schenkt. Meditiere 1–2 Minuten über seine Worte
               und schreibe auf, was Jesus dir gesagt hat.
             </p>
-            <textarea
-              id="meditationNotes"
-              value={meditationNotes}
-              onChange={(event) => setMeditationNotes(event.target.value)}
-              rows={4}
-              placeholder="Was hat Jesus dir in dieser Meditation zugesprochen?"
+            <div
               style={{
-                width: "100%",
-                fontSize: "1rem",
-                padding: "0.5rem",
+                display: "flex",
+                gap: "0.5rem",
+                alignItems: "stretch",
                 marginTop: "0.5rem",
-                borderRadius: "6px",
-                border: "1px solid #ccc"
+                marginBottom: "1rem"
               }}
-            />
+            >
+              <textarea
+                id="meditationNotes"
+                value={meditationNotes}
+                onChange={(event) => setMeditationNotes(event.target.value)}
+                rows={4}
+                placeholder="Was hat Jesus dir in dieser Meditation zugesprochen?"
+                style={{
+                  flex: 1,
+                  fontSize: "1rem",
+                  padding: "0.5rem",
+                  borderRadius: "6px",
+                  border: "1px solid #ccc"
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => handleDictation("meditationNotes", setMeditationNotes)}
+                style={{
+                  backgroundColor:
+                    listeningField === "meditationNotes" ? "#20bf6b" : "#4b7bec",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "6px",
+                  padding: "0 0.75rem",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: "1.25rem",
+                  minWidth: "3rem",
+                  height: "100%"
+                }}
+                aria-label="Meditationsnotizen diktieren"
+              >
+                🎤
+              </button>
+            </div>
             <h3 style={{ color: "#2c3e50", marginTop: "1.5rem" }}>📝 Schlusskommentar</h3>
             <p>
               Bitte Jesus dafür, was er dir gesagt hat, und lass dir von ChatGPT einen
