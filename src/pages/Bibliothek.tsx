@@ -323,16 +323,30 @@ export default function Bibliothek() {
   };
 
   const handlePersonalJesus = () => {
-    const prompt = encodeURIComponent(
-      "Lies den folgenden Text, in dem ein Mensch sein inneres Bedürfnis beschreibt. " +
-        "Antworte als Jesus – liebevoll, wahrhaftig, ermutigend. " +
-        "Zeige, wie dieses Bedürfnis in der Beziehung zu mir gestillt wird, " +
-        "nicht durch äußere Umstände, sondern durch die Gemeinschaft mit mir. " +
-        "Schlage außerdem 2–3 Bibelverse vor, die unterstützen, wie ich dieses Bedürfnis mit dir erlebe, und nenne die genaue Bibelstelle. " +
-        "Sprich in der Du-Form, sanft und persönlich, mit Wärme. " +
-        "Beschreibung des Bedürfnisses: " +
-        personalNeed
-    );
+    const contextDetails = [
+      problem.trim() ? `Was dich beschäftigt: ${problem.trim()}` : "",
+      selectedNeed ? `Ausgewähltes Bedürfnis (aus der Liste): ${selectedNeed}` : "",
+      personalNeed.trim()
+        ? `Persönliche Beschreibung des Bedürfnisses: ${personalNeed.trim()}`
+        : "",
+      childhoodExperience.trim()
+        ? `Kindheitserfahrungen zu diesem Gefühl/Bedürfnis: ${childhoodExperience.trim()}`
+        : ""
+    ].filter(Boolean);
+
+    const promptText = `
+Lies den folgenden Text, in dem ein Mensch sein inneres Bedürfnis beschreibt.
+Antworte als Jesus – liebevoll, wahrhaftig, ermutigend.
+Zeige, wie dieses Bedürfnis in der Beziehung zu mir gestillt wird,
+nicht durch äußere Umstände, sondern durch die Gemeinschaft mit mir.
+Schlage außerdem 2–3 Bibelverse vor, die unterstützen, wie ich dieses Bedürfnis mit dir erlebe, und nenne die genaue Bibelstelle.
+Sprich in der Du-Form, sanft und persönlich, mit Wärme.
+
+Angaben der Person:
+${contextDetails.map((detail) => `- ${detail}`).join("\n")}
+`.trim();
+
+    const prompt = encodeURIComponent(promptText);
     window.open(`https://chat.openai.com/?q=${prompt}`, "_blank", "noopener,noreferrer");
   };
 
@@ -351,7 +365,9 @@ export default function Bibliothek() {
       childhoodExperience.trim()
         ? `Kindheitserfahrungen zu diesem Gefühl/Bedürfnis: ${childhoodExperience.trim()}`
         : "",
-      `Worte Jesu aus der Meditation: ${meditationNotes.trim()}`
+      meditationNotes.trim()
+        ? `Worte Jesu aus der Meditation: ${meditationNotes.trim()}`
+        : ""
     ].filter(Boolean);
 
     const promptText = `
