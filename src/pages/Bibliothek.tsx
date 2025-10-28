@@ -754,7 +754,15 @@ ${closingDetails}
     [dictationSupported, listeningField, problem, personalNeed, childhoodExperience, meditationNotes, startRecognition]
   );
 
-  const DictationButton = ({ field, ariaLabel }: { field: DictationField; ariaLabel: string }) => {
+  const DictationButton = ({
+    field,
+    ariaLabel,
+    variant = "default"
+  }: {
+    field: DictationField;
+    ariaLabel: string;
+    variant?: "default" | "icon";
+  }) => {
     const isActive = listeningField === field;
     const isDisabled = !dictationSupported;
 
@@ -764,21 +772,35 @@ ${closingDetails}
         onClick={() => handleDictation(field)}
         disabled={isDisabled}
         style={{
-          backgroundColor: isDisabled ? "#95a5a6" : isActive ? "#20bf6b" : "#4b7bec",
+          backgroundColor: isDisabled
+            ? "#95a5a6"
+            : isActive
+            ? variant === "icon"
+              ? "#0abde3"
+              : "#20bf6b"
+            : variant === "icon"
+            ? "#ff7b54"
+            : "#4b7bec",
           color: "#fff",
           border: "none",
-          borderRadius: "6px",
-          padding: "0 0.75rem",
+          borderRadius: variant === "icon" ? "999px" : "6px",
+          padding: variant === "icon" ? 0 : "0 0.75rem",
           cursor: isDisabled ? "not-allowed" : "pointer",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          gap: "0.4rem",
-          fontSize: "0.95rem",
+          gap: variant === "icon" ? 0 : "0.4rem",
+          fontSize: variant === "icon" ? "1.1rem" : "0.95rem",
           fontWeight: 600,
-          minWidth: "5.5rem",
-          height: "100%",
-          transition: "background-color 0.2s ease-in-out"
+          minWidth: variant === "icon" ? "3rem" : "5.5rem",
+          width: variant === "icon" ? "3rem" : undefined,
+          height: variant === "icon" ? "3rem" : "100%",
+          boxShadow:
+            variant === "icon"
+              ? "0 8px 16px rgba(255, 123, 84, 0.35)"
+              : "none",
+          transition: "background-color 0.2s ease-in-out, transform 0.2s ease-in-out",
+          transform: variant === "icon" && isActive ? "scale(0.95)" : "none"
         }}
         aria-label={ariaLabel}
       >
@@ -787,12 +809,15 @@ ${closingDetails}
           viewBox="0 0 24 24"
           fill="currentColor"
           aria-hidden="true"
-          style={{ width: "1.25rem", height: "1.25rem" }}
+          style={{
+            width: variant === "icon" ? "1.4rem" : "1.25rem",
+            height: variant === "icon" ? "1.4rem" : "1.25rem"
+          }}
         >
           <path d="M12 1.5a3 3 0 00-3 3v6a3 3 0 106 0v-6a3 3 0 00-3-3z" />
           <path d="M5.25 10.5a.75.75 0 011.5 0 5.25 5.25 0 0010.5 0 .75.75 0 011.5 0 6.75 6.75 0 01-6 6.708v2.292h3a.75.75 0 010 1.5h-7.5a.75.75 0 010-1.5h3v-2.292a6.75 6.75 0 01-6-6.708z" />
         </svg>
-        <span>Diktat</span>
+        {variant === "default" && <span>Diktat</span>}
       </button>
     );
   };
@@ -1136,37 +1161,92 @@ ${closingDetails}
               />
               <DictationButton field="personalNeed" ariaLabel="Persönlichen Schritt diktieren" />
             </div>
-          <p style={{ marginTop: "1rem", fontWeight: 600 }}>
-            Hast du dieses Gefühl oder Bedürfnis schon einmal in der Kindheit erlebt?
-          </p>
-          <div
+          <section
             style={{
+              marginTop: "1.5rem",
+              marginBottom: "1.5rem",
               display: "flex",
-              gap: "0.5rem",
-              alignItems: "stretch",
-              marginTop: "0.5rem",
-              marginBottom: "1rem"
+              justifyContent: "center"
             }}
           >
-            <textarea
-              id="childhoodExperience"
-              value={childhoodExperience}
-              onChange={(event) => setChildhoodExperience(event.target.value)}
-              rows={3}
-              placeholder="Beschreibe hier deine Erinnerungen aus der Kindheit."
+            <div
               style={{
-                flex: 1,
-                fontSize: "1rem",
-                padding: "0.5rem",
-                borderRadius: "6px",
-                border: "1px solid #ccc"
+                background: "linear-gradient(180deg, #fff1df 0%, #ffe0bf 100%)",
+                borderRadius: "20px",
+                padding: "1.75rem 1.5rem",
+                width: "100%",
+                maxWidth: "420px",
+                boxShadow: "0 15px 35px rgba(255, 181, 121, 0.35)",
+                textAlign: "center"
               }}
-            />
-            <DictationButton
-              field="childhoodExperience"
-              ariaLabel="Kindheitserinnerungen diktieren"
-            />
-          </div>
+            >
+              <img
+                src="/stuhldialog/kind.png"
+                alt="Weinendes Kind"
+                style={{ width: "120px", height: "120px", objectFit: "contain" }}
+              />
+              <h3
+                style={{
+                  color: "#a64b2a",
+                  fontSize: "1.35rem",
+                  margin: "1rem 0 0.75rem",
+                  fontWeight: 700
+                }}
+              >
+                Kennst du dieses Gefühl aus deiner Kindheit?
+              </h3>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "stretch",
+                  gap: "0.75rem",
+                  marginTop: "1.25rem"
+                }}
+              >
+                <textarea
+                  id="childhoodExperience"
+                  value={childhoodExperience}
+                  onChange={(event) => setChildhoodExperience(event.target.value)}
+                  rows={3}
+                  placeholder="Beschreibe hier deine Erinnerung …"
+                  style={{
+                    flex: 1,
+                    resize: "vertical",
+                    minHeight: "3.5rem",
+                    fontSize: "1rem",
+                    lineHeight: 1.4,
+                    borderRadius: "14px",
+                    border: "none",
+                    padding: "0.85rem 1rem",
+                    backgroundColor: "#fff",
+                    boxShadow: "inset 0 0 0 1px rgba(166, 75, 42, 0.2)",
+                    color: "#5a341c"
+                  }}
+                />
+                <DictationButton
+                  field="childhoodExperience"
+                  ariaLabel="Kindheitserinnerungen diktieren"
+                  variant="icon"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={() => setChildhoodExperience("Ich weiß es nicht")}
+                style={{
+                  marginTop: "0.85rem",
+                  background: "none",
+                  border: "none",
+                  color: "#a64b2a",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  textDecoration: "underline",
+                  fontSize: "0.95rem"
+                }}
+              >
+                Ich weiß es nicht
+              </button>
+            </div>
+          </section>
           <button
             onClick={handlePersonalJesus}
             style={{
