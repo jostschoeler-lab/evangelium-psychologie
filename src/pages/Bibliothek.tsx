@@ -794,44 +794,6 @@ export default function Bibliothek() {
     window.open(`https://chat.openai.com/?q=${prompt}`, "_blank", "noopener,noreferrer");
   };
 
-  const handleClosingComment = () => {
-    if (!meditationNotes.trim()) {
-      alert("Bitte schreibe zuerst auf, was Jesus dir gesagt hat.");
-      return;
-    }
-
-    const closingDetails = buildDetailList([
-      { label: "Was die Person gerade beschäftigt", value: problem },
-      { label: "Ausgewähltes Bedürfnis", value: selectedNeed },
-      {
-        label: "Persönliche Beschreibung des Bedürfnisses",
-        value: personalNeed
-      },
-      {
-        label: "Kindheitserfahrungen zu diesem Gefühl/Bedürfnis",
-        value: childhoodExperience
-      },
-      { label: "Worte Jesu aus der Meditation", value: meditationNotes }
-    ]);
-
-    const promptText = `
-Du bist geistliche*r Begleiter*in, der/die eine kurze Würdigung und einen praktischen Tipp gibt.
-Lies die Angaben einer Person und antworte mit einem Abschlusskommentar.
-1) Bedanke dich bei Jesus und anerkenne voller Wertschätzung, was er der Person zugesprochen hat.
-2) Gib konkrete, warme Vorschläge, wie die Person diese Worte im Alltag wachhalten kann – z.B. durch kleine Erinnerungen, kurze Gebete, Meditationen, das Bitten um den Geist der Weisheit und Offenbarung oder die Augen des Herzens.
-3) Verknüpfe Anerkennung und Alltagstipps ausdrücklich mit ihrer persönlichen Bedürfnisbeschreibung, den Kindheitserfahrungen und den Worten, wie Jesus das Bedürfnis stillt.
-Erkläre, dass unser Verstand Jesu Worte sofort verstehen kann, während Unbewusstes und Gefühle manchmal länger brauchen – so können Leid und schwere Gefühle vorerst bleiben, ähnlich wie bei Paulus und seinem Pfahl im Fleisch, bis Gottes Gnade ihre Kraft zeigt.
-Baue mehrere Bibelverse ein (z.B. aus Römer 8, 2. Korinther 12, 1. Petrus 4, Hebräer 4 oder andere passende Stellen), die das Mitleiden mit Jesus, Glauben, Geduld und das Reifen durch Leid betonen.
-Schreibe maximal zwei kurze Absätze und sprich die Person in der Du-Form an.
-
-Angaben der Person:
-${closingDetails}
-    `.trim();
-
-    const prompt = encodeURIComponent(promptText);
-
-    window.open(`https://chat.openai.com/?q=${prompt}`, "_blank", "noopener,noreferrer");
-  };
 
   const handleSaveChat = () => {
     const trimmedInput = chatUserInput.trim();
@@ -1015,12 +977,6 @@ ${closingDetails}
       icon: "🙏",
       background: "linear-gradient(180deg, #fef6ee 0%, #eaf9f1 100%)"
     },
-    {
-      key: "closing-appreciation",
-      label: "Anerkennung & Alltagstipps",
-      icon: "🌟",
-      background: "linear-gradient(180deg, #fff4e6 0%, #e8f9ff 100%)"
-    }
   ] as const;
 
   const renderMobileStepContent = (): JSX.Element => {
@@ -1762,144 +1718,6 @@ ${closingDetails}
           </div>
         );
       }
-      case 5: {
-        const hasMeditationNotes = meditationNotes.trim().length > 0;
-
-        return (
-          <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-            <section style={baseCardStyle} aria-labelledby="mobileClosingStep">
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "1rem",
-                  alignItems: "center",
-                  textAlign: "center"
-                }}
-              >
-                <div
-                  style={{
-                    width: "160px",
-                    height: "160px",
-                    borderRadius: "36px",
-                    background: "linear-gradient(135deg, #ffe8cc, #d7f2ff)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    boxShadow: "0 20px 38px rgba(75, 123, 236, 0.18)"
-                  }}
-                >
-                  <span role="img" aria-label="Strahlender Stern" style={{ fontSize: "4rem" }}>
-                    🌟
-                  </span>
-                </div>
-                <h1
-                  id="mobileClosingStep"
-                  style={{ fontSize: "1.5rem", margin: 0, color: "#2c3e50" }}
-                >
-                  🌟 Anerkennung & Alltagstipps
-                </h1>
-                <p
-                  style={{
-                    margin: 0,
-                    fontSize: "1.05rem",
-                    lineHeight: 1.6,
-                    color: "#344767"
-                  }}
-                >
-                  Danke Jesus dafür, was er dir gesagt hat. Lass dir von ChatGPT einen warmen Abschlussimpuls schenken, wie du
-                  seine Worte im Alltag wachhalten kannst – fordere dazu Anerkennung und Alltagstipps an.
-                </p>
-              </div>
-
-              <div
-                style={{
-                  background: "rgba(32, 191, 107, 0.08)",
-                  borderRadius: "20px",
-                  padding: "1.1rem 1.25rem",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "0.75rem"
-                }}
-              >
-                <h2
-                  style={{
-                    margin: 0,
-                    fontSize: "1.1rem",
-                    color: "#177245"
-                  }}
-                >
-                  Worte Jesu aus deiner Meditation
-                </h2>
-                {hasMeditationNotes ? (
-                  <blockquote
-                    style={{
-                      margin: 0,
-                      padding: "0.9rem 1rem",
-                      borderLeft: "4px solid #20bf6b",
-                      background: "rgba(32, 191, 107, 0.1)",
-                      borderRadius: "16px",
-                      color: "#1f3c88",
-                      fontStyle: "italic",
-                      whiteSpace: "pre-wrap"
-                    }}
-                  >
-                    {meditationNotes.trim()}
-                  </blockquote>
-                ) : (
-                  <p
-                    style={{
-                      margin: 0,
-                      fontSize: "0.98rem",
-                      lineHeight: 1.5,
-                      color: "#4c5d73"
-                    }}
-                  >
-                    Notiere hier zuerst, was Jesus dir zugesprochen hat. Deine Worte erscheinen anschließend auch in dieser
-                    Ansicht.
-                  </p>
-                )}
-              </div>
-
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
-                <button
-                  type="button"
-                  onClick={handleClosingComment}
-                  disabled={!hasMeditationNotes}
-                  style={{
-                    border: "none",
-                    borderRadius: "999px",
-                    padding: "0.85rem 1.35rem",
-                    fontSize: "1.05rem",
-                    fontWeight: 700,
-                    background: hasMeditationNotes
-                      ? "linear-gradient(135deg, #4b7bec, #20bf6b)"
-                      : "#cbd2d9",
-                    color: hasMeditationNotes ? "#fff" : "#5b728f",
-                    cursor: hasMeditationNotes ? "pointer" : "not-allowed",
-                    boxShadow: hasMeditationNotes ? "0 18px 34px rgba(75, 123, 236, 0.3)" : "none",
-                    transition: "background-color 0.2s ease, transform 0.2s ease"
-                  }}
-                >
-                  🌟 Anerkennung & Alltagstipps anfordern
-                </button>
-                <p
-                  style={{
-                    margin: 0,
-                    fontSize: "0.9rem",
-                    lineHeight: 1.5,
-                    color: "#4c5d73",
-                    textAlign: "center"
-                  }}
-                >
-                  Es öffnet sich ein neues Fenster mit deiner Anfrage bei ChatGPT, damit du die Anerkennung und Alltagstipps dort
-                  nachlesen kannst.
-                </p>
-              </div>
-            </section>
-          </div>
-        );
-      }
       default:
         return <div />;
     }
@@ -2381,28 +2199,6 @@ ${closingDetails}
                   </button>
                 </div>
               </div>
-              <h3 style={{ color: "#2c3e50", marginTop: "1.5rem" }}>🌟 Anerkennung & Alltagstipps</h3>
-              <p>
-                Danke Jesus dafür, was er dir gesagt hat. Lass dir von ChatGPT einen warmen Abschlussimpuls schenken, wie du seine
-                Worte im Alltag wachhalten kannst – fordere dafür Anerkennung und Alltagstipps an.
-              </p>
-              <button
-                onClick={handleClosingComment}
-                style={{
-                  width: "100%",
-                  backgroundColor: meditationNotes.trim() ? "#20bf6b" : "#aacfbf",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "6px",
-                  padding: "0.6rem 1rem",
-                  cursor: meditationNotes.trim() ? "pointer" : "not-allowed",
-                  fontSize: "1rem"
-                }}
-                disabled={!meditationNotes.trim()}
-              >
-                🌟 Anerkennung & Alltagstipps anfordern
-              </button>
-
               <h3 style={{ color: "#2c3e50", marginTop: "1.5rem" }}>
                 💾 Gesamten Chat speichern
               </h3>
