@@ -411,6 +411,36 @@ export default function Bibliothek() {
     meditationNotes: ""
   });
 
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    try {
+      const storedPersonalNeed = localStorage.getItem("bibliothekPersonalNeed");
+      if (storedPersonalNeed) {
+        setPersonalNeed(storedPersonalNeed);
+        dictationBaseRef.current.personalNeed = storedPersonalNeed;
+      }
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    try {
+      if (!personalNeed.trim()) {
+        localStorage.removeItem("bibliothekPersonalNeed");
+      } else {
+        localStorage.setItem("bibliothekPersonalNeed", personalNeed);
+      }
+    } catch {
+      /* ignore */
+    }
+  }, [personalNeed]);
+
   const setFieldValue = useCallback(
     (field: DictationField, value: string) => {
       switch (field) {
@@ -1210,6 +1240,31 @@ ${closingDetails}
               </div>
 
               <h3 style={{ color: "#2c3e50" }}>🕊️ Dein persönlicher Schritt</h3>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  marginBottom: "0.5rem"
+                }}
+              >
+                <a
+                  href="/bibliothek/persoenlicher-schritt.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "0.35rem",
+                    fontSize: "0.9rem",
+                    fontWeight: 600,
+                    color: "#3867d6",
+                    textDecoration: "none"
+                  }}
+                >
+                  <span aria-hidden="true">📱</span>
+                  <span>Handy-Ansicht öffnen</span>
+                </a>
+              </div>
               <div
                 style={{
                   display: "flex",
