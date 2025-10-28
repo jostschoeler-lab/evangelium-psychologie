@@ -1004,10 +1004,16 @@ ${closingDetails}
       background: "linear-gradient(180deg, #f9f1ff 0%, #eef7ff 100%)"
     },
     {
-      key: "ask-jesus",
-      label: "Frage Jesus",
+      key: "jesus-answer",
+      label: "ChatGPT-Antwort",
       icon: "💬",
       background: "linear-gradient(180deg, #fff3e8 0%, #e8fff7 100%)"
+    },
+    {
+      key: "ask-jesus",
+      label: "Frage an Jesus",
+      icon: "🙏",
+      background: "linear-gradient(180deg, #fef6ee 0%, #eaf9f1 100%)"
     }
   ] as const;
 
@@ -1603,40 +1609,149 @@ ${closingDetails}
                 >
                   💬 ChatGPT-Antwort öffnen
                 </button>
-                <a
-                  href="/bibliothek/frage-jesus.html"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "0.4rem",
-                    borderRadius: "999px",
-                    padding: "0.7rem 1.2rem",
-                    fontWeight: 600,
-                    fontSize: "0.95rem",
-                    background: "rgba(27, 163, 156, 0.12)",
-                    color: "#1b8772",
-                    textDecoration: "none"
-                  }}
-                >
-                  📱 Auf dem Handy ansehen
-                </a>
               </div>
-
-              <p
+            </section>
+          </div>
+        );
+      }
+      case 4: {
+        return (
+          <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+            <section style={baseCardStyle} aria-labelledby="mobileAskJesusPrompt">
+              <div
                 style={{
-                  margin: 0,
-                  fontSize: "0.95rem",
-                  lineHeight: 1.6,
-                  color: "#4c5d73"
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "1rem",
+                  alignItems: "center",
+                  textAlign: "center"
                 }}
               >
-                🙏 Setze dich im Glauben auf den Gnadenthron, wo Jesus als barmherziger Hohepriester sitzt. Stell dir vor, was
-                er dir sagt und wie er dir jetzt Gnade schenkt. Meditiere 1–2 Minuten über seine Worte und schreibe auf, was
-                Jesus dir gesagt hat.
-              </p>
+                <div
+                  style={{
+                    width: "160px",
+                    height: "160px",
+                    borderRadius: "36px",
+                    background: "linear-gradient(135deg, #ffe7d6, #d9f5ff)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    boxShadow: "0 20px 38px rgba(32, 128, 118, 0.18)",
+                    overflow: "hidden"
+                  }}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 160 160"
+                    role="img"
+                    aria-label="Skizze: Jesus hält ein Kind im Arm"
+                    style={{ width: "130px", height: "130px" }}
+                  >
+                    <defs>
+                      <linearGradient id="robeGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stopColor="#fff" stopOpacity="0.9" />
+                        <stop offset="100%" stopColor="#cfe7ff" stopOpacity="0.8" />
+                      </linearGradient>
+                    </defs>
+                    <circle cx="86" cy="40" r="22" fill="#f5c6aa" opacity="0.95" />
+                    <path
+                      d="M60 70 C45 100 55 135 86 135 C117 135 127 100 112 70"
+                      fill="url(#robeGradient)"
+                      stroke="#9fb8d3"
+                      strokeWidth="3"
+                    />
+                    <circle cx="56" cy="78" r="16" fill="#f7d9c4" opacity="0.95" />
+                    <path
+                      d="M70 92 C64 118 80 132 96 128"
+                      fill="none"
+                      stroke="#f5c6aa"
+                      strokeWidth="10"
+                      strokeLinecap="round"
+                    />
+                    <path
+                      d="M108 92 C112 120 100 134 84 132"
+                      fill="none"
+                      stroke="#f5c6aa"
+                      strokeWidth="10"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                </div>
+                <h1
+                  id="mobileAskJesusPrompt"
+                  style={{ fontSize: "1.5rem", margin: 0, color: "#2c3e50" }}
+                >
+                  🙏 Frage an Jesus
+                </h1>
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: "1.05rem",
+                    lineHeight: 1.6,
+                    color: "#344767"
+                  }}
+                >
+                  Setze dich im Glauben auf den Gnadenthron, wo Jesus als barmherziger Hohepriester sitzt. Stell dir vor, wie
+                  er dich ansieht und dir jetzt Gnade schenkt.
+                </p>
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: "1.05rem",
+                    lineHeight: 1.6,
+                    color: "#344767"
+                  }}
+                >
+                  Meditiere 1–2 Minuten über seine Gegenwart. Sprich dann laut oder schriftlich aus, was du Jesus antwortest,
+                  und halte fest, was er dir zuspricht.
+                </p>
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "0.75rem",
+                  marginTop: "0.5rem"
+                }}
+              >
+                <label htmlFor="mobileMeditationNotes" style={{ fontWeight: 600, color: "#1f3c88" }}>
+                  Was hat Jesus dir in dieser Meditation zugesprochen?
+                </label>
+                <textarea
+                  id="mobileMeditationNotes"
+                  value={meditationNotes}
+                  onChange={(event) => setMeditationNotes(event.target.value)}
+                  rows={4}
+                  placeholder="Beschreibe hier Jesu Worte oder diktiere sie."
+                  style={{
+                    width: "100%",
+                    borderRadius: "20px",
+                    border: "1px solid rgba(31, 60, 136, 0.2)",
+                    padding: "1rem",
+                    fontSize: "1.05rem",
+                    lineHeight: 1.5,
+                    color: "#1f2933",
+                    backgroundColor: "#fff",
+                    boxShadow: "inset 0 1px 4px rgba(36, 53, 103, 0.08)",
+                    resize: "vertical",
+                    outline: "none"
+                  }}
+                />
+                <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                  <DictationButton field="meditationNotes" ariaLabel="Antwort an Jesus diktieren" />
+                </div>
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: "0.95rem",
+                    lineHeight: 1.5,
+                    color: "#4c5d73"
+                  }}
+                >
+                  Deine Worte bleiben auf diesem Gerät gespeichert und erscheinen auch in der Desktop-Ansicht im Feld
+                  „Worte Jesu aus der Meditation“.
+                </p>
+              </div>
             </section>
           </div>
         );
