@@ -387,6 +387,7 @@ export default function Bibliothek() {
 
   const recognitionRef = useRef<any>(null);
   const formRef = useRef<HTMLDivElement | null>(null);
+  const stepTwoRef = useRef<HTMLDivElement | null>(null);
   const activeFieldRef = useRef<DictationField | null>(null);
   const pendingFieldRef = useRef<DictationField | null>(null);
   const pendingBaseRef = useRef<string>("");
@@ -564,6 +565,14 @@ export default function Bibliothek() {
       }, 100);
     }
   }, [setIntroVisible]);
+
+  const handleContinueFromStepOne = useCallback(() => {
+    if (typeof window !== "undefined") {
+      window.setTimeout(() => {
+        stepTwoRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 80);
+    }
+  }, [stepTwoRef]);
 
   const handleChatGPT = () => {
     const prompt = encodeURIComponent(
@@ -844,109 +853,219 @@ ${closingDetails}
           </button>
         )}
 
-        <div ref={formRef} style={{ display: introVisible ? "none" : "block" }}>
-          <label htmlFor="problem" style={{ display: "block", fontWeight: 600 }}>
-            1️⃣ Was beschäftigt dich gerade?
-          </label>
-          <div
+        <div style={{ display: introVisible ? "none" : "block" }}>
+          <section
+            ref={formRef}
+            aria-labelledby="problem-heading"
             style={{
+              margin: "0 auto 2rem",
+              maxWidth: "420px",
+              background: "linear-gradient(180deg, #fdf0d5 0%, #f3e8ff 100%)",
+              borderRadius: "32px",
+              padding: "2.25rem 1.75rem 2.5rem",
+              boxShadow: "0 26px 60px rgba(45, 64, 102, 0.18)",
               display: "flex",
-              gap: "0.5rem",
-              alignItems: "stretch",
-              marginTop: "0.5rem",
-              marginBottom: "1rem"
+              flexDirection: "column",
+              gap: "1.5rem"
             }}
           >
-            <textarea
-              id="problem"
-              value={problem}
-              onChange={(event) => setProblem(event.target.value)}
-              rows={3}
-              placeholder="Schreibe hier dein Anliegen..."
+            <div
               style={{
-                flex: 1,
-                fontSize: "1rem",
-                padding: "0.5rem",
-                borderRadius: "6px",
-                border: "1px solid #ccc"
-              }}
-            />
-            <DictationButton field="problem" ariaLabel="Anliegen diktieren" />
-          </div>
-          {!dictationSupported && (
-            <p style={{ marginTop: "-0.5rem", marginBottom: "1.5rem", color: "#c0392b" }}>
-              Hinweis: Dein Browser unterstützt keine Spracherkennung. Bitte nutze Chrome oder Edge
-              auf dem Desktop, um die Diktierfunktion verwenden zu können.
-            </p>
-          )}
-
-          <label htmlFor="need" style={{ display: "block", fontWeight: 600 }}>
-            2️⃣ Welches Bedürfnis ist betroffen?
-          </label>
-          <select
-            id="need"
-            value={selectedNeed}
-            onChange={(event) => {
-              setSelectedNeed(event.target.value);
-              setShowResult(false);
-              setError(null);
-            }}
-            style={{
-              width: "100%",
-              fontSize: "1rem",
-              padding: "0.5rem",
-              marginTop: "0.5rem",
-              marginBottom: "1rem",
-              borderRadius: "6px",
-              border: "1px solid #ccc"
-            }}
-          >
-            <option value="">Bitte auswählen...</option>
-            {Object.keys(needs).map((key) => (
-              <option key={key} value={key}>
-                {key}
-              </option>
-            ))}
-          </select>
-
-          <div
-            style={{
-              display: "flex",
-              gap: "1rem",
-              flexWrap: "wrap"
-            }}
-          >
-            <button
-              onClick={handleShowResult}
-              style={{
-                flexGrow: 1,
-                backgroundColor: "#4b7bec",
-                color: "#fff",
-                border: "none",
-                borderRadius: "6px",
-                padding: "0.6rem 1rem",
-                cursor: "pointer",
-                fontSize: "1rem"
+                width: "100%",
+                borderRadius: "24px",
+                overflow: "hidden",
+                background: "linear-gradient(135deg, #f8e1b3, #f38181)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center"
               }}
             >
-              💫 Weiter
-            </button>
-            <button
-              onClick={handleChatGPT}
+              <img
+                src="/bibliothek/verwandlung-intro.svg"
+                alt="Illustration: Jesus tröstet ein Kind"
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
+            </div>
+
+            <label
+              id="problem-heading"
+              htmlFor="problem"
               style={{
-                flexGrow: 1,
+                display: "block",
+                fontSize: "1.65rem",
+                lineHeight: 1.2,
+                fontWeight: 700,
+                color: "#1f2933"
+              }}
+            >
+              Was belastet oder bewegt dich gerade?
+            </label>
+
+            <div style={{ position: "relative" }}>
+              <textarea
+                id="problem"
+                value={problem}
+                onChange={(event) => setProblem(event.target.value)}
+                rows={4}
+                placeholder="Einsprechen oder tippen, was dich gerade bewegt..."
+                style={{
+                  width: "100%",
+                  minHeight: "8rem",
+                  borderRadius: "20px",
+                  border: "1px solid rgba(56, 103, 214, 0.18)",
+                  padding: "1.15rem 1.15rem 4rem 1.15rem",
+                  fontSize: "1.05rem",
+                  lineHeight: 1.5,
+                  color: "#1f2933",
+                  backgroundColor: "#fff",
+                  boxShadow: "inset 0 1px 4px rgba(36, 53, 103, 0.08)",
+                  resize: "vertical",
+                  outline: "none"
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => handleDictation("problem")}
+                disabled={!dictationSupported}
+                aria-label="Anliegen einsprechen"
+                style={{
+                  position: "absolute",
+                  right: "1.1rem",
+                  bottom: "1.1rem",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.55rem",
+                  backgroundColor: !dictationSupported
+                    ? "#cbd2d9"
+                    : listeningField === "problem"
+                    ? "#20bf6b"
+                    : "#3867d6",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "999px",
+                  padding: "0.85rem 1.35rem",
+                  fontSize: "1rem",
+                  fontWeight: 600,
+                  cursor: !dictationSupported ? "not-allowed" : "pointer",
+                  boxShadow: !dictationSupported
+                    ? "none"
+                    : listeningField === "problem"
+                    ? "0 12px 26px rgba(32, 191, 107, 0.35)"
+                    : "0 16px 30px rgba(56, 103, 214, 0.25)",
+                  transition: "background-color 0.2s ease, transform 0.2s ease",
+                  transform: listeningField === "problem" ? "scale(1.02)" : "none"
+                }}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  aria-hidden="true"
+                  style={{ width: "1.2rem", height: "1.2rem" }}
+                >
+                  <path d="M12 1.5a3 3 0 00-3 3v6a3 3 0 106 0v-6a3 3 0 00-3-3z" />
+                  <path d="M5.25 10.5a.75.75 0 011.5 0 5.25 5.25 0 0010.5 0 .75.75 0 011.5 0 6.75 6.75 0 01-6 6.708v2.292h3a.75.75 0 010 1.5h-7.5a.75.75 0 010-1.5h3v-2.292a6.75 6.75 0 01-6-6.708z" />
+                </svg>
+                <span>Einsprechen</span>
+              </button>
+            </div>
+
+            {!dictationSupported && (
+              <p style={{ margin: 0, color: "#c0392b", fontSize: "0.95rem" }}>
+                Hinweis: Dein Browser unterstützt keine Spracherkennung. Bitte nutze Chrome oder Edge
+                auf dem Desktop, um die Diktierfunktion verwenden zu können.
+              </p>
+            )}
+
+            <button
+              type="button"
+              onClick={handleContinueFromStepOne}
+              style={{
+                alignSelf: "center",
+                marginTop: "0.5rem",
                 backgroundColor: "#3867d6",
                 color: "#fff",
                 border: "none",
-                borderRadius: "6px",
-                padding: "0.6rem 1rem",
+                borderRadius: "999px",
+                padding: "0.85rem 2.75rem",
+                fontSize: "1.05rem",
+                fontWeight: 600,
                 cursor: "pointer",
-                fontSize: "1rem"
+                boxShadow: "0 18px 32px rgba(56, 103, 214, 0.28)"
               }}
             >
-              💬 Bedürfnisvorschlag mit ChatGPT
+              Weiter
             </button>
-          </div>
+          </section>
+
+          <div ref={stepTwoRef}>
+            <label htmlFor="need" style={{ display: "block", fontWeight: 600 }}>
+              2️⃣ Welches Bedürfnis ist betroffen?
+            </label>
+            <select
+              id="need"
+              value={selectedNeed}
+              onChange={(event) => {
+                setSelectedNeed(event.target.value);
+                setShowResult(false);
+                setError(null);
+              }}
+              style={{
+                width: "100%",
+                fontSize: "1rem",
+                padding: "0.5rem",
+                marginTop: "0.5rem",
+                marginBottom: "1rem",
+                borderRadius: "6px",
+                border: "1px solid #ccc"
+              }}
+            >
+              <option value="">Bitte auswählen...</option>
+              {Object.keys(needs).map((key) => (
+                <option key={key} value={key}>
+                  {key}
+                </option>
+              ))}
+            </select>
+
+            <div
+              style={{
+                display: "flex",
+                gap: "1rem",
+                flexWrap: "wrap"
+              }}
+            >
+              <button
+                onClick={handleShowResult}
+                style={{
+                  flexGrow: 1,
+                  backgroundColor: "#4b7bec",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "6px",
+                  padding: "0.6rem 1rem",
+                  cursor: "pointer",
+                  fontSize: "1rem"
+                }}
+              >
+                💫 Weiter
+              </button>
+              <button
+                onClick={handleChatGPT}
+                style={{
+                  flexGrow: 1,
+                  backgroundColor: "#3867d6",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "6px",
+                  padding: "0.6rem 1rem",
+                  cursor: "pointer",
+                  fontSize: "1rem"
+                }}
+              >
+                💬 Bedürfnisvorschlag mit ChatGPT
+              </button>
+            </div>
 
           {error ? (
             <p style={{ color: "red", marginTop: "1rem" }}>{error}</p>
@@ -1263,7 +1382,8 @@ ${closingDetails}
               )}
             </div>
           </div>
-        ) : null}
+            ) : null}
+          </div>
         </div>
       </section>
     </main>
