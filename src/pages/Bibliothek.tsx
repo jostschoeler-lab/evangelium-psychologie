@@ -123,6 +123,19 @@ const needs: Record<string, NeedContent> = {
   }
 };
 
+const needOptions: { key: keyof typeof needs; label: string }[] = [
+  { key: "Sicherheit & Vorhersagbarkeit", label: "Sicherheit" },
+  {
+    key: "Gesehen / gehört / gewürdigt werden",
+    label: "Gesehen / gehört / gewürdigt werden"
+  },
+  { key: "Nähe / Verbundenheit", label: "Nähe & Verbundenheit" },
+  { key: "Fairness / Gerechtigkeit", label: "Gerechtigkeit / Fairness" },
+  { key: "Würde / Respekt / Unversehrtheit", label: "Würde / Respekt" },
+  { key: "Leichtigkeit / Entlastung", label: "Entlastung / Ruhe" },
+  { key: "Autonomie & Einfluss", label: "Autonomie / Einfluss" }
+];
+
 type IntroSection = {
   icon: string;
   title: string;
@@ -998,47 +1011,240 @@ ${closingDetails}
             </button>
           </section>
 
-          <div ref={stepTwoRef}>
-            <label htmlFor="need" style={{ display: "block", fontWeight: 600 }}>
-              2️⃣ Welches Bedürfnis ist betroffen?
-            </label>
-            <select
-              id="need"
-              value={selectedNeed}
-              onChange={(event) => {
-                setSelectedNeed(event.target.value);
-                setShowResult(false);
-                setError(null);
-              }}
-              style={{
-                width: "100%",
-                fontSize: "1rem",
-                padding: "0.5rem",
-                marginTop: "0.5rem",
-                marginBottom: "1rem",
-                borderRadius: "6px",
-                border: "1px solid #ccc"
-              }}
-            >
-              <option value="">Bitte auswählen...</option>
-              {Object.keys(needs).map((key) => (
-                <option key={key} value={key}>
-                  {key}
-                </option>
-              ))}
-            </select>
-
+          <section
+            ref={stepTwoRef}
+            style={{
+              marginTop: "3rem",
+              display: "flex",
+              justifyContent: "center"
+            }}
+          >
             <div
               style={{
+                width: "100%",
+                maxWidth: "420px",
+                background: "#fdf2e4",
+                borderRadius: "28px",
+                padding: "2.5rem 1.75rem",
+                boxShadow: "0 28px 40px rgba(198, 134, 66, 0.2)",
                 display: "flex",
-                gap: "1rem",
-                flexWrap: "wrap"
+                flexDirection: "column",
+                gap: "1.5rem"
               }}
             >
+              <div style={{ textAlign: "center" }}>
+                <div
+                  style={{
+                    width: "120px",
+                    height: "120px",
+                    borderRadius: "999px",
+                    background: "linear-gradient(180deg, #fff2dc 0%, #fbe1b8 100%)",
+                    margin: "0 auto 1rem",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    boxShadow: "0 16px 24px rgba(231, 162, 73, 0.22)"
+                  }}
+                >
+                  <img
+                    src="/assets/need-child.svg"
+                    alt="Kind hebt die Arme"
+                    style={{ width: "90px", height: "90px" }}
+                  />
+                </div>
+                <div
+                  style={{
+                    color: "#914c1c",
+                    fontWeight: 700,
+                    fontSize: "1.25rem",
+                    lineHeight: 1.35
+                  }}
+                >
+                  Welches Bedürfnis steckt dahinter?
+                </div>
+              </div>
+
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+                  gap: "0.75rem"
+                }}
+              >
+                {needOptions.map((option) => {
+                  const isSelected = selectedNeed === option.key;
+                  return (
+                    <button
+                      key={option.key}
+                      type="button"
+                      onClick={() => {
+                        setSelectedNeed(option.key);
+                        setShowResult(false);
+                        setError(null);
+                      }}
+                      style={{
+                        borderRadius: "18px",
+                        padding: "0.85rem 1rem",
+                        fontSize: "1rem",
+                        fontWeight: 600,
+                        border: isSelected ? "2px solid #eb8c2d" : "2px solid transparent",
+                        backgroundColor: isSelected ? "#ffe8c8" : "#fff4e5",
+                        color: "#7a4416",
+                        boxShadow: isSelected
+                          ? "0 16px 30px rgba(235, 140, 45, 0.35)"
+                          : "0 10px 24px rgba(214, 171, 116, 0.22)",
+                        cursor: "pointer",
+                        transition: "all 0.2s ease"
+                      }}
+                    >
+                      {option.label}
+                    </button>
+                  );
+                })}
+              </div>
+
               <button
+                type="button"
+                onClick={handleChatGPT}
+                style={{
+                  borderRadius: "18px",
+                  padding: "0.9rem 1rem",
+                  fontSize: "1rem",
+                  fontWeight: 600,
+                  border: "none",
+                  backgroundColor: "#fff",
+                  color: "#7a4416",
+                  boxShadow: "0 10px 24px rgba(214, 171, 116, 0.22)",
+                  cursor: "pointer"
+                }}
+              >
+                Ich weiß es nicht – bitte Vorschläge machen
+              </button>
+
+              <button
+                type="button"
                 onClick={handleShowResult}
                 style={{
-                  flexGrow: 1,
+                  borderRadius: "999px",
+                  padding: "0.95rem 1.5rem",
+                  fontSize: "1.05rem",
+                  fontWeight: 700,
+                  border: "none",
+                  background: "linear-gradient(135deg, #f08a24, #f7b733)",
+                  color: "#fff",
+                  boxShadow: "0 20px 36px rgba(236, 147, 44, 0.35)",
+                  cursor: "pointer"
+                }}
+              >
+                Weiter
+              </button>
+
+              {error ? (
+                <p style={{ color: "#d24c41", margin: 0, textAlign: "center" }}>{error}</p>
+              ) : null}
+            </div>
+          </section>
+
+          {showResult && selectedNeedData ? (
+            <div
+              style={{
+                backgroundColor: "#fff",
+                padding: "1.5rem",
+                borderRadius: "10px",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                marginTop: "1.5rem"
+              }}
+            >
+              <h2 style={{ color: "#2c3e50" }}>{selectedNeed}</h2>
+
+              <h3 style={{ color: "#2c3e50" }}>🌿 Resonanz-Hypothesen</h3>
+              <ul style={{ paddingLeft: "1.2rem" }}>
+                {selectedNeedData.resonance.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+
+              <h3 style={{ color: "#2c3e50" }}>💬 Dialog-Impulse an Jesus</h3>
+              <ul style={{ paddingLeft: "1.2rem" }}>
+                {selectedNeedData.dialog.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+
+              <h3 style={{ color: "#2c3e50" }}>✝️ Jesus-Antwort</h3>
+              <div
+                style={{
+                  backgroundColor: "#f0f8ff",
+                  borderLeft: "4px solid #4b7bec",
+                  padding: "1rem",
+                  borderRadius: "6px",
+                  fontStyle: "italic"
+                }}
+              >
+                {selectedNeedData.jesus}
+              </div>
+
+              <h3 style={{ color: "#2c3e50" }}>🕊️ Dein persönlicher Schritt</h3>
+              <div
+                style={{
+                  display: "flex",
+                  gap: "0.5rem",
+                  alignItems: "stretch",
+                  marginTop: "0.5rem",
+                  marginBottom: "1rem"
+                }}
+              >
+                <textarea
+                  id="personalNeed"
+                  value={personalNeed}
+                  onChange={(event) => setPersonalNeed(event.target.value)}
+                  rows={3}
+                  placeholder="Wie würdest du dein Bedürfnis mit eigenen Worten beschreiben?"
+                  style={{
+                    flex: 1,
+                    fontSize: "1rem",
+                    padding: "0.5rem",
+                    borderRadius: "6px",
+                    border: "1px solid #ccc"
+                  }}
+                />
+                <DictationButton field="personalNeed" ariaLabel="Persönlichen Schritt diktieren" />
+              </div>
+              <p style={{ marginTop: "1rem", fontWeight: 600 }}>
+                Hast du dieses Gefühl oder Bedürfnis schon einmal in der Kindheit erlebt?
+              </p>
+              <div
+                style={{
+                  display: "flex",
+                  gap: "0.5rem",
+                  alignItems: "stretch",
+                  marginTop: "0.5rem",
+                  marginBottom: "1rem"
+                }}
+              >
+                <textarea
+                  id="childhoodExperience"
+                  value={childhoodExperience}
+                  onChange={(event) => setChildhoodExperience(event.target.value)}
+                  rows={3}
+                  placeholder="Beschreibe hier deine Erinnerungen aus der Kindheit."
+                  style={{
+                    flex: 1,
+                    fontSize: "1rem",
+                    padding: "0.5rem",
+                    borderRadius: "6px",
+                    border: "1px solid #ccc"
+                  }}
+                />
+                <DictationButton
+                  field="childhoodExperience"
+                  ariaLabel="Kindheitserinnerungen diktieren"
+                />
+              </div>
+              <button
+                onClick={handlePersonalJesus}
+                style={{
+                  width: "100%",
                   backgroundColor: "#4b7bec",
                   color: "#fff",
                   border: "none",
@@ -1048,342 +1254,204 @@ ${closingDetails}
                   fontSize: "1rem"
                 }}
               >
-                💫 Weiter
+                💬 Frage Jesus, wie er dein Bedürfnis stillt
               </button>
-              <button
-                onClick={handleChatGPT}
+              <p style={{ marginTop: "1rem" }}>
+                🙏 Setze dich im Glauben auf den Gnadenthron, wo Jesus als barmherziger Hohepriester sitzt. Stell dir vor, was er
+                dir als Hohepriester sagt und wie er dir jetzt Gnade schenkt. Meditiere 1–2 Minuten über seine Worte und schreibe
+                auf, was Jesus dir gesagt hat.
+              </p>
+              <div
                 style={{
-                  flexGrow: 1,
-                  backgroundColor: "#3867d6",
+                  display: "flex",
+                  gap: "0.5rem",
+                  alignItems: "stretch",
+                  marginTop: "0.5rem",
+                  marginBottom: "1rem"
+                }}
+              >
+                <textarea
+                  id="meditationNotes"
+                  value={meditationNotes}
+                  onChange={(event) => setMeditationNotes(event.target.value)}
+                  rows={4}
+                  placeholder="Was hat Jesus dir in dieser Meditation zugesprochen?"
+                  style={{
+                    flex: 1,
+                    fontSize: "1rem",
+                    padding: "0.5rem",
+                    borderRadius: "6px",
+                    border: "1px solid #ccc"
+                  }}
+                />
+                <DictationButton field="meditationNotes" ariaLabel="Meditationsnotizen diktieren" />
+              </div>
+              <h3 style={{ color: "#2c3e50", marginTop: "1.5rem" }}>📝 Schlusskommentar</h3>
+              <p>
+                Bitte Jesus dafür, was er dir gesagt hat, und lass dir von ChatGPT einen warmen Abschlussimpuls schenken, wie du
+                seine Worte im Alltag wachhalten kannst.
+              </p>
+              <button
+                onClick={handleClosingComment}
+                style={{
+                  width: "100%",
+                  backgroundColor: meditationNotes.trim() ? "#20bf6b" : "#aacfbf",
                   color: "#fff",
                   border: "none",
                   borderRadius: "6px",
                   padding: "0.6rem 1rem",
-                  cursor: "pointer",
+                  cursor: meditationNotes.trim() ? "pointer" : "not-allowed",
                   fontSize: "1rem"
                 }}
+                disabled={!meditationNotes.trim()}
               >
-                💬 Bedürfnisvorschlag mit ChatGPT
+                🌟 Anerkennung & Alltagstipp anfordern
               </button>
-            </div>
 
-          {error ? (
-            <p style={{ color: "red", marginTop: "1rem" }}>{error}</p>
-          ) : null}
-
-          {showResult && selectedNeedData ? (
-          <div
-            style={{
-              backgroundColor: "#fff",
-              padding: "1.5rem",
-              borderRadius: "10px",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-              marginTop: "1.5rem"
-            }}
-          >
-            <h2 style={{ color: "#2c3e50" }}>{selectedNeed}</h2>
-
-            <h3 style={{ color: "#2c3e50" }}>🌿 Resonanz-Hypothesen</h3>
-            <ul style={{ paddingLeft: "1.2rem" }}>
-              {selectedNeedData.resonance.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-
-            <h3 style={{ color: "#2c3e50" }}>💬 Dialog-Impulse an Jesus</h3>
-            <ul style={{ paddingLeft: "1.2rem" }}>
-              {selectedNeedData.dialog.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-
-            <h3 style={{ color: "#2c3e50" }}>✝️ Jesus-Antwort</h3>
-            <div
-              style={{
-                backgroundColor: "#f0f8ff",
-                borderLeft: "4px solid #4b7bec",
-                padding: "1rem",
-                borderRadius: "6px",
-                fontStyle: "italic"
-              }}
-            >
-              {selectedNeedData.jesus}
-            </div>
-
-            <h3 style={{ color: "#2c3e50" }}>🕊️ Dein persönlicher Schritt</h3>
-            <div
-              style={{
-                display: "flex",
-                gap: "0.5rem",
-                alignItems: "stretch",
-                marginTop: "0.5rem",
-                marginBottom: "1rem"
-              }}
-            >
+              <h3 style={{ color: "#2c3e50", marginTop: "1.5rem" }}>
+                💾 Gesamten Chat speichern
+              </h3>
+              <p>
+                Füge hier deine Eingabe und die Antwort von ChatGPT ein, um sie für spätere Reflexionen zu sichern.
+              </p>
+              <label
+                htmlFor="chatUserInput"
+                style={{ display: "block", fontWeight: 600, marginTop: "1rem" }}
+              >
+                Deine Eingabe an ChatGPT
+              </label>
               <textarea
-                id="personalNeed"
-                value={personalNeed}
-                onChange={(event) => setPersonalNeed(event.target.value)}
+                id="chatUserInput"
+                value={chatUserInput}
+                onChange={(event) => setChatUserInput(event.target.value)}
                 rows={3}
-                placeholder="Wie würdest du dein Bedürfnis mit eigenen Worten beschreiben?"
+                placeholder="Füge hier deinen Prompt oder deine Frage ein..."
                 style={{
-                  flex: 1,
+                  width: "100%",
                   fontSize: "1rem",
                   padding: "0.5rem",
+                  marginTop: "0.5rem",
                   borderRadius: "6px",
                   border: "1px solid #ccc"
                 }}
               />
-              <DictationButton field="personalNeed" ariaLabel="Persönlichen Schritt diktieren" />
-            </div>
-          <p style={{ marginTop: "1rem", fontWeight: 600 }}>
-            Hast du dieses Gefühl oder Bedürfnis schon einmal in der Kindheit erlebt?
-          </p>
-          <div
-            style={{
-              display: "flex",
-              gap: "0.5rem",
-              alignItems: "stretch",
-              marginTop: "0.5rem",
-              marginBottom: "1rem"
-            }}
-          >
-            <textarea
-              id="childhoodExperience"
-              value={childhoodExperience}
-              onChange={(event) => setChildhoodExperience(event.target.value)}
-              rows={3}
-              placeholder="Beschreibe hier deine Erinnerungen aus der Kindheit."
-              style={{
-                flex: 1,
-                fontSize: "1rem",
-                padding: "0.5rem",
-                borderRadius: "6px",
-                border: "1px solid #ccc"
-              }}
-            />
-            <DictationButton
-              field="childhoodExperience"
-              ariaLabel="Kindheitserinnerungen diktieren"
-            />
-          </div>
-          <button
-            onClick={handlePersonalJesus}
-            style={{
-              width: "100%",
-                backgroundColor: "#4b7bec",
-                color: "#fff",
-                border: "none",
-                borderRadius: "6px",
-                padding: "0.6rem 1rem",
-                cursor: "pointer",
-                fontSize: "1rem"
-              }}
-            >
-              💬 Frage Jesus, wie er dein Bedürfnis stillt
-            </button>
-            <p style={{ marginTop: "1rem" }}>
-              🙏 Setze dich im Glauben auf den Gnadenthron, wo Jesus als barmherziger
-              Hohepriester sitzt. Stell dir vor, was er dir als Hohepriester sagt und
-              wie er dir jetzt Gnade schenkt. Meditiere 1–2 Minuten über seine Worte
-              und schreibe auf, was Jesus dir gesagt hat.
-            </p>
-            <div
-              style={{
-                display: "flex",
-                gap: "0.5rem",
-                alignItems: "stretch",
-                marginTop: "0.5rem",
-                marginBottom: "1rem"
-              }}
-            >
+              <label
+                htmlFor="chatAssistantResponse"
+                style={{ display: "block", fontWeight: 600, marginTop: "1rem" }}
+              >
+                Antwort von ChatGPT
+              </label>
               <textarea
-                id="meditationNotes"
-                value={meditationNotes}
-                onChange={(event) => setMeditationNotes(event.target.value)}
-                rows={4}
-                placeholder="Was hat Jesus dir in dieser Meditation zugesprochen?"
+                id="chatAssistantResponse"
+                value={chatAssistantResponse}
+                onChange={(event) => setChatAssistantResponse(event.target.value)}
+                rows={5}
+                placeholder="Füge hier die Antwort von ChatGPT ein..."
                 style={{
-                  flex: 1,
+                  width: "100%",
                   fontSize: "1rem",
                   padding: "0.5rem",
+                  marginTop: "0.5rem",
                   borderRadius: "6px",
                   border: "1px solid #ccc"
                 }}
               />
-              <DictationButton field="meditationNotes" ariaLabel="Meditationsnotizen diktieren" />
-            </div>
-            <h3 style={{ color: "#2c3e50", marginTop: "1.5rem" }}>📝 Schlusskommentar</h3>
-            <p>
-              Bitte Jesus dafür, was er dir gesagt hat, und lass dir von ChatGPT einen
-              warmen Abschlussimpuls schenken, wie du seine Worte im Alltag wachhalten
-              kannst.
-            </p>
-            <button
-              onClick={handleClosingComment}
-              style={{
-                width: "100%",
-                backgroundColor: meditationNotes.trim() ? "#20bf6b" : "#aacfbf",
-                color: "#fff",
-                border: "none",
-                borderRadius: "6px",
-                padding: "0.6rem 1rem",
-                cursor: meditationNotes.trim() ? "pointer" : "not-allowed",
-                fontSize: "1rem"
-              }}
-              disabled={!meditationNotes.trim()}
-            >
-              🌟 Anerkennung & Alltagstipp anfordern
-            </button>
+              <button
+                onClick={handleSaveChat}
+                style={{
+                  width: "100%",
+                  backgroundColor:
+                    chatUserInput.trim() || chatAssistantResponse.trim()
+                      ? "#3867d6"
+                      : "#aac1e8",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "6px",
+                  padding: "0.6rem 1rem",
+                  cursor:
+                    chatUserInput.trim() || chatAssistantResponse.trim()
+                      ? "pointer"
+                      : "not-allowed",
+                  fontSize: "1rem",
+                  marginTop: "1rem"
+                }}
+                disabled={!chatUserInput.trim() && !chatAssistantResponse.trim()}
+              >
+                💾 Chat sichern
+              </button>
 
-            <h3 style={{ color: "#2c3e50", marginTop: "1.5rem" }}>
-              💾 Gesamten Chat speichern
-            </h3>
-            <p>
-              Füge hier deine Eingabe und die Antwort von ChatGPT ein, um sie für
-              spätere Reflexionen zu sichern.
-            </p>
-            <label
-              htmlFor="chatUserInput"
-              style={{ display: "block", fontWeight: 600, marginTop: "1rem" }}
-            >
-              Deine Eingabe an ChatGPT
-            </label>
-            <textarea
-              id="chatUserInput"
-              value={chatUserInput}
-              onChange={(event) => setChatUserInput(event.target.value)}
-              rows={3}
-              placeholder="Füge hier deinen Prompt oder deine Frage ein..."
-              style={{
-                width: "100%",
-                fontSize: "1rem",
-                padding: "0.5rem",
-                marginTop: "0.5rem",
-                borderRadius: "6px",
-                border: "1px solid #ccc"
-              }}
-            />
-            <label
-              htmlFor="chatAssistantResponse"
-              style={{ display: "block", fontWeight: 600, marginTop: "1rem" }}
-            >
-              Antwort von ChatGPT
-            </label>
-            <textarea
-              id="chatAssistantResponse"
-              value={chatAssistantResponse}
-              onChange={(event) => setChatAssistantResponse(event.target.value)}
-              rows={5}
-              placeholder="Füge hier die Antwort von ChatGPT ein..."
-              style={{
-                width: "100%",
-                fontSize: "1rem",
-                padding: "0.5rem",
-                marginTop: "0.5rem",
-                borderRadius: "6px",
-                border: "1px solid #ccc"
-              }}
-            />
-            <button
-              onClick={handleSaveChat}
-              style={{
-                width: "100%",
-                backgroundColor:
-                  chatUserInput.trim() || chatAssistantResponse.trim()
-                    ? "#3867d6"
-                    : "#aac1e8",
-                color: "#fff",
-                border: "none",
-                borderRadius: "6px",
-                padding: "0.6rem 1rem",
-                cursor:
-                  chatUserInput.trim() || chatAssistantResponse.trim()
-                    ? "pointer"
-                    : "not-allowed",
-                fontSize: "1rem",
-                marginTop: "1rem"
-              }}
-              disabled={
-                !chatUserInput.trim() && !chatAssistantResponse.trim()
-              }
-            >
-              💾 Chat sichern
-            </button>
-
-            <div
-              style={{
-                backgroundColor: "#f9fbff",
-                borderRadius: "8px",
-                padding: "1rem",
-                marginTop: "1.5rem",
-                border: "1px solid #d6e0f5"
-              }}
-            >
-              <h4 style={{ color: "#2c3e50", marginTop: 0 }}>Gespeicherte Chats</h4>
-              {savedChats.length === 0 ? (
-                <p style={{ margin: 0 }}>
-                  Noch keine Chats gespeichert. Füge oben deine ersten Notizen hinzu.
-                </p>
-              ) : (
-                <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-                  {savedChats.map((chat) => (
-                    <li
-                      key={chat.id}
-                      style={{
-                        backgroundColor: "#fff",
-                        borderRadius: "6px",
-                        padding: "0.75rem",
-                        boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
-                        border: "1px solid #e0e8f8",
-                        marginBottom: "0.75rem"
-                      }}
-                    >
-                      <div
+              <div
+                style={{
+                  backgroundColor: "#f9fbff",
+                  borderRadius: "8px",
+                  padding: "1rem",
+                  marginTop: "1.5rem",
+                  border: "1px solid #d6e0f5"
+                }}
+              >
+                <h4 style={{ color: "#2c3e50", marginTop: 0 }}>Gespeicherte Chats</h4>
+                {savedChats.length === 0 ? (
+                  <p style={{ margin: 0 }}>
+                    Noch keine Chats gespeichert. Füge oben deine ersten Notizen hinzu.
+                  </p>
+                ) : (
+                  <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                    {savedChats.map((chat) => (
+                      <li
+                        key={chat.id}
                         style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          marginBottom: "0.5rem"
+                          backgroundColor: "#fff",
+                          borderRadius: "6px",
+                          padding: "0.75rem",
+                          boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
+                          border: "1px solid #e0e8f8",
+                          marginBottom: "0.75rem"
                         }}
                       >
-                        <strong>
-                          {new Date(chat.createdAt).toLocaleString("de-DE", {
-                            dateStyle: "short",
-                            timeStyle: "short"
-                          })}
-                        </strong>
-                        <button
-                          onClick={() => handleDeleteChat(chat.id)}
+                        <div
                           style={{
-                            backgroundColor: "transparent",
-                            color: "#eb3b5a",
-                            border: "none",
-                            cursor: "pointer",
-                            fontWeight: 600
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            marginBottom: "0.5rem"
                           }}
                         >
-                          ✖️ Löschen
-                        </button>
-                      </div>
-                      {chat.userInput ? (
-                        <p style={{ whiteSpace: "pre-wrap", marginBottom: "0.5rem" }}>
-                          <strong>Du:</strong> {chat.userInput}
-                        </p>
-                      ) : null}
-                      {chat.assistantResponse ? (
-                        <p style={{ whiteSpace: "pre-wrap", margin: 0 }}>
-                          <strong>ChatGPT:</strong> {chat.assistantResponse}
-                        </p>
-                      ) : null}
-                    </li>
-                  ))}
-                </ul>
-              )}
+                          <strong>
+                            {new Date(chat.createdAt).toLocaleString("de-DE", {
+                              dateStyle: "short",
+                              timeStyle: "short"
+                            })}
+                          </strong>
+                          <button
+                            onClick={() => handleDeleteChat(chat.id)}
+                            style={{
+                              backgroundColor: "transparent",
+                              color: "#eb3b5a",
+                              border: "none",
+                              cursor: "pointer",
+                              fontWeight: 600
+                            }}
+                          >
+                            ✖️ Löschen
+                          </button>
+                        </div>
+                        {chat.userInput ? (
+                          <p style={{ whiteSpace: "pre-wrap", marginBottom: "0.5rem" }}>
+                            <strong>Du:</strong> {chat.userInput}
+                          </p>
+                        ) : null}
+                        {chat.assistantResponse ? (
+                          <p style={{ whiteSpace: "pre-wrap", margin: 0 }}>
+                            <strong>ChatGPT:</strong> {chat.assistantResponse}
+                          </p>
+                        ) : null}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
             </div>
-          </div>
-            ) : null}
-          </div>
+          ) : null}
         </div>
       </section>
     </main>
