@@ -1689,36 +1689,6 @@ ${closingDetails}
                 marginTop: "1.5rem"
               }}
             >
-              <h2 style={{ color: "#2c3e50" }}>{selectedNeed}</h2>
-
-              <h3 style={{ color: "#2c3e50" }}>🌿 Resonanz-Hypothesen</h3>
-              <ul style={{ paddingLeft: "1.2rem" }}>
-                {selectedNeedData.resonance.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-
-              <h3 style={{ color: "#2c3e50" }}>💬 Dialog-Impulse an Jesus</h3>
-              <ul style={{ paddingLeft: "1.2rem" }}>
-                {selectedNeedData.dialog.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-
-              <h3 style={{ color: "#2c3e50" }}>✝️ Jesus-Antwort</h3>
-              <div
-                style={{
-                  backgroundColor: "#f0f8ff",
-                  borderLeft: "4px solid #4b7bec",
-                  padding: "1rem",
-                  borderRadius: "6px",
-                  fontStyle: "italic"
-                }}
-              >
-                {selectedNeedData.jesus}
-              </div>
-
-              <h3 style={{ color: "#2c3e50" }}>🕊️ Dein persönlicher Schritt</h3>
               <div
                 style={{
                   display: "flex",
