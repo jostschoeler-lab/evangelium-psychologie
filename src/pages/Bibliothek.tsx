@@ -400,6 +400,7 @@ export default function Bibliothek() {
   const [chatAssistantResponse, setChatAssistantResponse] = useState("");
   const [savedChats, setSavedChats] = useState<SavedChat[]>([]);
   const [introVisible, setIntroVisible] = useState(true);
+  const [introExpanded, setIntroExpanded] = useState(false);
   const [activeMobileStep, setActiveMobileStep] = useState(0);
 
   const dictationSupported =
@@ -687,12 +688,13 @@ export default function Bibliothek() {
 
   const handleStartIntro = useCallback(() => {
     setIntroVisible(false);
+    setIntroExpanded(false);
     if (typeof window !== "undefined") {
       window.setTimeout(() => {
         formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
       }, 100);
     }
-  }, [setIntroVisible]);
+  }, [setIntroVisible, setIntroExpanded]);
 
   const handleContinueFromStepOne = useCallback(() => {
     if (typeof window !== "undefined") {
@@ -1002,28 +1004,153 @@ export default function Bibliothek() {
       return <IntroCard onStart={handleStartIntro} />;
     }
 
+    const displayedLeadParagraphs = introExpanded
+      ? introLeadParagraphs
+      : introLeadParagraphs.slice(0, 1);
+
+    const displayedSections = introExpanded ? introSections : introSections.slice(0, 1);
+
     return (
-      <button
-        type="button"
-        onClick={() => {
-          setIntroVisible(true);
-          if (typeof window !== "undefined") {
-            window.scrollTo({ top: 0, behavior: "smooth" });
-          }
-        }}
+      <section
+        aria-label="Einführung: Verwandlung als Gotteskind"
         style={{
-          background: "none",
-          border: "none",
-          color: "#3867d6",
-          textDecoration: "underline",
-          cursor: "pointer",
-          padding: 0,
-          fontSize: "0.95rem",
-          marginBottom: "1.5rem"
+          margin: "0 auto 2rem",
+          maxWidth: "420px",
+          background: "linear-gradient(180deg, #fff5e6 0%, #fdebd2 100%)",
+          borderRadius: "28px",
+          padding: "1.5rem 1.5rem 1.75rem",
+          boxShadow: "0 24px 48px rgba(149, 94, 36, 0.18)",
+          display: "flex",
+          flexDirection: "column",
+          gap: "1rem"
         }}
       >
-        Einführung erneut ansehen
-      </button>
+        <div
+          style={{
+            width: "100%",
+            borderRadius: "20px",
+            overflow: "hidden",
+            background: "linear-gradient(135deg, #f8e1b3, #f38181)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            height: introExpanded ? "190px" : "150px"
+          }}
+        >
+          <img
+            src="/bibliothek/verwandlung-intro.svg"
+            alt="Jesus hält ein weinendes Kind im Arm"
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          />
+        </div>
+
+        <div>
+          <h2
+            style={{
+              margin: 0,
+              fontSize: "1.45rem",
+              lineHeight: 1.3,
+              color: "#5c3b1f"
+            }}
+          >
+            Verwandlung als Gotteskind
+          </h2>
+          <p
+            style={{
+              margin: "0.3rem 0 0",
+              fontSize: "0.95rem",
+              lineHeight: 1.5,
+              color: "#8c5d32",
+              fontStyle: "italic"
+            }}
+          >
+            „Selig sind die Trauernden, denn sie werden getröstet werden.“ (Matthäus 5,4)
+          </p>
+        </div>
+
+        {displayedLeadParagraphs.map((paragraph, index, array) => {
+          const isLast = index === array.length - 1;
+          return (
+            <p
+              key={paragraph}
+              style={{ margin: 0, fontSize: "0.95rem", lineHeight: 1.6, color: "#5f4630" }}
+            >
+              {introExpanded || !isLast ? paragraph : `${paragraph} …`}
+            </p>
+          );
+        })}
+
+        {displayedSections.map((section) => (
+          <div
+            key={section.title}
+            style={{
+              borderRadius: "18px",
+              backgroundColor: "#fff",
+              padding: "0.9rem 1rem",
+              border: "1px solid rgba(240, 194, 123, 0.4)",
+              display: "flex",
+              flexDirection: "column",
+              gap: "0.5rem"
+            }}
+          >
+            <h3
+              style={{
+                margin: 0,
+                fontSize: "1rem",
+                color: "#5c3b1f",
+                display: "flex",
+                alignItems: "center",
+                gap: "0.4rem"
+              }}
+            >
+              <span aria-hidden="true">{section.icon}</span>
+              <span>{section.title}</span>
+            </h3>
+            {section.paragraphs?.map((paragraph) => (
+              <p
+                key={paragraph}
+                style={{ margin: 0, fontSize: "0.92rem", lineHeight: 1.55, color: "#5f4630" }}
+              >
+                {paragraph}
+              </p>
+            ))}
+            {section.list && (
+              <ul
+                style={{
+                  margin: 0,
+                  paddingLeft: "1.1rem",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "0.35rem",
+                  color: "#4a3524",
+                  fontSize: "0.92rem"
+                }}
+              >
+                {section.list.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+        ))}
+
+        <button
+          type="button"
+          onClick={() => setIntroExpanded((previous) => !previous)}
+          style={{
+            alignSelf: "flex-start",
+            background: "none",
+            border: "none",
+            color: "#3867d6",
+            textDecoration: "underline",
+            cursor: "pointer",
+            fontWeight: 600,
+            fontSize: "0.95rem"
+          }}
+        >
+          {introExpanded ? "Weniger anzeigen" : "Alles anzeigen"}
+        </button>
+      </section>
     );
   };
 
@@ -2118,9 +2245,12 @@ export default function Bibliothek() {
         {renderIntroSection()}
 
         <div style={{ display: introVisible ? "none" : "block" }}>
-          {renderProblemSection({ attachRef: true })}
-
-          {renderNeedSelectionSection({ attachRef: true })}
+          {!showResult && (
+            <>
+              {renderProblemSection({ attachRef: true })}
+              {renderNeedSelectionSection({ attachRef: true })}
+            </>
+          )}
           {showResult && selectedNeedData ? (
             <div
               style={{
