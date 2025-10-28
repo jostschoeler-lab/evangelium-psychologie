@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bedürfnis-Erklärung – Bibliothek (mobil)</title>
+    <link rel="stylesheet" href="/assets/styles/main.css" />
+    <style>
+      body {
+        margin: 0;
+        background: linear-gradient(180deg, #fef6ee 0%, #e8f0ff 100%);
+        font-family: "Segoe UI", system-ui, sans-serif;
+        color: #1f2933;
+      }
+      main {
+        max-width: 480px;
+        margin: 0 auto;
+        padding: 24px 20px 48px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+      }
+      header a {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        color: #3867d6;
+        font-weight: 600;
+      }
+      .badge {
+        background: rgba(56, 103, 214, 0.1);
+        color: #1f3c88;
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-size: 0.85rem;
+        font-weight: 600;
+      }
+      .card {
+        background: #ffffffcc;
+        backdrop-filter: blur(6px);
+        border-radius: 28px;
+        padding: 28px 22px;
+        box-shadow: 0 24px 48px rgba(31, 61, 116, 0.16);
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+      }
+      h1 {
+        font-size: 1.6rem;
+        margin: 0;
+        color: #2c3e50;
+      }
+      h2 {
+        margin: 0;
+        font-size: 1.2rem;
+        color: #2c3e50;
+      }
+      p.subtitle {
+        margin: 0;
+        font-size: 1.05rem;
+        line-height: 1.5;
+        color: #344767;
+      }
+      ul.info-list {
+        margin: 0;
+        padding-left: 1.2rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+      }
+      .section {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .notice {
+        background: rgba(255, 255, 255, 0.75);
+        padding: 18px 20px;
+        border-radius: 20px;
+        color: #4c5d73;
+        line-height: 1.6;
+        font-weight: 600;
+        text-align: center;
+      }
+      blockquote {
+        margin: 0;
+        padding: 18px 20px;
+        border-left: 4px solid #4b7bec;
+        background: rgba(72, 103, 214, 0.12);
+        border-radius: 20px;
+        font-style: italic;
+        color: #1f3c88;
+      }
+      @media (max-width: 420px) {
+        main {
+          padding: 20px 16px 40px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <a href="/bibliothek/index.html">← Zurück</a>
+        <span class="badge">Bibliothek · Mobil</span>
+      </header>
+      <section class="card" aria-labelledby="needTitle">
+        <div class="section">
+          <h1 id="needTitle">Bedürfnis</h1>
+          <p id="needSubtitle" class="subtitle"></p>
+        </div>
+        <div class="section">
+          <h2>🌱 Resonanz-Hypothesen</h2>
+          <ul id="resonanceList" class="info-list"></ul>
+        </div>
+        <div class="section">
+          <h2>🗣️ Dialog-Impulse an Jesus</h2>
+          <ul id="dialogList" class="info-list"></ul>
+        </div>
+        <div class="section">
+          <h2>✝️ Jesus-Antwort</h2>
+          <blockquote id="jesusAnswer"></blockquote>
+        </div>
+      </section>
+      <p id="fallbackNotice" class="notice" hidden>
+        Wähle zuerst ein Bedürfnis in der Desktop-Ansicht, damit die Erklärung hier angezeigt werden kann.
+      </p>
+    </main>
+    <script>
+      (function () {
+        const storageKey = "bibliothekNeedDetails";
+        const needTitle = document.getElementById("needTitle");
+        const needSubtitle = document.getElementById("needSubtitle");
+        const resonanceList = document.getElementById("resonanceList");
+        const dialogList = document.getElementById("dialogList");
+        const jesusAnswer = document.getElementById("jesusAnswer");
+        const fallbackNotice = document.getElementById("fallbackNotice");
+
+        const renderList = (container, items) => {
+          container.innerHTML = "";
+          if (!Array.isArray(items) || items.length === 0) {
+            const empty = document.createElement("li");
+            empty.textContent = "Noch keine Inhalte vorhanden.";
+            container.appendChild(empty);
+            return;
+          }
+          items.forEach((item) => {
+            const li = document.createElement("li");
+            li.textContent = item;
+            container.appendChild(li);
+          });
+        };
+
+        try {
+          const stored = localStorage.getItem(storageKey);
+          if (!stored) {
+            fallbackNotice.hidden = false;
+            return;
+          }
+          const data = JSON.parse(stored);
+          if (!data || typeof data !== "object") {
+            fallbackNotice.hidden = false;
+            return;
+          }
+          const { need, resonance, dialog, jesus } = data;
+          if (typeof need === "string" && need.trim()) {
+            needTitle.textContent = need;
+            needSubtitle.textContent = "Diese Impulse helfen dir, das Bedürfnis tiefer zu verstehen.";
+          }
+          renderList(resonanceList, Array.isArray(resonance) ? resonance : []);
+          renderList(dialogList, Array.isArray(dialog) ? dialog : []);
+          jesusAnswer.textContent = typeof jesus === "string" ? jesus : "";
+          if (!jesus) {
+            jesusAnswer.textContent = "Noch keine Antwort vorhanden.";
+          }
+        } catch (error) {
+          console.warn("Konnte Bedürfnisdetails nicht laden", error);
+          fallbackNotice.hidden = false;
+        }
+      })();
+    </script>
+  </body>
+</html>

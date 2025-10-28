@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Kindheitserinnerung – Bibliothek (mobil)</title>
+    <link rel="stylesheet" href="/assets/styles/main.css" />
+    <style>
+      body {
+        margin: 0;
+        background: linear-gradient(180deg, #f9f1ff 0%, #eef7ff 100%);
+        font-family: "Segoe UI", system-ui, sans-serif;
+        color: #1f2933;
+      }
+      main {
+        max-width: 480px;
+        margin: 0 auto;
+        padding: 24px 20px 48px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+      }
+      header a {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        color: #3867d6;
+        font-weight: 600;
+      }
+      .badge {
+        background: rgba(56, 103, 214, 0.1);
+        color: #1f3c88;
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-size: 0.85rem;
+        font-weight: 600;
+      }
+      .card {
+        background: #ffffffcc;
+        backdrop-filter: blur(6px);
+        border-radius: 28px;
+        padding: 28px 22px;
+        box-shadow: 0 24px 48px rgba(79, 43, 124, 0.18);
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+      }
+      h1 {
+        font-size: 1.6rem;
+        margin: 0;
+        color: #2c3e50;
+      }
+      p.subtitle {
+        margin: 0;
+        font-size: 1.05rem;
+        line-height: 1.6;
+        color: #344767;
+        text-align: center;
+        font-weight: 600;
+      }
+      label {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #1f2933;
+      }
+      textarea {
+        width: 100%;
+        min-height: 160px;
+        border-radius: 20px;
+        border: 1px solid rgba(56, 103, 214, 0.25);
+        padding: 16px;
+        font-size: 1.05rem;
+        line-height: 1.5;
+        resize: vertical;
+        box-shadow: inset 0 1px 4px rgba(31, 61, 116, 0.12);
+      }
+      textarea:focus {
+        outline: none;
+        border-color: #3867d6;
+        box-shadow: 0 0 0 3px rgba(56, 103, 214, 0.15);
+      }
+      .actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      button#dictationBtn {
+        flex: 0 0 auto;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 12px 18px;
+        border-radius: 999px;
+        border: none;
+        font-weight: 600;
+        font-size: 1rem;
+        background: linear-gradient(135deg, #8f72ff, #5c6cff);
+        color: #fff;
+        cursor: pointer;
+        box-shadow: 0 14px 28px rgba(112, 125, 255, 0.28);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+      button#dictationBtn.active {
+        transform: scale(0.96);
+        box-shadow: 0 8px 18px rgba(112, 125, 255, 0.35);
+        background: linear-gradient(135deg, #20bf6b, #1e9f5a);
+      }
+      button#dictationBtn:disabled {
+        background: #b0b9c6;
+        cursor: not-allowed;
+        box-shadow: none;
+      }
+      .status {
+        font-size: 0.9rem;
+        color: #5b728f;
+        font-weight: 600;
+      }
+      .hint {
+        margin: 0;
+        font-size: 0.9rem;
+        line-height: 1.5;
+        color: #4c5d73;
+        text-align: center;
+      }
+      .notice {
+        display: none;
+        font-size: 0.9rem;
+        color: #c0392b;
+        background: rgba(255, 235, 230, 0.9);
+        padding: 12px 14px;
+        border-radius: 16px;
+      }
+      @media (max-width: 420px) {
+        main {
+          padding: 20px 16px 40px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <a href="/bibliothek/index.html">← Zurück</a>
+        <span class="badge">Bibliothek · Mobil</span>
+      </header>
+      <section class="card" aria-labelledby="stepTitle">
+        <h1 id="stepTitle">👶 Kindheitserinnerung</h1>
+        <p class="subtitle">Hast du dieses Gefühl schon einmal in der Kindheit erlebt?</p>
+        <label for="childhoodExperience">Antwort eingeben</label>
+        <textarea
+          id="childhoodExperience"
+          placeholder="Beschreibe hier deine Erinnerungen aus der Kindheit."
+        ></textarea>
+        <div class="actions">
+          <button id="dictationBtn" type="button" aria-label="Antwort einsprechen">
+            🎙️ Einsprechen
+          </button>
+          <span id="dictationStatus" class="status">Bereit</span>
+        </div>
+        <p id="dictationNotice" class="notice">
+          Dein Browser unterstützt keine Spracherkennung. Verwende Chrome oder Edge, um die Diktierfunktion zu nutzen.
+        </p>
+      </section>
+      <p class="hint">
+        Deine Eingabe wird automatisch auf diesem Gerät gespeichert. Sie erscheint auch in der Desktop-Ansicht unter „Hast du dieses Gefühl in der Kindheit erlebt?“.
+      </p>
+    </main>
+    <script>
+      (function () {
+        const storageKey = "bibliothekChildhoodExperience";
+        const needDetailsKey = "bibliothekNeedDetails";
+        const textarea = document.getElementById("childhoodExperience");
+        const dictationBtn = document.getElementById("dictationBtn");
+        const statusEl = document.getElementById("dictationStatus");
+        const noticeEl = document.getElementById("dictationNotice");
+        const subtitleEl = document.querySelector(".subtitle");
+
+        try {
+          const needStored = localStorage.getItem(needDetailsKey);
+          if (needStored && subtitleEl) {
+            const parsed = JSON.parse(needStored);
+            if (parsed && typeof parsed.need === "string" && parsed.need.trim()) {
+              subtitleEl.textContent = `Hast du „${parsed.need}" schon in deiner Kindheit gespürt?`;
+            }
+          }
+        } catch (error) {
+          console.warn("Konnte Bedürfnisdetails für die Kindheitserinnerung nicht laden", error);
+        }
+
+        const loadValue = () => {
+          try {
+            const stored = localStorage.getItem(storageKey);
+            if (stored) {
+              textarea.value = stored;
+            }
+          } catch (error) {
+            console.warn("Konnte gespeicherte Kindheitserinnerung nicht laden", error);
+          }
+        };
+
+        const persistValue = () => {
+          try {
+            const value = textarea.value;
+            if (value.trim()) {
+              localStorage.setItem(storageKey, value);
+            } else {
+              localStorage.removeItem(storageKey);
+            }
+          } catch (error) {
+            console.warn("Konnte Kindheitserinnerung nicht speichern", error);
+          }
+        };
+
+        textarea.addEventListener("input", persistValue);
+        window.addEventListener("beforeunload", persistValue);
+        loadValue();
+
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+          dictationBtn.disabled = true;
+          statusEl.textContent = "Nicht verfügbar";
+          noticeEl.style.display = "block";
+          return;
+        }
+
+        const recognition = new SpeechRecognition();
+        recognition.lang = "de-DE";
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        let listening = false;
+        let baseValue = "";
+
+        const stopListening = () => {
+          if (!listening) return;
+          listening = false;
+          dictationBtn.classList.remove("active");
+          statusEl.textContent = "Bereit";
+        };
+
+        recognition.addEventListener("result", (event) => {
+          const result = event.results[event.results.length - 1];
+          if (!result || !result[0]) {
+            return;
+          }
+          const transcript = result[0].transcript.trim();
+          if (!transcript) {
+            return;
+          }
+          const prefix = baseValue.trim();
+          const separator = prefix.length > 0 ? " " : "";
+          const combined = `${prefix}${separator}${transcript}`.trim();
+          textarea.value = combined;
+          persistValue();
+          baseValue = combined;
+        });
+
+        recognition.addEventListener("start", () => {
+          listening = true;
+          dictationBtn.classList.add("active");
+          statusEl.textContent = "Spricht …";
+        });
+
+        recognition.addEventListener("end", () => {
+          stopListening();
+        });
+
+        recognition.addEventListener("error", () => {
+          stopListening();
+          statusEl.textContent = "Fehler";
+        });
+
+        dictationBtn.addEventListener("click", () => {
+          if (listening) {
+            recognition.stop();
+            return;
+          }
+          baseValue = textarea.value.trim();
+          try {
+            recognition.start();
+          } catch (error) {
+            console.error("Spracherkennung konnte nicht gestartet werden", error);
+            stopListening();
+          }
+        });
+      })();
+    </script>
+  </body>
+</html>

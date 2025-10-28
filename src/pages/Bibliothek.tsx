@@ -424,6 +424,16 @@ export default function Bibliothek() {
     } catch {
       /* ignore */
     }
+
+    try {
+      const storedChildhoodExperience = localStorage.getItem("bibliothekChildhoodExperience");
+      if (storedChildhoodExperience) {
+        setChildhoodExperience(storedChildhoodExperience);
+        dictationBaseRef.current.childhoodExperience = storedChildhoodExperience;
+      }
+    } catch {
+      /* ignore */
+    }
   }, []);
 
   useEffect(() => {
@@ -440,6 +450,22 @@ export default function Bibliothek() {
       /* ignore */
     }
   }, [personalNeed]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    try {
+      if (!childhoodExperience.trim()) {
+        localStorage.removeItem("bibliothekChildhoodExperience");
+      } else {
+        localStorage.setItem("bibliothekChildhoodExperience", childhoodExperience);
+      }
+    } catch {
+      /* ignore */
+    }
+  }, [childhoodExperience]);
 
   const setFieldValue = useCallback(
     (field: DictationField, value: string) => {
@@ -589,6 +615,30 @@ export default function Bibliothek() {
     }
     return needs[selectedNeed];
   }, [selectedNeed]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    if (!selectedNeed || !selectedNeedData) {
+      localStorage.removeItem("bibliothekNeedDetails");
+      return;
+    }
+
+    const payload = {
+      need: selectedNeed,
+      resonance: selectedNeedData.resonance,
+      dialog: selectedNeedData.dialog,
+      jesus: selectedNeedData.jesus
+    } as const;
+
+    try {
+      localStorage.setItem("bibliothekNeedDetails", JSON.stringify(payload));
+    } catch {
+      /* ignore */
+    }
+  }, [selectedNeed, selectedNeedData]);
 
   const handleShowResult = () => {
     if (!selectedNeed) {
@@ -1240,31 +1290,140 @@ ${closingDetails}
               </div>
 
               <h3 style={{ color: "#2c3e50" }}>🕊️ Dein persönlicher Schritt</h3>
-              <div
+              <ol
                 style={{
+                  listStyle: "none",
+                  paddingLeft: 0,
+                  margin: "0 0 1rem 0",
                   display: "flex",
-                  justifyContent: "flex-end",
-                  marginBottom: "0.5rem"
+                  flexDirection: "column",
+                  gap: "0.6rem"
                 }}
               >
-                <a
-                  href="/bibliothek/persoenlicher-schritt.html"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <li
                   style={{
-                    display: "inline-flex",
+                    display: "flex",
                     alignItems: "center",
-                    gap: "0.35rem",
-                    fontSize: "0.9rem",
-                    fontWeight: 600,
-                    color: "#3867d6",
-                    textDecoration: "none"
+                    gap: "0.65rem"
                   }}
                 >
-                  <span aria-hidden="true">📱</span>
-                  <span>Handy-Ansicht öffnen</span>
-                </a>
-              </div>
+                  <span
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: "1.8rem",
+                      height: "1.8rem",
+                      borderRadius: "999px",
+                      backgroundColor: "#f0f4ff",
+                      color: "#2c3e50",
+                      fontWeight: 700
+                    }}
+                    aria-hidden="true"
+                  >
+                    1
+                  </span>
+                  <a
+                    href="/bibliothek/beduerfnis-erklaerung.html"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "0.4rem",
+                      fontSize: "0.95rem",
+                      fontWeight: 600,
+                      color: "#3867d6",
+                      textDecoration: "none"
+                    }}
+                  >
+                    <span aria-hidden="true">📖</span>
+                    <span>Bedürfnis-Erklärung (Handy)</span>
+                  </a>
+                </li>
+                <li
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.65rem"
+                  }}
+                >
+                  <span
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: "1.8rem",
+                      height: "1.8rem",
+                      borderRadius: "999px",
+                      backgroundColor: "#f0f4ff",
+                      color: "#2c3e50",
+                      fontWeight: 700
+                    }}
+                    aria-hidden="true"
+                  >
+                    2
+                  </span>
+                  <a
+                    href="/bibliothek/persoenlicher-schritt.html"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "0.4rem",
+                      fontSize: "0.95rem",
+                      fontWeight: 600,
+                      color: "#3867d6",
+                      textDecoration: "none"
+                    }}
+                  >
+                    <span aria-hidden="true">📱</span>
+                    <span>Handy-Ansicht · Persönlicher Schritt</span>
+                  </a>
+                </li>
+                <li
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.65rem"
+                  }}
+                >
+                  <span
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: "1.8rem",
+                      height: "1.8rem",
+                      borderRadius: "999px",
+                      backgroundColor: "#f0f4ff",
+                      color: "#2c3e50",
+                      fontWeight: 700
+                    }}
+                    aria-hidden="true"
+                  >
+                    3
+                  </span>
+                  <a
+                    href="/bibliothek/kindheitserinnerung.html"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "0.4rem",
+                      fontSize: "0.95rem",
+                      fontWeight: 600,
+                      color: "#3867d6",
+                      textDecoration: "none"
+                    }}
+                  >
+                    <span aria-hidden="true">👶</span>
+                    <span>Handy-Ansicht · Kindheitserinnerung</span>
+                  </a>
+                </li>
+              </ol>
               <div
                 style={{
                   display: "flex",
