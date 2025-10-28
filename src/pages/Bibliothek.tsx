@@ -767,7 +767,15 @@ ${closingDetails}
     [dictationSupported, listeningField, problem, personalNeed, childhoodExperience, meditationNotes, startRecognition]
   );
 
-  const DictationButton = ({ field, ariaLabel }: { field: DictationField; ariaLabel: string }) => {
+  const DictationButton = ({
+    field,
+    ariaLabel,
+    variant = "default"
+  }: {
+    field: DictationField;
+    ariaLabel: string;
+    variant?: "default" | "icon";
+  }) => {
     const isActive = listeningField === field;
     const isDisabled = !dictationSupported;
 
@@ -777,21 +785,35 @@ ${closingDetails}
         onClick={() => handleDictation(field)}
         disabled={isDisabled}
         style={{
-          backgroundColor: isDisabled ? "#95a5a6" : isActive ? "#20bf6b" : "#4b7bec",
+          backgroundColor: isDisabled
+            ? "#95a5a6"
+            : isActive
+            ? variant === "icon"
+              ? "#0abde3"
+              : "#20bf6b"
+            : variant === "icon"
+            ? "#ff7b54"
+            : "#4b7bec",
           color: "#fff",
           border: "none",
-          borderRadius: "6px",
-          padding: "0 0.75rem",
+          borderRadius: variant === "icon" ? "999px" : "6px",
+          padding: variant === "icon" ? 0 : "0 0.75rem",
           cursor: isDisabled ? "not-allowed" : "pointer",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          gap: "0.4rem",
-          fontSize: "0.95rem",
+          gap: variant === "icon" ? 0 : "0.4rem",
+          fontSize: variant === "icon" ? "1.1rem" : "0.95rem",
           fontWeight: 600,
-          minWidth: "5.5rem",
-          height: "100%",
-          transition: "background-color 0.2s ease-in-out"
+          minWidth: variant === "icon" ? "3rem" : "5.5rem",
+          width: variant === "icon" ? "3rem" : undefined,
+          height: variant === "icon" ? "3rem" : "100%",
+          boxShadow:
+            variant === "icon"
+              ? "0 8px 16px rgba(255, 123, 84, 0.35)"
+              : "none",
+          transition: "background-color 0.2s ease-in-out, transform 0.2s ease-in-out",
+          transform: variant === "icon" && isActive ? "scale(0.95)" : "none"
         }}
         aria-label={ariaLabel}
       >
@@ -800,12 +822,15 @@ ${closingDetails}
           viewBox="0 0 24 24"
           fill="currentColor"
           aria-hidden="true"
-          style={{ width: "1.25rem", height: "1.25rem" }}
+          style={{
+            width: variant === "icon" ? "1.4rem" : "1.25rem",
+            height: variant === "icon" ? "1.4rem" : "1.25rem"
+          }}
         >
           <path d="M12 1.5a3 3 0 00-3 3v6a3 3 0 106 0v-6a3 3 0 00-3-3z" />
           <path d="M5.25 10.5a.75.75 0 011.5 0 5.25 5.25 0 0010.5 0 .75.75 0 011.5 0 6.75 6.75 0 01-6 6.708v2.292h3a.75.75 0 010 1.5h-7.5a.75.75 0 010-1.5h3v-2.292a6.75 6.75 0 01-6-6.708z" />
         </svg>
-        <span>Diktat</span>
+        {variant === "default" && <span>Diktat</span>}
       </button>
     );
   };
