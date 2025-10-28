@@ -322,17 +322,36 @@ export default function Bibliothek() {
     window.open(`https://chat.openai.com/?q=${prompt}`, "_blank", "noopener,noreferrer");
   };
 
+  const buildDetailList = (
+    items: Array<{ label: string; value: string }>
+  ): string =>
+    items
+      .map(({ label, value }) => {
+        const trimmed = value.trim();
+        if (!trimmed) {
+          return "";
+        }
+        return `- ${label}: ${trimmed}`;
+      })
+      .filter(Boolean)
+      .join("\n");
+
   const handlePersonalJesus = () => {
-    const contextDetails = [
-      problem.trim() ? `Was dich beschäftigt: ${problem.trim()}` : "",
-      selectedNeed ? `Ausgewähltes Bedürfnis (aus der Liste): ${selectedNeed}` : "",
-      personalNeed.trim()
-        ? `Persönliche Beschreibung des Bedürfnisses: ${personalNeed.trim()}`
-        : "",
-      childhoodExperience.trim()
-        ? `Kindheitserfahrungen zu diesem Gefühl/Bedürfnis: ${childhoodExperience.trim()}`
-        : ""
-    ].filter(Boolean);
+    const contextDetails = buildDetailList([
+      { label: "Was dich beschäftigt", value: problem },
+      {
+        label: "Ausgewähltes Bedürfnis (aus der Liste)",
+        value: selectedNeed
+      },
+      {
+        label: "Persönliche Beschreibung des Bedürfnisses",
+        value: personalNeed
+      },
+      {
+        label: "Kindheitserfahrungen zu diesem Gefühl/Bedürfnis",
+        value: childhoodExperience
+      }
+    ]);
 
     const promptText = `
 Lies den folgenden Text, in dem ein Mensch sein inneres Bedürfnis beschreibt.
@@ -343,7 +362,7 @@ Schlage außerdem 2–3 Bibelverse vor, die unterstützen, wie ich dieses Bedür
 Sprich in der Du-Form, sanft und persönlich, mit Wärme.
 
 Angaben der Person:
-${contextDetails.map((detail) => `- ${detail}`).join("\n")}
+${contextDetails}
 `.trim();
 
     const prompt = encodeURIComponent(promptText);
@@ -356,19 +375,19 @@ ${contextDetails.map((detail) => `- ${detail}`).join("\n")}
       return;
     }
 
-    const closingDetails = [
-      problem.trim() ? `Was die Person gerade beschäftigt: ${problem.trim()}` : "",
-      selectedNeed ? `Ausgewähltes Bedürfnis: ${selectedNeed}` : "",
-      personalNeed.trim()
-        ? `Persönliche Beschreibung des Bedürfnisses: ${personalNeed.trim()}`
-        : "",
-      childhoodExperience.trim()
-        ? `Kindheitserfahrungen zu diesem Gefühl/Bedürfnis: ${childhoodExperience.trim()}`
-        : "",
-      meditationNotes.trim()
-        ? `Worte Jesu aus der Meditation: ${meditationNotes.trim()}`
-        : ""
-    ].filter(Boolean);
+    const closingDetails = buildDetailList([
+      { label: "Was die Person gerade beschäftigt", value: problem },
+      { label: "Ausgewähltes Bedürfnis", value: selectedNeed },
+      {
+        label: "Persönliche Beschreibung des Bedürfnisses",
+        value: personalNeed
+      },
+      {
+        label: "Kindheitserfahrungen zu diesem Gefühl/Bedürfnis",
+        value: childhoodExperience
+      },
+      { label: "Worte Jesu aus der Meditation", value: meditationNotes }
+    ]);
 
     const promptText = `
 Du bist geistliche*r Begleiter*in, der/die eine kurze Würdigung und einen praktischen Tipp gibt.
@@ -381,7 +400,7 @@ Baue mehrere Bibelverse ein (z.B. aus Römer 8, 2. Korinther 12, 1. Petrus 4, He
 Schreibe maximal zwei kurze Absätze und sprich die Person in der Du-Form an.
 
 Angaben der Person:
-${closingDetails.map((detail) => `- ${detail}`).join("\n")}
+${closingDetails}
     `.trim();
 
     const prompt = encodeURIComponent(promptText);
