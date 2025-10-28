@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Verwandlung als Gotteskind</title>
+  <desc id="desc">Symbolische Darstellung von Jesus, der ein Kind tröstet.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f8e1b3" />
+      <stop offset="50%" stop-color="#f0c27b" />
+      <stop offset="100%" stop-color="#f38181" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="56" fill="url(#bg)" />
+  <g transform="translate(256 270)">
+    <path d="M-36 -90c0-36 30-66 66-66s66 30 66 66-30 66-66 66-66-30-66-66z" fill="#f9dba7" />
+    <path d="M52 -96c22 6 40 26 44 54 10 72-46 120-96 120-30 0-58-16-74-40l-14-22c-9-14-6-32 8-42l38-26c5-3 8-10 8-16 0-14 4-28 12-40z" fill="#b24a2f" opacity="0.88" />
+    <path d="M-54 -30c-10 8-24 24-34 50-8 22 10 48 34 60 36 18 82 32 124 12 28-14 36-52 14-76-22-24-38-34-38-68 0-10-8-18-18-18h-30c-18 0-36 6-52 16z" fill="#f4b860" />
+    <circle cx="-60" cy="-64" r="42" fill="#f6cf90" />
+    <path d="M-68 -80c0-18 14-32 32-32 6 0 12 2 18 4 16 8 24 24 24 40 0 22-18 40-40 40-18 0-34-12-38-30-2-8 0-16 4-22z" fill="#fce5bb" />
+    <path d="M-50 -38c24-20 64-20 88 2 36 30 38 92 4 126-30 30-78 32-112 4-10-8-18-18-24-30l-12-26c-6-12-2-26 10-32z" fill="#d7663f" opacity="0.9" />
+  </g>
+</svg>
