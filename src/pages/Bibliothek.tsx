@@ -423,6 +423,17 @@ export default function Bibliothek() {
     if (typeof window === "undefined") {
       return;
     }
+
+    try {
+      const storedProblem = localStorage.getItem("bibliothekProblem");
+      if (storedProblem) {
+        setProblem(storedProblem);
+        dictationBaseRef.current.problem = storedProblem;
+      }
+    } catch {
+      /* ignore */
+    }
+
     try {
       const storedPersonalNeed = localStorage.getItem("bibliothekPersonalNeed");
       if (storedPersonalNeed) {
@@ -443,6 +454,22 @@ export default function Bibliothek() {
       /* ignore */
     }
   }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    try {
+      if (!problem.trim()) {
+        localStorage.removeItem("bibliothekProblem");
+      } else {
+        localStorage.setItem("bibliothekProblem", problem);
+      }
+    } catch {
+      /* ignore */
+    }
+  }, [problem]);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -700,7 +727,33 @@ export default function Bibliothek() {
       .filter(Boolean)
       .join("\n");
 
-  const handlePersonalJesus = () => {
+  const formatNeedExplanation = (need?: NeedContent): string => {
+    if (!need) {
+      return "";
+    }
+
+    const segments: string[] = [];
+
+    if (need.resonance?.length) {
+      const resonanceText = need.resonance
+        .map((entry) => `  • ${entry}`)
+        .join("\n");
+      segments.push(`Resonanz-Hypothesen:\n${resonanceText}`);
+    }
+
+    if (need.dialog?.length) {
+      const dialogText = need.dialog.map((entry) => `  • ${entry}`).join("\n");
+      segments.push(`Dialog-Impulse an Jesus:\n${dialogText}`);
+    }
+
+    if (need.jesus) {
+      segments.push(`Zusammenfassung der bisherigen Jesus-Antwort:\n  • ${need.jesus}`);
+    }
+
+    return segments.join("\n\n");
+  };
+
+  const handleAskJesus = () => {
     const contextDetails = buildDetailList([
       { label: "Was dich beschäftigt", value: problem },
       {
@@ -717,17 +770,25 @@ export default function Bibliothek() {
       }
     ]);
 
-    const promptText = `
-Lies den folgenden Text, in dem ein Mensch sein inneres Bedürfnis beschreibt.
-Antworte als Jesus – liebevoll, wahrhaftig, ermutigend.
-Zeige, wie dieses Bedürfnis in der Beziehung zu mir gestillt wird,
-nicht durch äußere Umstände, sondern durch die Gemeinschaft mit mir.
-Schlage außerdem 2–3 Bibelverse vor, die unterstützen, wie ich dieses Bedürfnis mit dir erlebe, und nenne die genaue Bibelstelle.
-Sprich in der Du-Form, sanft und persönlich, mit Wärme.
+    const needExplanation = formatNeedExplanation(selectedNeedData);
 
-Angaben der Person:
-${contextDetails}
-`.trim();
+    const promptLines = [
+      "Lies den folgenden Text, in dem ein Mensch sein inneres Bedürfnis beschreibt.",
+      "Antworte als Jesus – liebevoll, wahrhaftig, ermutigend.",
+      "Zeige, wie dieses Bedürfnis in der Beziehung zu mir gestillt werden könnte,",
+      "nicht durch äußere Umstände, sondern durch die Gemeinschaft mit mir.",
+      "Schlage außerdem 2–3 Bibelverse vor, die unterstützen, wie ich dieses Bedürfnis mit dir erlebe, und nenne die genaue Bibelstelle.",
+      "Sprich in der Du-Form, sanft und persönlich, mit Wärme.",
+      "",
+      "Angaben der Person:",
+      contextDetails || "- (Der Mensch hat keine zusätzlichen Details hinterlassen.)"
+    ];
+
+    if (needExplanation) {
+      promptLines.push("", "Bedürfnis-Erklärung aus der Bibliothek:", needExplanation);
+    }
+
+    const promptText = promptLines.join("\n");
 
     const prompt = encodeURIComponent(promptText);
     window.open(`https://chat.openai.com/?q=${prompt}`, "_blank", "noopener,noreferrer");
@@ -941,6 +1002,12 @@ ${closingDetails}
       label: "Kindheitserinnerung",
       icon: "👶",
       background: "linear-gradient(180deg, #f9f1ff 0%, #eef7ff 100%)"
+    },
+    {
+      key: "ask-jesus",
+      label: "Frage Jesus",
+      icon: "💬",
+      background: "linear-gradient(180deg, #fff3e8 0%, #e8fff7 100%)"
     }
   ] as const;
 
@@ -1336,6 +1403,241 @@ ${closingDetails}
             >
               Deine Eingabe wird automatisch auf diesem Gerät gespeichert. Sie erscheint auch in der Desktop-Ansicht unter „Hast du dieses Gefühl in der Kindheit erlebt?“.
             </p>
+          </div>
+        );
+      }
+      case 3: {
+        const summaryItems = [
+          { label: "Was dich beschäftigt", value: problem },
+          { label: "Ausgewähltes Bedürfnis", value: selectedNeed },
+          { label: "Deine Beschreibung", value: personalNeed },
+          { label: "Kindheitserinnerung", value: childhoodExperience }
+        ].filter(({ value }) => value && value.trim().length > 0);
+
+        const canAskJesus = summaryItems.length > 0 || Boolean(selectedNeedData);
+
+        const needSections = selectedNeedData
+          ? [
+              { title: "🌱 Resonanz-Hypothesen", items: selectedNeedData.resonance },
+              { title: "🗣️ Dialog-Impulse an Jesus", items: selectedNeedData.dialog },
+              {
+                title: "✝️ Jesus-Antwort",
+                items: selectedNeedData.jesus ? [selectedNeedData.jesus] : []
+              }
+            ]
+              .map((section) => ({
+                ...section,
+                items: section.items.filter((entry) => entry && entry.trim().length > 0)
+              }))
+              .filter((section) => section.items.length > 0)
+          : [];
+
+        return (
+          <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+            <section style={baseCardStyle} aria-labelledby="mobileAskJesusStep">
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "1rem",
+                  alignItems: "center",
+                  textAlign: "center"
+                }}
+              >
+                <div
+                  style={{
+                    width: "160px",
+                    height: "160px",
+                    borderRadius: "36px",
+                    background: "linear-gradient(135deg, #ffe0c7, #d5f9e5)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    boxShadow: "0 20px 38px rgba(75, 123, 236, 0.18)",
+                    overflow: "hidden"
+                  }}
+                >
+                  <img
+                    src="/bibliothek/jesus-traegt-weinendes-kind.svg"
+                    alt="Jesus hält ein weinendes Kind tröstend im Arm"
+                    style={{ width: "140px", height: "140px", objectFit: "contain" }}
+                  />
+                </div>
+                <h1
+                  id="mobileAskJesusStep"
+                  style={{ fontSize: "1.5rem", margin: 0, color: "#2c3e50" }}
+                >
+                  💬 Frage Jesus, wie er dein Bedürfnis stillen könnte
+                </h1>
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: "1.05rem",
+                    lineHeight: 1.6,
+                    color: "#344767"
+                  }}
+                >
+                  Die Antwort von ChatGPT berücksichtigt dein aktuelles Anliegen, deine Bedürfniswahl,
+                  deine eigene Beschreibung und deine Kindheitserinnerung.
+                </p>
+              </div>
+
+              {summaryItems.length > 0 && (
+                <div
+                  style={{
+                    background: "rgba(75, 123, 236, 0.08)",
+                    borderRadius: "20px",
+                    padding: "1.1rem 1.25rem",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "0.8rem"
+                  }}
+                >
+                  <h2
+                    style={{
+                      margin: 0,
+                      fontSize: "1.1rem",
+                      color: "#1f3c88"
+                    }}
+                  >
+                    Dein Anliegen im Überblick
+                  </h2>
+                  <ul
+                    style={{
+                      margin: 0,
+                      paddingLeft: "1.1rem",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "0.5rem",
+                      color: "#2c3e50"
+                    }}
+                  >
+                    {summaryItems.map((item) => (
+                      <li key={item.label} style={{ whiteSpace: "pre-line", lineHeight: 1.5 }}>
+                        <strong>{item.label}:</strong> {item.value.trim()}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {needSections.length > 0 && (
+                <div
+                  style={{
+                    background: "rgba(32, 191, 107, 0.08)",
+                    borderRadius: "20px",
+                    padding: "1.1rem 1.25rem",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "1rem"
+                  }}
+                >
+                  <h2
+                    style={{
+                      margin: 0,
+                      fontSize: "1.1rem",
+                      color: "#177245"
+                    }}
+                  >
+                    Aus der Bedürfnis-Erklärung
+                  </h2>
+                  {needSections.map((section) => (
+                    <div key={section.title} style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                      <h3 style={{ margin: 0, fontSize: "1rem", color: "#1f3c88" }}>{section.title}</h3>
+                      {section.title === "✝️ Jesus-Antwort" ? (
+                        <blockquote
+                          style={{
+                            margin: 0,
+                            padding: "0.9rem 1rem",
+                            borderLeft: "4px solid #4b7bec",
+                            background: "rgba(75, 123, 236, 0.1)",
+                            borderRadius: "16px",
+                            color: "#1f3c88",
+                            fontStyle: "italic"
+                          }}
+                        >
+                          {section.items[0]}
+                        </blockquote>
+                      ) : (
+                        <ul
+                          style={{
+                            margin: 0,
+                            paddingLeft: "1.1rem",
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: "0.4rem",
+                            color: "#2c3e50"
+                          }}
+                        >
+                          {section.items.map((item) => (
+                            <li key={item}>{item}</li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+                <button
+                  type="button"
+                  onClick={handleAskJesus}
+                  disabled={!canAskJesus}
+                  style={{
+                    border: "none",
+                    borderRadius: "999px",
+                    padding: "0.85rem 1.35rem",
+                    fontSize: "1.05rem",
+                    fontWeight: 700,
+                    background: canAskJesus
+                      ? "linear-gradient(135deg, #4b7bec, #20bf6b)"
+                      : "#cbd2d9",
+                    color: canAskJesus ? "#fff" : "#5b728f",
+                    cursor: canAskJesus ? "pointer" : "not-allowed",
+                    boxShadow: canAskJesus
+                      ? "0 18px 34px rgba(75, 123, 236, 0.3)"
+                      : "none",
+                    transition: "background-color 0.2s ease, transform 0.2s ease"
+                  }}
+                >
+                  💬 ChatGPT-Antwort öffnen
+                </button>
+                <a
+                  href="/bibliothek/frage-jesus.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "0.4rem",
+                    borderRadius: "999px",
+                    padding: "0.7rem 1.2rem",
+                    fontWeight: 600,
+                    fontSize: "0.95rem",
+                    background: "rgba(27, 163, 156, 0.12)",
+                    color: "#1b8772",
+                    textDecoration: "none"
+                  }}
+                >
+                  📱 Auf dem Handy ansehen
+                </a>
+              </div>
+
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: "0.95rem",
+                  lineHeight: 1.6,
+                  color: "#4c5d73"
+                }}
+              >
+                🙏 Setze dich im Glauben auf den Gnadenthron, wo Jesus als barmherziger Hohepriester sitzt. Stell dir vor, was
+                er dir sagt und wie er dir jetzt Gnade schenkt. Meditiere 1–2 Minuten über seine Worte und schreibe auf, was
+                Jesus dir gesagt hat.
+              </p>
+            </section>
           </div>
         );
       }
@@ -1820,26 +2122,6 @@ ${closingDetails}
                   </button>
                 </div>
               </div>
-              <button
-                onClick={handlePersonalJesus}
-                style={{
-                  width: "100%",
-                  backgroundColor: "#4b7bec",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "6px",
-                  padding: "0.6rem 1rem",
-                  cursor: "pointer",
-                  fontSize: "1rem"
-                }}
-              >
-                💬 Frage Jesus, wie er dein Bedürfnis stillt
-              </button>
-              <p style={{ marginTop: "1rem" }}>
-                🙏 Setze dich im Glauben auf den Gnadenthron, wo Jesus als barmherziger Hohepriester sitzt. Stell dir vor, was er
-                dir als Hohepriester sagt und wie er dir jetzt Gnade schenkt. Meditiere 1–2 Minuten über seine Worte und schreibe
-                auf, was Jesus dir gesagt hat.
-              </p>
               <div
                 style={{
                   display: "flex",
