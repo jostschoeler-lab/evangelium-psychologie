@@ -948,36 +948,374 @@ export default function Bibliothek() {
 
   const mobileStepMeta = [
     {
+      key: "transformation",
+      label: "1) Verwandlung als Gotteskind",
+      icon: "✨",
+      background: "linear-gradient(180deg, #fff4e8 0%, #fdf6ec 100%)"
+    },
+    {
+      key: "burden",
+      label: "2) Was belastet oder bewegt dich?",
+      icon: "📝",
+      background: "linear-gradient(180deg, #f0f4ff 0%, #fef6ee 100%)"
+    },
+    {
+      key: "need-selection",
+      label: "3) Welches Bedürfnis steckt dahinter?",
+      icon: "🧭",
+      background: "linear-gradient(180deg, #fff6eb 0%, #fff0d9 100%)"
+    },
+    {
       key: "need",
-      label: "Bedürfnis-Erklärung",
+      label: "4) Bedürfnis-Erklärung",
       icon: "📖",
       background: "linear-gradient(180deg, #fef6ee 0%, #e8f0ff 100%)"
     },
     {
       key: "personal",
-      label: "Dein persönlicher Schritt",
+      label: "5) Dein persönlicher Schritt",
       icon: "🕊️",
       background: "linear-gradient(180deg, #fef6ee 0%, #f0f7ff 100%)"
     },
     {
       key: "childhood",
-      label: "Kindheitserinnerung",
+      label: "6) Kindheitserinnerung",
       icon: "👶",
       background: "linear-gradient(180deg, #f9f1ff 0%, #eef7ff 100%)"
     },
     {
       key: "jesus-answer",
-      label: "ChatGPT-Antwort",
+      label: "7) ChatGPT-Antwort",
       icon: "💬",
       background: "linear-gradient(180deg, #fff3e8 0%, #e8fff7 100%)"
     },
     {
       key: "ask-jesus",
-      label: "Frage an Jesus",
+      label: "8) Frage an Jesus",
       icon: "🙏",
       background: "linear-gradient(180deg, #fef6ee 0%, #eaf9f1 100%)"
     },
   ] as const;
+
+  const renderIntroSection = () => {
+    if (introVisible) {
+      return <IntroCard onStart={handleStartIntro} />;
+    }
+
+    return (
+      <button
+        type="button"
+        onClick={() => {
+          setIntroVisible(true);
+          if (typeof window !== "undefined") {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }
+        }}
+        style={{
+          background: "none",
+          border: "none",
+          color: "#3867d6",
+          textDecoration: "underline",
+          cursor: "pointer",
+          padding: 0,
+          fontSize: "0.95rem",
+          marginBottom: "1.5rem"
+        }}
+      >
+        Einführung erneut ansehen
+      </button>
+    );
+  };
+
+  const renderProblemSection = ({
+    attachRef = false,
+    sectionLabelId = "problem-heading",
+    textareaId = "problem"
+  }: {
+    attachRef?: boolean;
+    sectionLabelId?: string;
+    textareaId?: string;
+  } = {}) => (
+    <section
+      ref={attachRef ? formRef : undefined}
+      aria-labelledby={sectionLabelId}
+      style={{
+        margin: "0 auto 2rem",
+        maxWidth: "420px",
+        background: "linear-gradient(180deg, #fdf0d5 0%, #f3e8ff 100%)",
+        borderRadius: "32px",
+        padding: "2.25rem 1.75rem 2.5rem",
+        boxShadow: "0 26px 60px rgba(45, 64, 102, 0.18)",
+        display: "flex",
+        flexDirection: "column",
+        gap: "1.5rem"
+      }}
+    >
+      <div
+        style={{
+          width: "100%",
+          borderRadius: "24px",
+          overflow: "hidden",
+          background: "linear-gradient(135deg, #f8e1b3, #f38181)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center"
+        }}
+      >
+        <img
+          src="/bibliothek/verwandlung-intro.svg"
+          alt="Illustration: Jesus tröstet ein Kind"
+          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+        />
+      </div>
+
+      <label
+        id={sectionLabelId}
+        htmlFor={textareaId}
+        style={{
+          display: "block",
+          fontSize: "1.65rem",
+          lineHeight: 1.2,
+          fontWeight: 700,
+          color: "#1f2933"
+        }}
+      >
+        Was belastet oder bewegt dich gerade?
+      </label>
+
+      <div style={{ position: "relative" }}>
+        <textarea
+          id={textareaId}
+          value={problem}
+          onChange={(event) => setProblem(event.target.value)}
+          rows={4}
+          placeholder="Einsprechen oder tippen, was dich gerade bewegt..."
+          style={{
+            width: "100%",
+            minHeight: "8rem",
+            borderRadius: "20px",
+            border: "1px solid rgba(56, 103, 214, 0.18)",
+            padding: "1.15rem 1.15rem 4rem 1.15rem",
+            fontSize: "1.05rem",
+            lineHeight: 1.5,
+            color: "#1f2933",
+            backgroundColor: "#fff",
+            boxShadow: "inset 0 1px 4px rgba(36, 53, 103, 0.08)",
+            resize: "vertical",
+            outline: "none"
+          }}
+        />
+        <button
+          type="button"
+          onClick={() => handleDictation("problem")}
+          disabled={!dictationSupported}
+          aria-label="Anliegen einsprechen"
+          style={{
+            position: "absolute",
+            right: "1.1rem",
+            bottom: "1.1rem",
+            display: "flex",
+            alignItems: "center",
+            gap: "0.55rem",
+            backgroundColor: !dictationSupported
+              ? "#cbd2d9"
+              : listeningField === "problem"
+              ? "#20bf6b"
+              : "#3867d6",
+            color: "#fff",
+            border: "none",
+            borderRadius: "999px",
+            padding: "0.85rem 1.35rem",
+            fontSize: "1rem",
+            fontWeight: 600,
+            cursor: !dictationSupported ? "not-allowed" : "pointer",
+            boxShadow: !dictationSupported
+              ? "none"
+              : listeningField === "problem"
+              ? "0 12px 26px rgba(32, 191, 107, 0.35)"
+              : "0 16px 30px rgba(56, 103, 214, 0.25)",
+            transition: "background-color 0.2s ease, transform 0.2s ease",
+            transform: listeningField === "problem" ? "scale(1.02)" : "none"
+          }}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            aria-hidden="true"
+            style={{ width: "1.2rem", height: "1.2rem" }}
+          >
+            <path d="M12 1.5a3 3 0 00-3 3v6a3 3 0 106 0v-6a3 3 0 00-3-3z" />
+            <path d="M5.25 10.5a.75.75 0 011.5 0 5.25 5.25 0 0010.5 0 .75.75 0 011.5 0 6.75 6.75 0 01-6 6.708v2.292h3a.75.75 0 010 1.5h-7.5a.75.75 0 010-1.5h3v-2.292a6.75 6.75 0 01-6-6.708z" />
+          </svg>
+          <span>Einsprechen</span>
+        </button>
+      </div>
+
+      {!dictationSupported && (
+        <p style={{ margin: 0, color: "#c0392b", fontSize: "0.95rem" }}>
+          Hinweis: Dein Browser unterstützt keine Spracherkennung. Bitte nutze Chrome oder Edge
+          auf dem Desktop, um die Diktierfunktion verwenden zu können.
+        </p>
+      )}
+
+      <button
+        type="button"
+        onClick={handleContinueFromStepOne}
+        style={{
+          alignSelf: "center",
+          marginTop: "0.5rem",
+          backgroundColor: "#3867d6",
+          color: "#fff",
+          border: "none",
+          borderRadius: "999px",
+          padding: "0.85rem 2.75rem",
+          fontSize: "1.05rem",
+          fontWeight: 600,
+          cursor: "pointer",
+          boxShadow: "0 18px 32px rgba(56, 103, 214, 0.28)"
+        }}
+      >
+        Weiter
+      </button>
+    </section>
+  );
+
+  const renderNeedSelectionSection = ({ attachRef = false }: { attachRef?: boolean } = {}) => (
+    <section
+      ref={attachRef ? stepTwoRef : undefined}
+      style={{
+        marginTop: "3rem",
+        display: "flex",
+        justifyContent: "center"
+      }}
+    >
+      <div
+        style={{
+          width: "100%",
+          maxWidth: "420px",
+          background: "#fdf2e4",
+          borderRadius: "28px",
+          padding: "2.5rem 1.75rem",
+          boxShadow: "0 28px 40px rgba(198, 134, 66, 0.2)",
+          display: "flex",
+          flexDirection: "column",
+          gap: "1.5rem"
+        }}
+      >
+        <div style={{ textAlign: "center" }}>
+          <div
+            style={{
+              width: "120px",
+              height: "120px",
+              borderRadius: "999px",
+              background: "linear-gradient(180deg, #fff2dc 0%, #fbe1b8 100%)",
+              margin: "0 auto 1rem",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              boxShadow: "0 16px 24px rgba(231, 162, 73, 0.22)"
+            }}
+          >
+            <img
+              src="/assets/need-child.svg"
+              alt="Kind hebt die Arme"
+              style={{ width: "90px", height: "90px" }}
+            />
+          </div>
+          <div
+            style={{
+              color: "#914c1c",
+              fontWeight: 700,
+              fontSize: "1.25rem",
+              lineHeight: 1.35
+            }}
+          >
+            Welches Bedürfnis steckt dahinter?
+          </div>
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+            gap: "0.75rem"
+          }}
+        >
+          {needOptions.map((option) => {
+            const isSelected = selectedNeed === option.key;
+            return (
+              <button
+                key={option.key}
+                type="button"
+                onClick={() => {
+                  setSelectedNeed(option.key);
+                  setShowResult(false);
+                  setError(null);
+                }}
+                style={{
+                  borderRadius: "18px",
+                  padding: "0.85rem 1rem",
+                  fontSize: "1rem",
+                  fontWeight: 600,
+                  border: isSelected ? "2px solid #eb8c2d" : "2px solid transparent",
+                  backgroundColor: isSelected ? "#ffe8c8" : "#fff4e5",
+                  color: "#7a4416",
+                  boxShadow: isSelected
+                    ? "0 16px 30px rgba(235, 140, 45, 0.35)"
+                    : "0 10px 24px rgba(214, 171, 116, 0.22)",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease"
+                }}
+              >
+                {option.label}
+              </button>
+            );
+          })}
+        </div>
+
+        <button
+          type="button"
+          onClick={handleChatGPT}
+          style={{
+            borderRadius: "18px",
+            padding: "0.9rem 1rem",
+            fontSize: "1rem",
+            fontWeight: 600,
+            border: "none",
+            backgroundColor: "#fff",
+            color: "#7a4416",
+            boxShadow: "0 10px 24px rgba(214, 171, 116, 0.22)",
+            cursor: "pointer"
+          }}
+        >
+          Ich weiß es nicht – bitte Vorschläge machen
+        </button>
+
+        <button
+          type="button"
+          onClick={handleShowResult}
+          style={{
+            borderRadius: "999px",
+            padding: "0.95rem 1.5rem",
+            fontSize: "1.05rem",
+            fontWeight: 700,
+            border: "none",
+            background: "linear-gradient(135deg, #f08a24, #f7b733)",
+            color: "#fff",
+            boxShadow: "0 20px 36px rgba(236, 147, 44, 0.35)",
+            cursor: "pointer"
+          }}
+        >
+          Weiter zum nächsten Schritt
+        </button>
+
+        {error ? (
+          <p style={{ color: "#d24c41", margin: 0, textAlign: "center" }}>{error}</p>
+        ) : null}
+      </div>
+    </section>
+  );
 
   const renderMobileStepContent = (): JSX.Element => {
     const baseCardStyle: CSSProperties = {
@@ -1001,6 +1339,30 @@ export default function Bibliothek() {
 
     switch (activeMobileStep) {
       case 0: {
+        return (
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "1rem" }}>
+            {renderIntroSection()}
+          </div>
+        );
+      }
+      case 1: {
+        return (
+          <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+            {renderProblemSection({
+              sectionLabelId: "mobile-problem-heading",
+              textareaId: "mobile-problem"
+            })}
+          </div>
+        );
+      }
+      case 2: {
+        return (
+          <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+            {renderNeedSelectionSection()}
+          </div>
+        );
+      }
+      case 3: {
         if (!selectedNeedData) {
           return (
             <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
@@ -1119,7 +1481,7 @@ export default function Bibliothek() {
           </div>
         );
       }
-      case 1: {
+      case 4: {
         const isListening = listeningField === "personalNeed";
         const status = !dictationSupported
           ? "Nicht verfügbar"
@@ -1255,7 +1617,7 @@ export default function Bibliothek() {
           </div>
         );
       }
-      case 2: {
+      case 5: {
         const isListening = listeningField === "childhoodExperience";
         const status = !dictationSupported
           ? "Nicht verfügbar"
@@ -1374,7 +1736,7 @@ export default function Bibliothek() {
           </div>
         );
       }
-      case 3: {
+      case 6: {
         const summaryItems = [
           { label: "Was dich beschäftigt", value: problem },
           { label: "Ausgewähltes Bedürfnis", value: selectedNeed },
@@ -1576,7 +1938,7 @@ export default function Bibliothek() {
           </div>
         );
       }
-      case 4: {
+      case 7: {
         return (
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
             <section style={baseCardStyle} aria-labelledby="mobileAskJesusPrompt">
@@ -1753,311 +2115,12 @@ export default function Bibliothek() {
       <section style={{ maxWidth: "800px", margin: "0 auto" }}>
         <h1 style={{ color: "#2c3e50", marginBottom: "1.5rem" }}>Verwandlung als Gotteskind</h1>
 
-        {introVisible ? (
-          <IntroCard onStart={handleStartIntro} />
-        ) : (
-          <button
-            type="button"
-            onClick={() => {
-              setIntroVisible(true);
-              if (typeof window !== "undefined") {
-                window.scrollTo({ top: 0, behavior: "smooth" });
-              }
-            }}
-            style={{
-              background: "none",
-              border: "none",
-              color: "#3867d6",
-              textDecoration: "underline",
-              cursor: "pointer",
-              padding: 0,
-              fontSize: "0.95rem",
-              marginBottom: "1.5rem"
-            }}
-          >
-            Einführung erneut ansehen
-          </button>
-        )}
+        {renderIntroSection()}
 
         <div style={{ display: introVisible ? "none" : "block" }}>
-          <section
-            ref={formRef}
-            aria-labelledby="problem-heading"
-            style={{
-              margin: "0 auto 2rem",
-              maxWidth: "420px",
-              background: "linear-gradient(180deg, #fdf0d5 0%, #f3e8ff 100%)",
-              borderRadius: "32px",
-              padding: "2.25rem 1.75rem 2.5rem",
-              boxShadow: "0 26px 60px rgba(45, 64, 102, 0.18)",
-              display: "flex",
-              flexDirection: "column",
-              gap: "1.5rem"
-            }}
-          >
-            <div
-              style={{
-                width: "100%",
-                borderRadius: "24px",
-                overflow: "hidden",
-                background: "linear-gradient(135deg, #f8e1b3, #f38181)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center"
-              }}
-            >
-              <img
-                src="/bibliothek/verwandlung-intro.svg"
-                alt="Illustration: Jesus tröstet ein Kind"
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-              />
-            </div>
+          {renderProblemSection({ attachRef: true })}
 
-            <label
-              id="problem-heading"
-              htmlFor="problem"
-              style={{
-                display: "block",
-                fontSize: "1.65rem",
-                lineHeight: 1.2,
-                fontWeight: 700,
-                color: "#1f2933"
-              }}
-            >
-              Was belastet oder bewegt dich gerade?
-            </label>
-
-            <div style={{ position: "relative" }}>
-              <textarea
-                id="problem"
-                value={problem}
-                onChange={(event) => setProblem(event.target.value)}
-                rows={4}
-                placeholder="Einsprechen oder tippen, was dich gerade bewegt..."
-                style={{
-                  width: "100%",
-                  minHeight: "8rem",
-                  borderRadius: "20px",
-                  border: "1px solid rgba(56, 103, 214, 0.18)",
-                  padding: "1.15rem 1.15rem 4rem 1.15rem",
-                  fontSize: "1.05rem",
-                  lineHeight: 1.5,
-                  color: "#1f2933",
-                  backgroundColor: "#fff",
-                  boxShadow: "inset 0 1px 4px rgba(36, 53, 103, 0.08)",
-                  resize: "vertical",
-                  outline: "none"
-                }}
-              />
-              <button
-                type="button"
-                onClick={() => handleDictation("problem")}
-                disabled={!dictationSupported}
-                aria-label="Anliegen einsprechen"
-                style={{
-                  position: "absolute",
-                  right: "1.1rem",
-                  bottom: "1.1rem",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.55rem",
-                  backgroundColor: !dictationSupported
-                    ? "#cbd2d9"
-                    : listeningField === "problem"
-                    ? "#20bf6b"
-                    : "#3867d6",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "999px",
-                  padding: "0.85rem 1.35rem",
-                  fontSize: "1rem",
-                  fontWeight: 600,
-                  cursor: !dictationSupported ? "not-allowed" : "pointer",
-                  boxShadow: !dictationSupported
-                    ? "none"
-                    : listeningField === "problem"
-                    ? "0 12px 26px rgba(32, 191, 107, 0.35)"
-                    : "0 16px 30px rgba(56, 103, 214, 0.25)",
-                  transition: "background-color 0.2s ease, transform 0.2s ease",
-                  transform: listeningField === "problem" ? "scale(1.02)" : "none"
-                }}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  aria-hidden="true"
-                  style={{ width: "1.2rem", height: "1.2rem" }}
-                >
-                  <path d="M12 1.5a3 3 0 00-3 3v6a3 3 0 106 0v-6a3 3 0 00-3-3z" />
-                  <path d="M5.25 10.5a.75.75 0 011.5 0 5.25 5.25 0 0010.5 0 .75.75 0 011.5 0 6.75 6.75 0 01-6 6.708v2.292h3a.75.75 0 010 1.5h-7.5a.75.75 0 010-1.5h3v-2.292a6.75 6.75 0 01-6-6.708z" />
-                </svg>
-                <span>Einsprechen</span>
-              </button>
-            </div>
-
-            {!dictationSupported && (
-              <p style={{ margin: 0, color: "#c0392b", fontSize: "0.95rem" }}>
-                Hinweis: Dein Browser unterstützt keine Spracherkennung. Bitte nutze Chrome oder Edge
-                auf dem Desktop, um die Diktierfunktion verwenden zu können.
-              </p>
-            )}
-
-            <button
-              type="button"
-              onClick={handleContinueFromStepOne}
-              style={{
-                alignSelf: "center",
-                marginTop: "0.5rem",
-                backgroundColor: "#3867d6",
-                color: "#fff",
-                border: "none",
-                borderRadius: "999px",
-                padding: "0.85rem 2.75rem",
-                fontSize: "1.05rem",
-                fontWeight: 600,
-                cursor: "pointer",
-                boxShadow: "0 18px 32px rgba(56, 103, 214, 0.28)"
-              }}
-            >
-              Weiter
-            </button>
-          </section>
-
-          <section
-            ref={stepTwoRef}
-            style={{
-              marginTop: "3rem",
-              display: "flex",
-              justifyContent: "center"
-            }}
-          >
-            <div
-              style={{
-                width: "100%",
-                maxWidth: "420px",
-                background: "#fdf2e4",
-                borderRadius: "28px",
-                padding: "2.5rem 1.75rem",
-                boxShadow: "0 28px 40px rgba(198, 134, 66, 0.2)",
-                display: "flex",
-                flexDirection: "column",
-                gap: "1.5rem"
-              }}
-            >
-              <div style={{ textAlign: "center" }}>
-                <div
-                  style={{
-                    width: "120px",
-                    height: "120px",
-                    borderRadius: "999px",
-                    background: "linear-gradient(180deg, #fff2dc 0%, #fbe1b8 100%)",
-                    margin: "0 auto 1rem",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    boxShadow: "0 16px 24px rgba(231, 162, 73, 0.22)"
-                  }}
-                >
-                  <img
-                    src="/assets/need-child.svg"
-                    alt="Kind hebt die Arme"
-                    style={{ width: "90px", height: "90px" }}
-                  />
-                </div>
-                <div
-                  style={{
-                    color: "#914c1c",
-                    fontWeight: 700,
-                    fontSize: "1.25rem",
-                    lineHeight: 1.35
-                  }}
-                >
-                  Welches Bedürfnis steckt dahinter?
-                </div>
-              </div>
-
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
-                  gap: "0.75rem"
-                }}
-              >
-                {needOptions.map((option) => {
-                  const isSelected = selectedNeed === option.key;
-                  return (
-                    <button
-                      key={option.key}
-                      type="button"
-                      onClick={() => {
-                        setSelectedNeed(option.key);
-                        setShowResult(false);
-                        setError(null);
-                      }}
-                      style={{
-                        borderRadius: "18px",
-                        padding: "0.85rem 1rem",
-                        fontSize: "1rem",
-                        fontWeight: 600,
-                        border: isSelected ? "2px solid #eb8c2d" : "2px solid transparent",
-                        backgroundColor: isSelected ? "#ffe8c8" : "#fff4e5",
-                        color: "#7a4416",
-                        boxShadow: isSelected
-                          ? "0 16px 30px rgba(235, 140, 45, 0.35)"
-                          : "0 10px 24px rgba(214, 171, 116, 0.22)",
-                        cursor: "pointer",
-                        transition: "all 0.2s ease"
-                      }}
-                    >
-                      {option.label}
-                    </button>
-                  );
-                })}
-              </div>
-
-              <button
-                type="button"
-                onClick={handleChatGPT}
-                style={{
-                  borderRadius: "18px",
-                  padding: "0.9rem 1rem",
-                  fontSize: "1rem",
-                  fontWeight: 600,
-                  border: "none",
-                  backgroundColor: "#fff",
-                  color: "#7a4416",
-                  boxShadow: "0 10px 24px rgba(214, 171, 116, 0.22)",
-                  cursor: "pointer"
-                }}
-              >
-                Ich weiß es nicht – bitte Vorschläge machen
-              </button>
-
-              <button
-                type="button"
-                onClick={handleShowResult}
-                style={{
-                  borderRadius: "999px",
-                  padding: "0.95rem 1.5rem",
-                  fontSize: "1.05rem",
-                  fontWeight: 700,
-                  border: "none",
-                  background: "linear-gradient(135deg, #f08a24, #f7b733)",
-                  color: "#fff",
-                  boxShadow: "0 20px 36px rgba(236, 147, 44, 0.35)",
-                  cursor: "pointer"
-                }}
-              >
-                Weiter
-              </button>
-
-              {error ? (
-                <p style={{ color: "#d24c41", margin: 0, textAlign: "center" }}>{error}</p>
-              ) : null}
-            </div>
-          </section>
-
+          {renderNeedSelectionSection({ attachRef: true })}
           {showResult && selectedNeedData ? (
             <div
               style={{
