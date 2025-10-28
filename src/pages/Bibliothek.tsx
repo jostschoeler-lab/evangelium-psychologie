@@ -390,7 +390,7 @@ export default function Bibliothek() {
   const nav = useNavigate();
   const [problem, setProblem] = useState("");
   const [selectedNeed, setSelectedNeed] = useState<string>("");
-  const [showResult, setShowResult] = useState(false);
+  const [showResult, setShowResult] = useState(true);
   const [personalNeed, setPersonalNeed] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [meditationNotes, setMeditationNotes] = useState("");
@@ -399,7 +399,7 @@ export default function Bibliothek() {
   const [chatUserInput, setChatUserInput] = useState("");
   const [chatAssistantResponse, setChatAssistantResponse] = useState("");
   const [savedChats, setSavedChats] = useState<SavedChat[]>([]);
-  const [introVisible, setIntroVisible] = useState(true);
+  const [introVisible, setIntroVisible] = useState(false);
   const [introExpanded, setIntroExpanded] = useState(false);
   const [activeMobileStep, setActiveMobileStep] = useState(0);
 
@@ -679,11 +679,11 @@ export default function Bibliothek() {
   const handleShowResult = () => {
     if (!selectedNeed) {
       setError("Bitte wähle ein Bedürfnis aus.");
-      setShowResult(false);
       return;
     }
     setError(null);
     setShowResult(true);
+    setActiveMobileStep(2);
   };
 
   const handleStartIntro = useCallback(() => {
@@ -697,12 +697,13 @@ export default function Bibliothek() {
   }, [setIntroVisible, setIntroExpanded]);
 
   const handleContinueFromStepOne = useCallback(() => {
+    setActiveMobileStep(1);
     if (typeof window !== "undefined") {
       window.setTimeout(() => {
         stepTwoRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
       }, 80);
     }
-  }, [stepTwoRef]);
+  }, [setActiveMobileStep, stepTwoRef]);
 
   const handleChatGPT = () => {
     const prompt = encodeURIComponent(
@@ -950,56 +951,56 @@ export default function Bibliothek() {
 
   const mobileStepMeta = [
     {
-      key: "transformation",
-      label: "1) Verwandlung als Gotteskind",
-      icon: "✨",
-      background: "linear-gradient(180deg, #fff4e8 0%, #fdf6ec 100%)"
-    },
-    {
       key: "burden",
-      label: "2) Was belastet oder bewegt dich?",
+      label: "1) Was belastet oder bewegt dich?",
       icon: "📝",
       background: "linear-gradient(180deg, #f0f4ff 0%, #fef6ee 100%)"
     },
     {
       key: "need-selection",
-      label: "3) Welches Bedürfnis steckt dahinter?",
+      label: "2) Welches Bedürfnis steckt dahinter?",
       icon: "🧭",
       background: "linear-gradient(180deg, #fff6eb 0%, #fff0d9 100%)"
     },
     {
       key: "need",
-      label: "4) Bedürfnis-Erklärung",
+      label: "3) Bedürfnis-Erklärung",
       icon: "📖",
       background: "linear-gradient(180deg, #fef6ee 0%, #e8f0ff 100%)"
     },
     {
       key: "personal",
-      label: "5) Dein persönlicher Schritt",
+      label: "4) Dein persönlicher Schritt",
       icon: "🕊️",
       background: "linear-gradient(180deg, #fef6ee 0%, #f0f7ff 100%)"
     },
     {
       key: "childhood",
-      label: "6) Kindheitserinnerung",
+      label: "5) Kindheitserinnerung",
       icon: "👶",
       background: "linear-gradient(180deg, #f9f1ff 0%, #eef7ff 100%)"
     },
     {
       key: "jesus-answer",
-      label: "7) ChatGPT-Antwort",
+      label: "6) ChatGPT-Antwort",
       icon: "💬",
       background: "linear-gradient(180deg, #fff3e8 0%, #e8fff7 100%)"
     },
     {
       key: "ask-jesus",
-      label: "8) Frage an Jesus",
+      label: "7) Frage an Jesus",
       icon: "🙏",
       background: "linear-gradient(180deg, #fef6ee 0%, #eaf9f1 100%)"
     },
   ] as const;
 
+  const introEnabled = false;
+
   const renderIntroSection = () => {
+    if (!introEnabled) {
+      return null;
+    }
+
     if (introVisible) {
       return <IntroCard onStart={handleStartIntro} />;
     }
@@ -1377,7 +1378,6 @@ export default function Bibliothek() {
                 type="button"
                 onClick={() => {
                   setSelectedNeed(option.key);
-                  setShowResult(false);
                   setError(null);
                 }}
                 style={{
@@ -1467,13 +1467,6 @@ export default function Bibliothek() {
     switch (activeMobileStep) {
       case 0: {
         return (
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "1rem" }}>
-            {renderIntroSection()}
-          </div>
-        );
-      }
-      case 1: {
-        return (
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
             {renderProblemSection({
               sectionLabelId: "mobile-problem-heading",
@@ -1482,14 +1475,14 @@ export default function Bibliothek() {
           </div>
         );
       }
-      case 2: {
+      case 1: {
         return (
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
             {renderNeedSelectionSection()}
           </div>
         );
       }
-      case 3: {
+      case 2: {
         if (!selectedNeedData) {
           return (
             <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
@@ -1608,7 +1601,7 @@ export default function Bibliothek() {
           </div>
         );
       }
-      case 4: {
+      case 3: {
         const isListening = listeningField === "personalNeed";
         const status = !dictationSupported
           ? "Nicht verfügbar"
@@ -1744,7 +1737,7 @@ export default function Bibliothek() {
           </div>
         );
       }
-      case 5: {
+      case 4: {
         const isListening = listeningField === "childhoodExperience";
         const status = !dictationSupported
           ? "Nicht verfügbar"
@@ -1863,7 +1856,7 @@ export default function Bibliothek() {
           </div>
         );
       }
-      case 6: {
+      case 5: {
         const summaryItems = [
           { label: "Was dich beschäftigt", value: problem },
           { label: "Ausgewähltes Bedürfnis", value: selectedNeed },
@@ -2065,7 +2058,7 @@ export default function Bibliothek() {
           </div>
         );
       }
-      case 7: {
+      case 6: {
         return (
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
             <section style={baseCardStyle} aria-labelledby="mobileAskJesusPrompt">
@@ -2249,7 +2242,7 @@ export default function Bibliothek() {
               {renderNeedSelectionSection({ attachRef: true })}
             </>
           )}
-          {showResult && selectedNeedData ? (
+          {showResult ? (
             <div
               style={{
                 backgroundColor: "#fff",
