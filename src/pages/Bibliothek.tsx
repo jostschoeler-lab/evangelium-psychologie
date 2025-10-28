@@ -123,6 +123,249 @@ const needs: Record<string, NeedContent> = {
   }
 };
 
+type IntroSection = {
+  icon: string;
+  title: string;
+  paragraphs?: string[];
+  list?: string[];
+};
+
+const introLeadParagraphs: string[] = [
+  "Um wirklich von Jesus getröstet zu werden, müssen wir trauern.",
+  "Wenn ich das Himmelreich bekommen will, muss ich mich arm fühlen, hilflos, wie ein Kind.",
+  "Das Reich Gottes gehört den Kindern, nicht den Starken. (Matthäus 5,3; Markus 10,15)",
+  "Paulus sagt: „Gottes Kraft wird in der Schwachheit vollkommen.“ (2. Korinther 12,9)",
+  "Er wollte seine Schwachheit sogar wegbeten und nannte sie einen „Engel Satans“. (2. Korinther 12,7–8)",
+  "Aber genau diese Schwachheit war der Ort, wo Gottes Kraft offenbar wurde. Dort lag die Verwandlung."
+];
+
+const introSections: IntroSection[] = [
+  {
+    icon: "⚡",
+    title: "Warum wir Schwachheit wegdrücken",
+    paragraphs: [
+      "Schwachheit fühlt sich schmerzhaft an. Darum machen wir Menschen das oft unbewusst:",
+      "Dann machen wir eine fromme Fassade: „Ich bin stark, ich bin getröstet, alles ist in Ordnung.“ Aber das ist Verdrängung – nicht Verwandlung."
+    ],
+    list: [
+      "Wir wollen die Auferstehung ohne das Kreuz",
+      "Trost ohne Trauer",
+      "Himmelreich ohne Armut",
+      "Glauben ohne Hilflosigkeit"
+    ]
+  },
+  {
+    icon: "❤️",
+    title: "Der verborgene Schatz",
+    paragraphs: [
+      "Hinter schmerzhaften Gefühlen liegt fast immer ein unbefriedigtes Bedürfnis.",
+      "Und Jesus möchte dieses Bedürfnis stillen. Wenn ich das Bedürfnis aber nicht erkenne, kann ich es Jesus nicht bringen – und Er kann mich nicht verändern.",
+      "Viele Christen verwechseln Schwachheit mit Sünde. Aber das stimmt nicht: Das ist die Schwachheit, in der Gottes Kraft wirkt."
+    ]
+  },
+  {
+    icon: "🌿",
+    title: "Der Weg Jesu",
+    paragraphs: [
+      "Warum vermeiden wir das trotzdem? Weil es weh tut, weil wir uns hilflos fühlen, weil Wahrheit uns entblößt.",
+      "Aber das Evangelium sagt: „Durch Leiden zur Herrlichkeit.“ (Römer 8,17) Das ist der Weg Jesu."
+    ]
+  },
+  {
+    icon: "🙏",
+    title: "Eine Einladung",
+    paragraphs: [
+      "Nimm dir einen Moment und spüre das Gefühl, das du sonst wegdrückst.",
+      "Sprich es aus. Du kannst es in dieser App einsprechen oder schreiben. Dann zeigt dir die App Vorschläge, welches Bedürfnis dahinter liegt.",
+      "Am Anfang kann das fremd wirken, denn wir sind nicht gewohnt, Bedürfnisse zu erkennen. Aber dort begegnet Jesus."
+    ],
+    list: [
+      "Schließe die Augen",
+      "Spüre, was in dir lebendig ist",
+      "Sprich es laut oder schreibe es auf"
+    ]
+  },
+  {
+    icon: "⏳",
+    title: "Wenn Gefühle nicht sofort kommen",
+    paragraphs: [
+      "Der Verstand begreift schnell, das Herz begreift langsam, der Körper hat sein eigenes Tempo.",
+      "Das ist normal. So erleben wir das ganze Leben hindurch Schwachheit – und immer wieder Gottes Güte."
+    ]
+  },
+  {
+    icon: "👑",
+    title: "Das ist nicht Knechtschaft",
+    paragraphs: [
+      "Das ist Sohnschaft:",
+      "Mit Jesus leiden, mit Jesus verherrlicht werden (Römer 8,17), die Werke des Leibes töten (Römer 8,13) – und echte Verwandlung erleben."
+    ],
+    list: [
+      "Mit Jesus leiden",
+      "Mit Jesus verherrlicht werden (Römer 8,17)",
+      "Die Werke des Leibes töten (Römer 8,13)"
+    ]
+  },
+  {
+    icon: "✅",
+    title: "Abschluss",
+    paragraphs: [
+      "Wenn du bereit bist, kannst du jetzt dein Gefühl oder dein Problem eingeben."
+    ]
+  }
+];
+
+type IntroCardProps = {
+  onStart: () => void;
+};
+
+const IntroCard = ({ onStart }: IntroCardProps) => {
+  return (
+    <section
+      aria-label="Verwandlung als Gotteskind"
+      style={{
+        margin: "0 auto 2rem",
+        maxWidth: "380px",
+        backgroundColor: "#fdf6ec",
+        borderRadius: "28px",
+        padding: "1.75rem 1.5rem",
+        boxShadow: "0 20px 45px rgba(32, 40, 52, 0.18)",
+        display: "flex",
+        flexDirection: "column",
+        gap: "1.25rem"
+      }}
+    >
+      <div
+        style={{
+          width: "100%",
+          aspectRatio: "1 / 1",
+          borderRadius: "22px",
+          overflow: "hidden",
+          background: "linear-gradient(135deg, #f8e1b3, #f38181)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center"
+        }}
+      >
+        <img
+          src="/bibliothek/verwandlung-intro.svg"
+          alt="Jesus hält ein weinendes Kind im Arm"
+          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+        />
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+        <div>
+          <h2
+            style={{
+              margin: 0,
+              fontSize: "1.6rem",
+              lineHeight: 1.2,
+              color: "#3a2a18",
+              fontWeight: 700
+            }}
+          >
+            Verwandlung als Gotteskind
+          </h2>
+          <p
+            style={{
+              margin: "0.5rem 0 0",
+              fontSize: "1rem",
+              lineHeight: 1.6,
+              color: "#5f4630",
+              fontStyle: "italic"
+            }}
+          >
+            „Selig sind die Trauernden, denn sie werden getröstet werden.“ (Matthäus 5,4)
+          </p>
+        </div>
+
+        {introLeadParagraphs.map((paragraph) => (
+          <p
+            key={paragraph}
+            style={{ margin: 0, fontSize: "0.98rem", lineHeight: 1.6, color: "#463626" }}
+          >
+            {paragraph}
+          </p>
+        ))}
+
+        {introSections.map((section) => (
+          <div
+            key={section.title}
+            style={{
+              borderRadius: "18px",
+              backgroundColor: "#fff8f0",
+              padding: "1rem",
+              border: "1px solid rgba(240, 194, 123, 0.4)",
+              display: "flex",
+              flexDirection: "column",
+              gap: "0.6rem"
+            }}
+          >
+            <h3
+              style={{
+                margin: 0,
+                fontSize: "1.05rem",
+                color: "#3a2a18",
+                display: "flex",
+                alignItems: "center",
+                gap: "0.4rem"
+              }}
+            >
+              <span aria-hidden="true">{section.icon}</span>
+              <span>{section.title}</span>
+            </h3>
+            {section.paragraphs?.map((paragraph) => (
+              <p
+                key={paragraph}
+                style={{ margin: 0, fontSize: "0.95rem", lineHeight: 1.55, color: "#5f4630" }}
+              >
+                {paragraph}
+              </p>
+            ))}
+            {section.list && (
+              <ul
+                style={{
+                  margin: 0,
+                  paddingLeft: "1.1rem",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "0.35rem",
+                  color: "#4a3524",
+                  fontSize: "0.95rem"
+                }}
+              >
+                {section.list.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <button
+        onClick={onStart}
+        style={{
+          alignSelf: "center",
+          marginTop: "0.5rem",
+          background: "linear-gradient(135deg, #f4b860, #d98c3f)",
+          color: "#fff",
+          border: "none",
+          borderRadius: "999px",
+          padding: "0.85rem 2.5rem",
+          fontSize: "1rem",
+          fontWeight: 600,
+          cursor: "pointer",
+          boxShadow: "0 12px 24px rgba(212, 136, 65, 0.35)"
+        }}
+      >
+        Starten
+      </button>
+    </section>
+  );
+};
+
 export default function Bibliothek() {
   const nav = useNavigate();
   const [problem, setProblem] = useState("");
@@ -136,12 +379,14 @@ export default function Bibliothek() {
   const [chatUserInput, setChatUserInput] = useState("");
   const [chatAssistantResponse, setChatAssistantResponse] = useState("");
   const [savedChats, setSavedChats] = useState<SavedChat[]>([]);
+  const [introVisible, setIntroVisible] = useState(true);
 
   const dictationSupported =
     typeof window !== "undefined" &&
     Boolean((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
 
   const recognitionRef = useRef<any>(null);
+  const formRef = useRef<HTMLDivElement | null>(null);
   const activeFieldRef = useRef<DictationField | null>(null);
   const pendingFieldRef = useRef<DictationField | null>(null);
   const pendingBaseRef = useRef<string>("");
@@ -310,6 +555,15 @@ export default function Bibliothek() {
     setError(null);
     setShowResult(true);
   };
+
+  const handleStartIntro = useCallback(() => {
+    setIntroVisible(false);
+    if (typeof window !== "undefined") {
+      window.setTimeout(() => {
+        formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 100);
+    }
+  }, [setIntroVisible]);
 
   const handleChatGPT = () => {
     const prompt = encodeURIComponent(
@@ -562,117 +816,143 @@ ${closingDetails}
       </button>
 
       <section style={{ maxWidth: "800px", margin: "0 auto" }}>
-        <h1 style={{ color: "#2c3e50" }}>🕊️ 7-Minuten-Debrief – Jesus antwortet dir</h1>
-        <p>Beschreibe kurz dein Thema, wähle dein Bedürfnis – und erlebe den Dialog mit Jesus.</p>
+        <h1 style={{ color: "#2c3e50", marginBottom: "1.5rem" }}>Verwandlung als Gotteskind</h1>
 
-        <label htmlFor="problem" style={{ display: "block", fontWeight: 600 }}>
-          1️⃣ Was beschäftigt dich gerade?
-        </label>
-        <div
-          style={{
-            display: "flex",
-            gap: "0.5rem",
-            alignItems: "stretch",
-            marginTop: "0.5rem",
-            marginBottom: "1rem"
-          }}
-        >
-          <textarea
-            id="problem"
-            value={problem}
-            onChange={(event) => setProblem(event.target.value)}
-            rows={3}
-            placeholder="Schreibe hier dein Anliegen..."
+        {introVisible ? (
+          <IntroCard onStart={handleStartIntro} />
+        ) : (
+          <button
+            type="button"
+            onClick={() => {
+              setIntroVisible(true);
+              if (typeof window !== "undefined") {
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }
+            }}
             style={{
-              flex: 1,
+              background: "none",
+              border: "none",
+              color: "#3867d6",
+              textDecoration: "underline",
+              cursor: "pointer",
+              padding: 0,
+              fontSize: "0.95rem",
+              marginBottom: "1.5rem"
+            }}
+          >
+            Einführung erneut ansehen
+          </button>
+        )}
+
+        <div ref={formRef} style={{ display: introVisible ? "none" : "block" }}>
+          <label htmlFor="problem" style={{ display: "block", fontWeight: 600 }}>
+            1️⃣ Was beschäftigt dich gerade?
+          </label>
+          <div
+            style={{
+              display: "flex",
+              gap: "0.5rem",
+              alignItems: "stretch",
+              marginTop: "0.5rem",
+              marginBottom: "1rem"
+            }}
+          >
+            <textarea
+              id="problem"
+              value={problem}
+              onChange={(event) => setProblem(event.target.value)}
+              rows={3}
+              placeholder="Schreibe hier dein Anliegen..."
+              style={{
+                flex: 1,
+                fontSize: "1rem",
+                padding: "0.5rem",
+                borderRadius: "6px",
+                border: "1px solid #ccc"
+              }}
+            />
+            <DictationButton field="problem" ariaLabel="Anliegen diktieren" />
+          </div>
+          {!dictationSupported && (
+            <p style={{ marginTop: "-0.5rem", marginBottom: "1.5rem", color: "#c0392b" }}>
+              Hinweis: Dein Browser unterstützt keine Spracherkennung. Bitte nutze Chrome oder Edge
+              auf dem Desktop, um die Diktierfunktion verwenden zu können.
+            </p>
+          )}
+
+          <label htmlFor="need" style={{ display: "block", fontWeight: 600 }}>
+            2️⃣ Welches Bedürfnis ist betroffen?
+          </label>
+          <select
+            id="need"
+            value={selectedNeed}
+            onChange={(event) => {
+              setSelectedNeed(event.target.value);
+              setShowResult(false);
+              setError(null);
+            }}
+            style={{
+              width: "100%",
               fontSize: "1rem",
               padding: "0.5rem",
+              marginTop: "0.5rem",
+              marginBottom: "1rem",
               borderRadius: "6px",
               border: "1px solid #ccc"
             }}
-          />
-          <DictationButton field="problem" ariaLabel="Anliegen diktieren" />
-        </div>
-        {!dictationSupported && (
-          <p style={{ marginTop: "-0.5rem", marginBottom: "1.5rem", color: "#c0392b" }}>
-            Hinweis: Dein Browser unterstützt keine Spracherkennung. Bitte nutze Chrome oder Edge
-            auf dem Desktop, um die Diktierfunktion verwenden zu können.
-          </p>
-        )}
+          >
+            <option value="">Bitte auswählen...</option>
+            {Object.keys(needs).map((key) => (
+              <option key={key} value={key}>
+                {key}
+              </option>
+            ))}
+          </select>
 
-        <label htmlFor="need" style={{ display: "block", fontWeight: 600 }}>
-          2️⃣ Welches Bedürfnis ist betroffen?
-        </label>
-        <select
-          id="need"
-          value={selectedNeed}
-          onChange={(event) => {
-            setSelectedNeed(event.target.value);
-            setShowResult(false);
-            setError(null);
-          }}
-          style={{
-            width: "100%",
-            fontSize: "1rem",
-            padding: "0.5rem",
-            marginTop: "0.5rem",
-            marginBottom: "1rem",
-            borderRadius: "6px",
-            border: "1px solid #ccc"
-          }}
-        >
-          <option value="">Bitte auswählen...</option>
-          {Object.keys(needs).map((key) => (
-            <option key={key} value={key}>
-              {key}
-            </option>
-          ))}
-        </select>
-
-        <div
-          style={{
-            display: "flex",
-            gap: "1rem",
-            flexWrap: "wrap"
-          }}
-        >
-          <button
-            onClick={handleShowResult}
+          <div
             style={{
-              flexGrow: 1,
-              backgroundColor: "#4b7bec",
-              color: "#fff",
-              border: "none",
-              borderRadius: "6px",
-              padding: "0.6rem 1rem",
-              cursor: "pointer",
-              fontSize: "1rem"
+              display: "flex",
+              gap: "1rem",
+              flexWrap: "wrap"
             }}
           >
-            💫 Weiter
-          </button>
-          <button
-            onClick={handleChatGPT}
-            style={{
-              flexGrow: 1,
-              backgroundColor: "#3867d6",
-              color: "#fff",
-              border: "none",
-              borderRadius: "6px",
-              padding: "0.6rem 1rem",
-              cursor: "pointer",
-              fontSize: "1rem"
-            }}
-          >
-            💬 Bedürfnisvorschlag mit ChatGPT
-          </button>
-        </div>
+            <button
+              onClick={handleShowResult}
+              style={{
+                flexGrow: 1,
+                backgroundColor: "#4b7bec",
+                color: "#fff",
+                border: "none",
+                borderRadius: "6px",
+                padding: "0.6rem 1rem",
+                cursor: "pointer",
+                fontSize: "1rem"
+              }}
+            >
+              💫 Weiter
+            </button>
+            <button
+              onClick={handleChatGPT}
+              style={{
+                flexGrow: 1,
+                backgroundColor: "#3867d6",
+                color: "#fff",
+                border: "none",
+                borderRadius: "6px",
+                padding: "0.6rem 1rem",
+                cursor: "pointer",
+                fontSize: "1rem"
+              }}
+            >
+              💬 Bedürfnisvorschlag mit ChatGPT
+            </button>
+          </div>
 
-        {error ? (
-          <p style={{ color: "red", marginTop: "1rem" }}>{error}</p>
-        ) : null}
+          {error ? (
+            <p style={{ color: "red", marginTop: "1rem" }}>{error}</p>
+          ) : null}
 
-        {showResult && selectedNeedData ? (
+          {showResult && selectedNeedData ? (
           <div
             style={{
               backgroundColor: "#fff",
@@ -984,6 +1264,7 @@ ${closingDetails}
             </div>
           </div>
         ) : null}
+        </div>
       </section>
     </main>
   );
