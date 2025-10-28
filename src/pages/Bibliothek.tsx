@@ -2237,31 +2237,6 @@ ${closingDetails}
                   </button>
                 </div>
               </div>
-              <div
-                style={{
-                  display: "flex",
-                  gap: "0.5rem",
-                  alignItems: "stretch",
-                  marginTop: "0.5rem",
-                  marginBottom: "1rem"
-                }}
-              >
-                <textarea
-                  id="meditationNotes"
-                  value={meditationNotes}
-                  onChange={(event) => setMeditationNotes(event.target.value)}
-                  rows={4}
-                  placeholder="Was hat Jesus dir in dieser Meditation zugesprochen?"
-                  style={{
-                    flex: 1,
-                    fontSize: "1rem",
-                    padding: "0.5rem",
-                    borderRadius: "6px",
-                    border: "1px solid #ccc"
-                  }}
-                />
-                <DictationButton field="meditationNotes" ariaLabel="Meditationsnotizen diktieren" />
-              </div>
               <h3 style={{ color: "#2c3e50", marginTop: "1.5rem" }}>📝 Schlusskommentar</h3>
               <p>
                 Bitte Jesus dafür, was er dir gesagt hat, und lass dir von ChatGPT einen warmen Abschlussimpuls schenken, wie du
