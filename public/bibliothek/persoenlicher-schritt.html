@@ -195,10 +195,24 @@
   <script>
     (function () {
       const storageKey = "bibliothekPersonalNeed";
+      const needDetailsKey = "bibliothekNeedDetails";
       const textarea = document.getElementById("personalNeed");
       const dictationBtn = document.getElementById("dictationBtn");
       const statusEl = document.getElementById("dictationStatus");
       const noticeEl = document.getElementById("dictationNotice");
+      const subtitleEl = document.querySelector(".subtitle");
+
+      try {
+        const needStored = localStorage.getItem(needDetailsKey);
+        if (needStored && subtitleEl) {
+          const parsed = JSON.parse(needStored);
+          if (parsed && typeof parsed.need === "string" && parsed.need.trim()) {
+            subtitleEl.textContent = `Wie würdest du „${parsed.need}" mit eigenen Worten beschreiben?`;
+          }
+        }
+      } catch (error) {
+        console.warn("Konnte Bedürfnisdetails für die Handyansicht nicht laden", error);
+      }
 
       const loadValue = () => {
         try {
