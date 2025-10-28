@@ -683,7 +683,7 @@ export default function Bibliothek() {
     }
     setError(null);
     setShowResult(true);
-    setActiveMobileStep(2);
+    setActiveMobileStep(3);
   };
 
   const handleStartIntro = useCallback(() => {
@@ -697,7 +697,7 @@ export default function Bibliothek() {
   }, [setIntroVisible, setIntroExpanded]);
 
   const handleContinueFromStepOne = useCallback(() => {
-    setActiveMobileStep(1);
+    setActiveMobileStep(2);
     if (typeof window !== "undefined") {
       window.setTimeout(() => {
         stepTwoRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -951,50 +951,56 @@ export default function Bibliothek() {
 
   const mobileStepMeta = [
     {
+      key: "intro",
+      label: "1) Verwandlung als Gotteskind",
+      icon: "🌅",
+      background: "linear-gradient(180deg, #fff5e6 0%, #fdebd2 100%)"
+    },
+    {
       key: "burden",
-      label: "1) Was belastet oder bewegt dich?",
+      label: "2) Was belastet oder bewegt dich?",
       icon: "📝",
       background: "linear-gradient(180deg, #f0f4ff 0%, #fef6ee 100%)"
     },
     {
       key: "need-selection",
-      label: "2) Welches Bedürfnis steckt dahinter?",
+      label: "3) Welches Bedürfnis steckt dahinter?",
       icon: "🧭",
       background: "linear-gradient(180deg, #fff6eb 0%, #fff0d9 100%)"
     },
     {
       key: "need",
-      label: "3) Bedürfnis-Erklärung",
+      label: "4) Bedürfnis-Erklärung",
       icon: "📖",
       background: "linear-gradient(180deg, #fef6ee 0%, #e8f0ff 100%)"
     },
     {
       key: "personal",
-      label: "4) Dein persönlicher Schritt",
+      label: "5) Dein persönlicher Schritt",
       icon: "🕊️",
       background: "linear-gradient(180deg, #fef6ee 0%, #f0f7ff 100%)"
     },
     {
       key: "childhood",
-      label: "5) Kindheitserinnerung",
+      label: "6) Kindheitserinnerung",
       icon: "👶",
       background: "linear-gradient(180deg, #f9f1ff 0%, #eef7ff 100%)"
     },
     {
       key: "jesus-answer",
-      label: "6) ChatGPT-Antwort",
+      label: "7) ChatGPT-Antwort",
       icon: "💬",
       background: "linear-gradient(180deg, #fff3e8 0%, #e8fff7 100%)"
     },
     {
       key: "ask-jesus",
-      label: "7) Frage an Jesus",
+      label: "8) Frage an Jesus",
       icon: "🙏",
       background: "linear-gradient(180deg, #fef6ee 0%, #eaf9f1 100%)"
     },
   ] as const;
 
-  const introEnabled = false;
+  const introEnabled = true;
 
   const renderIntroSection = () => {
     if (!introEnabled) {
@@ -1468,6 +1474,13 @@ export default function Bibliothek() {
       case 0: {
         return (
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+            {renderIntroSection()}
+          </div>
+        );
+      }
+      case 1: {
+        return (
+          <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
             {renderProblemSection({
               sectionLabelId: "mobile-problem-heading",
               textareaId: "mobile-problem"
@@ -1475,14 +1488,14 @@ export default function Bibliothek() {
           </div>
         );
       }
-      case 1: {
+      case 2: {
         return (
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
             {renderNeedSelectionSection()}
           </div>
         );
       }
-      case 2: {
+      case 3: {
         if (!selectedNeedData) {
           return (
             <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
@@ -1601,7 +1614,7 @@ export default function Bibliothek() {
           </div>
         );
       }
-      case 3: {
+      case 4: {
         const isListening = listeningField === "personalNeed";
         const status = !dictationSupported
           ? "Nicht verfügbar"
@@ -1737,7 +1750,7 @@ export default function Bibliothek() {
           </div>
         );
       }
-      case 4: {
+      case 5: {
         const isListening = listeningField === "childhoodExperience";
         const status = !dictationSupported
           ? "Nicht verfügbar"
@@ -1856,7 +1869,7 @@ export default function Bibliothek() {
           </div>
         );
       }
-      case 5: {
+      case 6: {
         const summaryItems = [
           { label: "Was dich beschäftigt", value: problem },
           { label: "Ausgewähltes Bedürfnis", value: selectedNeed },
@@ -2058,7 +2071,7 @@ export default function Bibliothek() {
           </div>
         );
       }
-      case 6: {
+      case 7: {
         return (
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
             <section style={baseCardStyle} aria-labelledby="mobileAskJesusPrompt">
@@ -2233,301 +2246,303 @@ export default function Bibliothek() {
       </button>
 
       <section style={{ maxWidth: "800px", margin: "0 auto" }}>
-        {renderIntroSection()}
-
-        <div style={{ display: introVisible ? "none" : "block" }}>
-          {!showResult && (
-            <>
-              {renderProblemSection({ attachRef: true })}
-              {renderNeedSelectionSection({ attachRef: true })}
-            </>
-          )}
-          {showResult ? (
-            <div
-              style={{
-                backgroundColor: "#fff",
-                padding: "1.5rem",
-                borderRadius: "10px",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                marginTop: "1.5rem"
-              }}
-            >
+        {introVisible ? (
+          renderIntroSection()
+        ) : (
+          <div>
+            {!showResult && (
+              <>
+                {renderProblemSection({ attachRef: true })}
+                {renderNeedSelectionSection({ attachRef: true })}
+              </>
+            )}
+            {showResult ? (
               <div
                 style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "1.25rem",
-                  marginTop: "0.75rem"
+                  backgroundColor: "#fff",
+                  padding: "1.5rem",
+                  borderRadius: "10px",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                  marginTop: "1.5rem"
                 }}
               >
                 <div
                   style={{
                     display: "flex",
-                    flexWrap: "wrap",
-                    gap: "0.6rem"
+                    flexDirection: "column",
+                    gap: "1.25rem",
+                    marginTop: "0.75rem"
                   }}
                 >
-                  {mobileStepMeta.map((step, index) => {
-                    const isActive = activeMobileStep === index;
-                    return (
-                      <button
-                        key={step.key}
-                        type="button"
-                        onClick={() => setActiveMobileStep(index)}
-                        style={{
-                          flex: "1 1 180px",
-                          borderRadius: "999px",
-                          border: "none",
-                          padding: "0.55rem 1rem",
-                          cursor: "pointer",
-                          background: isActive ? "#4b7bec" : "#e1e9ff",
-                          color: isActive ? "#fff" : "#1f3c88",
-                          fontWeight: 600,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          gap: "0.4rem",
-                          boxShadow: isActive
-                            ? "0 12px 28px rgba(75, 123, 236, 0.25)"
-                            : "none",
-                          transition: "background-color 0.2s ease, box-shadow 0.2s ease"
-                        }}
-                      >
-                        <span aria-hidden="true">{step.icon}</span>
-                        <span>{step.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-                <div
-                  style={{
-                    borderRadius: "36px",
-                    overflow: "hidden",
-                    padding: "1.5rem",
-                    background: mobileStepMeta[activeMobileStep].background,
-                    boxShadow: "0 24px 48px rgba(31, 61, 116, 0.18)"
-                  }}
-                >
-                  {renderMobileStepContent()}
-                </div>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    gap: "0.75rem"
-                  }}
-                >
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setActiveMobileStep((previous) => Math.max(0, previous - 1))
-                    }
-                    disabled={activeMobileStep === 0}
+                  <div
                     style={{
-                      border: "none",
-                      borderRadius: "999px",
-                      padding: "0.5rem 1.1rem",
-                      fontWeight: 600,
-                      cursor: activeMobileStep === 0 ? "not-allowed" : "pointer",
-                      background: activeMobileStep === 0 ? "#dfe6f3" : "#4b7bec",
-                      color: activeMobileStep === 0 ? "#5b728f" : "#fff",
-                      boxShadow:
-                        activeMobileStep === 0
-                          ? "none"
-                          : "0 10px 22px rgba(75, 123, 236, 0.2)"
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: "0.6rem"
                     }}
                   >
-                    ← Zurück
-                  </button>
-                  <span
-                    style={{
-                      fontWeight: 600,
-                      color: "#344767",
-                      textAlign: "center",
-                      flex: "1 1 auto"
-                    }}
-                  >
-                    {mobileStepMeta[activeMobileStep].label}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setActiveMobileStep((previous) =>
-                        Math.min(mobileStepMeta.length - 1, previous + 1)
-                      )
-                    }
-                    disabled={activeMobileStep === mobileStepMeta.length - 1}
-                    style={{
-                      border: "none",
-                      borderRadius: "999px",
-                      padding: "0.5rem 1.1rem",
-                      fontWeight: 600,
-                      cursor:
-                        activeMobileStep === mobileStepMeta.length - 1
-                          ? "not-allowed"
-                          : "pointer",
-                      background:
-                        activeMobileStep === mobileStepMeta.length - 1
-                          ? "#dfe6f3"
-                          : "#4b7bec",
-                      color:
-                        activeMobileStep === mobileStepMeta.length - 1 ? "#5b728f" : "#fff",
-                      boxShadow:
-                        activeMobileStep === mobileStepMeta.length - 1
-                          ? "none"
-                          : "0 10px 22px rgba(75, 123, 236, 0.2)"
-                    }}
-                  >
-                    Weiter →
-                  </button>
-                </div>
-              </div>
-              <h3 style={{ color: "#2c3e50", marginTop: "1.5rem" }}>
-                💾 Gesamten Chat speichern
-              </h3>
-              <p>
-                Füge hier deine Eingabe und die Antwort von ChatGPT ein, um sie für spätere Reflexionen zu sichern.
-              </p>
-              <label
-                htmlFor="chatUserInput"
-                style={{ display: "block", fontWeight: 600, marginTop: "1rem" }}
-              >
-                Deine Eingabe an ChatGPT
-              </label>
-              <textarea
-                id="chatUserInput"
-                value={chatUserInput}
-                onChange={(event) => setChatUserInput(event.target.value)}
-                rows={3}
-                placeholder="Füge hier deinen Prompt oder deine Frage ein..."
-                style={{
-                  width: "100%",
-                  fontSize: "1rem",
-                  padding: "0.5rem",
-                  marginTop: "0.5rem",
-                  borderRadius: "6px",
-                  border: "1px solid #ccc"
-                }}
-              />
-              <label
-                htmlFor="chatAssistantResponse"
-                style={{ display: "block", fontWeight: 600, marginTop: "1rem" }}
-              >
-                Antwort von ChatGPT
-              </label>
-              <textarea
-                id="chatAssistantResponse"
-                value={chatAssistantResponse}
-                onChange={(event) => setChatAssistantResponse(event.target.value)}
-                rows={5}
-                placeholder="Füge hier die Antwort von ChatGPT ein..."
-                style={{
-                  width: "100%",
-                  fontSize: "1rem",
-                  padding: "0.5rem",
-                  marginTop: "0.5rem",
-                  borderRadius: "6px",
-                  border: "1px solid #ccc"
-                }}
-              />
-              <button
-                onClick={handleSaveChat}
-                style={{
-                  width: "100%",
-                  backgroundColor:
-                    chatUserInput.trim() || chatAssistantResponse.trim()
-                      ? "#3867d6"
-                      : "#aac1e8",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "6px",
-                  padding: "0.6rem 1rem",
-                  cursor:
-                    chatUserInput.trim() || chatAssistantResponse.trim()
-                      ? "pointer"
-                      : "not-allowed",
-                  fontSize: "1rem",
-                  marginTop: "1rem"
-                }}
-                disabled={!chatUserInput.trim() && !chatAssistantResponse.trim()}
-              >
-                💾 Chat sichern
-              </button>
-
-              <div
-                style={{
-                  backgroundColor: "#f9fbff",
-                  borderRadius: "8px",
-                  padding: "1rem",
-                  marginTop: "1.5rem",
-                  border: "1px solid #d6e0f5"
-                }}
-              >
-                <h4 style={{ color: "#2c3e50", marginTop: 0 }}>Gespeicherte Chats</h4>
-                {savedChats.length === 0 ? (
-                  <p style={{ margin: 0 }}>
-                    Noch keine Chats gespeichert. Füge oben deine ersten Notizen hinzu.
-                  </p>
-                ) : (
-                  <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-                    {savedChats.map((chat) => (
-                      <li
-                        key={chat.id}
-                        style={{
-                          backgroundColor: "#fff",
-                          borderRadius: "6px",
-                          padding: "0.75rem",
-                          boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
-                          border: "1px solid #e0e8f8",
-                          marginBottom: "0.75rem"
-                        }}
-                      >
-                        <div
+                    {mobileStepMeta.map((step, index) => {
+                      const isActive = activeMobileStep === index;
+                      return (
+                        <button
+                          key={step.key}
+                          type="button"
+                          onClick={() => setActiveMobileStep(index)}
                           style={{
+                            flex: "1 1 180px",
+                            borderRadius: "999px",
+                            border: "none",
+                            padding: "0.55rem 1rem",
+                            cursor: "pointer",
+                            background: isActive ? "#4b7bec" : "#e1e9ff",
+                            color: isActive ? "#fff" : "#1f3c88",
+                            fontWeight: 600,
                             display: "flex",
-                            justifyContent: "space-between",
                             alignItems: "center",
-                            marginBottom: "0.5rem"
+                            justifyContent: "center",
+                            gap: "0.4rem",
+                            boxShadow: isActive
+                              ? "0 12px 28px rgba(75, 123, 236, 0.25)"
+                              : "none",
+                            transition: "background-color 0.2s ease, box-shadow 0.2s ease"
                           }}
                         >
-                          <strong>
-                            {new Date(chat.createdAt).toLocaleString("de-DE", {
-                              dateStyle: "short",
-                              timeStyle: "short"
-                            })}
-                          </strong>
-                          <button
-                            onClick={() => handleDeleteChat(chat.id)}
+                          <span aria-hidden="true">{step.icon}</span>
+                          <span>{step.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <div
+                    style={{
+                      borderRadius: "36px",
+                      overflow: "hidden",
+                      padding: "1.5rem",
+                      background: mobileStepMeta[activeMobileStep].background,
+                      boxShadow: "0 24px 48px rgba(31, 61, 116, 0.18)"
+                    }}
+                  >
+                    {renderMobileStepContent()}
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      gap: "0.75rem"
+                    }}
+                  >
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setActiveMobileStep((previous) => Math.max(0, previous - 1))
+                      }
+                      disabled={activeMobileStep === 0}
+                      style={{
+                        border: "none",
+                        borderRadius: "999px",
+                        padding: "0.5rem 1.1rem",
+                        fontWeight: 600,
+                        cursor: activeMobileStep === 0 ? "not-allowed" : "pointer",
+                        background: activeMobileStep === 0 ? "#dfe6f3" : "#4b7bec",
+                        color: activeMobileStep === 0 ? "#5b728f" : "#fff",
+                        boxShadow:
+                          activeMobileStep === 0
+                            ? "none"
+                            : "0 10px 22px rgba(75, 123, 236, 0.2)"
+                      }}
+                    >
+                      ← Zurück
+                    </button>
+                    <span
+                      style={{
+                        fontWeight: 600,
+                        color: "#344767",
+                        textAlign: "center",
+                        flex: "1 1 auto"
+                      }}
+                    >
+                      {mobileStepMeta[activeMobileStep].label}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setActiveMobileStep((previous) =>
+                          Math.min(mobileStepMeta.length - 1, previous + 1)
+                        )
+                      }
+                      disabled={activeMobileStep === mobileStepMeta.length - 1}
+                      style={{
+                        border: "none",
+                        borderRadius: "999px",
+                        padding: "0.5rem 1.1rem",
+                        fontWeight: 600,
+                        cursor:
+                          activeMobileStep === mobileStepMeta.length - 1
+                            ? "not-allowed"
+                            : "pointer",
+                        background:
+                          activeMobileStep === mobileStepMeta.length - 1
+                            ? "#dfe6f3"
+                            : "#4b7bec",
+                        color:
+                          activeMobileStep === mobileStepMeta.length - 1 ? "#5b728f" : "#fff",
+                        boxShadow:
+                          activeMobileStep === mobileStepMeta.length - 1
+                            ? "none"
+                            : "0 10px 22px rgba(75, 123, 236, 0.2)"
+                      }}
+                    >
+                      Weiter →
+                    </button>
+                  </div>
+                </div>
+                <h3 style={{ color: "#2c3e50", marginTop: "1.5rem" }}>
+                  💾 Gesamten Chat speichern
+                </h3>
+                <p>
+                  Füge hier deine Eingabe und die Antwort von ChatGPT ein, um sie für spätere Reflexionen zu sichern.
+                </p>
+                <label
+                  htmlFor="chatUserInput"
+                  style={{ display: "block", fontWeight: 600, marginTop: "1rem" }}
+                >
+                  Deine Eingabe an ChatGPT
+                </label>
+                <textarea
+                  id="chatUserInput"
+                  value={chatUserInput}
+                  onChange={(event) => setChatUserInput(event.target.value)}
+                  rows={3}
+                  placeholder="Füge hier deinen Prompt oder deine Frage ein..."
+                  style={{
+                    width: "100%",
+                    fontSize: "1rem",
+                    padding: "0.5rem",
+                    marginTop: "0.5rem",
+                    borderRadius: "6px",
+                    border: "1px solid #ccc"
+                  }}
+                />
+                <label
+                  htmlFor="chatAssistantResponse"
+                  style={{ display: "block", fontWeight: 600, marginTop: "1rem" }}
+                >
+                  Antwort von ChatGPT
+                </label>
+                <textarea
+                  id="chatAssistantResponse"
+                  value={chatAssistantResponse}
+                  onChange={(event) => setChatAssistantResponse(event.target.value)}
+                  rows={5}
+                  placeholder="Füge hier die Antwort von ChatGPT ein..."
+                  style={{
+                    width: "100%",
+                    fontSize: "1rem",
+                    padding: "0.5rem",
+                    marginTop: "0.5rem",
+                    borderRadius: "6px",
+                    border: "1px solid #ccc"
+                  }}
+                />
+                <button
+                  onClick={handleSaveChat}
+                  style={{
+                    width: "100%",
+                    backgroundColor:
+                      chatUserInput.trim() || chatAssistantResponse.trim()
+                        ? "#3867d6"
+                        : "#aac1e8",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: "6px",
+                    padding: "0.6rem 1rem",
+                    cursor:
+                      chatUserInput.trim() || chatAssistantResponse.trim()
+                        ? "pointer"
+                        : "not-allowed",
+                    fontSize: "1rem",
+                    marginTop: "1rem"
+                  }}
+                  disabled={!chatUserInput.trim() && !chatAssistantResponse.trim()}
+                >
+                  💾 Chat sichern
+                </button>
+
+                <div
+                  style={{
+                    backgroundColor: "#f9fbff",
+                    borderRadius: "8px",
+                    padding: "1rem",
+                    marginTop: "1.5rem",
+                    border: "1px solid #d6e0f5"
+                  }}
+                >
+                  <h4 style={{ color: "#2c3e50", marginTop: 0 }}>Gespeicherte Chats</h4>
+                  {savedChats.length === 0 ? (
+                    <p style={{ margin: 0 }}>
+                      Noch keine Chats gespeichert. Füge oben deine ersten Notizen hinzu.
+                    </p>
+                  ) : (
+                    <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                      {savedChats.map((chat) => (
+                        <li
+                          key={chat.id}
+                          style={{
+                            backgroundColor: "#fff",
+                            borderRadius: "6px",
+                            padding: "0.75rem",
+                            boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
+                            border: "1px solid #e0e8f8",
+                            marginBottom: "0.75rem"
+                          }}
+                        >
+                          <div
                             style={{
-                              backgroundColor: "transparent",
-                              color: "#eb3b5a",
-                              border: "none",
-                              cursor: "pointer",
-                              fontWeight: 600
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "center",
+                              marginBottom: "0.5rem"
                             }}
                           >
-                            ✖️ Löschen
-                          </button>
-                        </div>
-                        {chat.userInput ? (
-                          <p style={{ whiteSpace: "pre-wrap", marginBottom: "0.5rem" }}>
-                            <strong>Du:</strong> {chat.userInput}
-                          </p>
-                        ) : null}
-                        {chat.assistantResponse ? (
-                          <p style={{ whiteSpace: "pre-wrap", margin: 0 }}>
-                            <strong>ChatGPT:</strong> {chat.assistantResponse}
-                          </p>
-                        ) : null}
-                      </li>
-                    ))}
-                  </ul>
-                )}
+                            <strong>
+                              {new Date(chat.createdAt).toLocaleString("de-DE", {
+                                dateStyle: "short",
+                                timeStyle: "short"
+                              })}
+                            </strong>
+                            <button
+                              onClick={() => handleDeleteChat(chat.id)}
+                              style={{
+                                backgroundColor: "transparent",
+                                color: "#eb3b5a",
+                                border: "none",
+                                cursor: "pointer",
+                                fontWeight: 600
+                              }}
+                            >
+                              ✖️ Löschen
+                            </button>
+                          </div>
+                          {chat.userInput ? (
+                            <p style={{ whiteSpace: "pre-wrap", marginBottom: "0.5rem" }}>
+                              <strong>Du:</strong> {chat.userInput}
+                            </p>
+                          ) : null}
+                          {chat.assistantResponse ? (
+                            <p style={{ whiteSpace: "pre-wrap", margin: 0 }}>
+                              <strong>ChatGPT:</strong> {chat.assistantResponse}
+                            </p>
+                          ) : null}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
               </div>
-            </div>
-          ) : null}
-        </div>
+            ) : null}
+          </div>
+        )}
       </section>
     </main>
   );
