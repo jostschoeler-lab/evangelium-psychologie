@@ -2240,8 +2240,6 @@ export default function Bibliothek() {
       </button>
 
       <section style={{ maxWidth: "800px", margin: "0 auto" }}>
-        <h1 style={{ color: "#2c3e50", marginBottom: "1.5rem" }}>Verwandlung als Gotteskind</h1>
-
         {renderIntroSection()}
 
         <div style={{ display: introVisible ? "none" : "block" }}>
