@@ -1,5 +1,12 @@
 import { useNavigate } from "react-router-dom";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties
+} from "react";
 
 type NeedContent = {
   resonance: string[];
@@ -393,6 +400,7 @@ export default function Bibliothek() {
   const [chatAssistantResponse, setChatAssistantResponse] = useState("");
   const [savedChats, setSavedChats] = useState<SavedChat[]>([]);
   const [introVisible, setIntroVisible] = useState(true);
+  const [activeMobileStep, setActiveMobileStep] = useState(0);
 
   const dictationSupported =
     typeof window !== "undefined" &&
@@ -915,6 +923,427 @@ ${closingDetails}
     );
   };
 
+  const mobileStepMeta = [
+    {
+      key: "need",
+      label: "Bedürfnis-Erklärung",
+      icon: "📖",
+      background: "linear-gradient(180deg, #fef6ee 0%, #e8f0ff 100%)"
+    },
+    {
+      key: "personal",
+      label: "Dein persönlicher Schritt",
+      icon: "🕊️",
+      background: "linear-gradient(180deg, #fef6ee 0%, #f0f7ff 100%)"
+    },
+    {
+      key: "childhood",
+      label: "Kindheitserinnerung",
+      icon: "👶",
+      background: "linear-gradient(180deg, #f9f1ff 0%, #eef7ff 100%)"
+    }
+  ] as const;
+
+  const renderMobileStepContent = (): JSX.Element => {
+    const baseCardStyle: CSSProperties = {
+      background: "#ffffffcc",
+      backdropFilter: "blur(6px)",
+      borderRadius: "28px",
+      padding: "28px 22px",
+      boxShadow: "0 24px 48px rgba(31, 61, 116, 0.16)",
+      display: "flex",
+      flexDirection: "column",
+      gap: "18px"
+    };
+
+    const listStyle: CSSProperties = {
+      margin: 0,
+      paddingLeft: "1.2rem",
+      display: "flex",
+      flexDirection: "column",
+      gap: "0.6rem"
+    };
+
+    switch (activeMobileStep) {
+      case 0: {
+        if (!selectedNeedData) {
+          return (
+            <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+              <section style={baseCardStyle} aria-labelledby="mobileNeedTitle">
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+                  <h1
+                    id="mobileNeedTitle"
+                    style={{
+                      fontSize: "1.6rem",
+                      margin: 0,
+                      color: "#2c3e50"
+                    }}
+                  >
+                    {selectedNeed || "Bedürfnis"}
+                  </h1>
+                  <p
+                    style={{
+                      margin: 0,
+                      fontSize: "1.05rem",
+                      lineHeight: 1.5,
+                      color: "#344767"
+                    }}
+                  >
+                    Wähle zuerst ein Bedürfnis in der Desktop-Ansicht, damit die Erklärung angezeigt wird.
+                  </p>
+                </div>
+              </section>
+            </div>
+          );
+        }
+
+        return (
+          <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+            <section style={baseCardStyle} aria-labelledby="mobileNeedTitle">
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+                <h1
+                  id="mobileNeedTitle"
+                  style={{
+                    fontSize: "1.6rem",
+                    margin: 0,
+                    color: "#2c3e50"
+                  }}
+                >
+                  {selectedNeed}
+                </h1>
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: "1.05rem",
+                    lineHeight: 1.5,
+                    color: "#344767"
+                  }}
+                >
+                  Diese Impulse helfen dir, das Bedürfnis tiefer zu verstehen.
+                </p>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                <div>
+                  <h2
+                    style={{
+                      margin: 0,
+                      fontSize: "1.2rem",
+                      color: "#2c3e50"
+                    }}
+                  >
+                    🌱 Resonanz-Hypothesen
+                  </h2>
+                  <ul style={listStyle}>
+                    {selectedNeedData.resonance.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <h2
+                    style={{
+                      margin: 0,
+                      fontSize: "1.2rem",
+                      color: "#2c3e50"
+                    }}
+                  >
+                    🗣️ Dialog-Impulse an Jesus
+                  </h2>
+                  <ul style={listStyle}>
+                    {selectedNeedData.dialog.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <h2
+                    style={{
+                      margin: 0,
+                      fontSize: "1.2rem",
+                      color: "#2c3e50"
+                    }}
+                  >
+                    ✝️ Jesus-Antwort
+                  </h2>
+                  <blockquote
+                    style={{
+                      margin: 0,
+                      padding: "18px 20px",
+                      borderLeft: "4px solid #4b7bec",
+                      background: "rgba(72, 103, 214, 0.12)",
+                      borderRadius: "20px",
+                      fontStyle: "italic",
+                      color: "#1f3c88"
+                    }}
+                  >
+                    {selectedNeedData.jesus || "Noch keine Antwort vorhanden."}
+                  </blockquote>
+                </div>
+              </div>
+            </section>
+          </div>
+        );
+      }
+      case 1: {
+        const isListening = listeningField === "personalNeed";
+        const status = !dictationSupported
+          ? "Nicht verfügbar"
+          : isListening
+          ? "Hört zu …"
+          : "Bereit";
+
+        return (
+          <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+            <section style={baseCardStyle} aria-labelledby="mobilePersonalStep">
+              <h1
+                id="mobilePersonalStep"
+                style={{ fontSize: "1.6rem", margin: 0, color: "#2c3e50" }}
+              >
+                🕊️ Dein persönlicher Schritt
+              </h1>
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: "1.05rem",
+                  lineHeight: 1.6,
+                  color: "#344767",
+                  textAlign: "center",
+                  fontWeight: 600
+                }}
+              >
+                {selectedNeed
+                  ? `Wie würdest du „${selectedNeed}" mit deinen eigenen Worten beschreiben?`
+                  : "Wie würdest du dieses Bedürfnis mit deinen eigenen Worten beschreiben?"}
+              </p>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                  gap: "16px",
+                  alignItems: "center",
+                  justifyItems: "center"
+                }}
+              >
+                <img
+                  src="/bibliothek/personal-step-child.svg"
+                  alt="Ein Kind streckt weinend die Hände aus"
+                  style={{ width: "120px", height: "120px" }}
+                />
+                <img
+                  src="/bibliothek/personal-step-guide.svg"
+                  alt="Ein Begleiter lächelt warm und hört zu"
+                  style={{ width: "120px", height: "120px" }}
+                />
+              </div>
+              <label htmlFor="personalNeed" style={{ fontSize: "1rem", fontWeight: 600, color: "#1f2933" }}>
+                Antwort eingeben
+              </label>
+              <textarea
+                id="personalNeed"
+                value={personalNeed}
+                onChange={(event) => setPersonalNeed(event.target.value)}
+                placeholder="Wie würdest du dieses Bedürfnis mit eigenen Worten beschreiben?"
+                style={{
+                  width: "100%",
+                  minHeight: "140px",
+                  borderRadius: "20px",
+                  border: "1px solid rgba(56, 103, 214, 0.25)",
+                  padding: "16px",
+                  fontSize: "1.05rem",
+                  lineHeight: 1.5,
+                  resize: "vertical",
+                  boxShadow: "inset 0 1px 4px rgba(31, 61, 116, 0.12)"
+                }}
+              />
+              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <button
+                  type="button"
+                  onClick={() => handleDictation("personalNeed")}
+                  disabled={!dictationSupported}
+                  style={{
+                    flex: "0 0 auto",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "8px",
+                    padding: "12px 18px",
+                    borderRadius: "999px",
+                    border: "none",
+                    fontWeight: 600,
+                    fontSize: "1rem",
+                    background: !dictationSupported
+                      ? "#b0b9c6"
+                      : isListening
+                      ? "linear-gradient(135deg, #20bf6b, #1e9f5a)"
+                      : "linear-gradient(135deg, #ff8a5c, #ff6f61)",
+                    color: "#fff",
+                    cursor: dictationSupported ? "pointer" : "not-allowed",
+                    boxShadow: !dictationSupported
+                      ? "none"
+                      : isListening
+                      ? "0 8px 18px rgba(255, 112, 97, 0.35)"
+                      : "0 14px 28px rgba(255, 112, 97, 0.28)",
+                    transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                    transform: isListening ? "scale(0.96)" : "none"
+                  }}
+                  aria-label="Antwort einsprechen"
+                >
+                  🎙️ Einsprechen
+                </button>
+                <span style={{ fontSize: "0.9rem", color: "#5b728f", fontWeight: 600 }}>{status}</span>
+              </div>
+              {!dictationSupported && (
+                <p
+                  style={{
+                    fontSize: "0.9rem",
+                    color: "#c0392b",
+                    background: "rgba(255, 235, 230, 0.9)",
+                    padding: "12px 14px",
+                    borderRadius: "16px"
+                  }}
+                >
+                  Dein Browser unterstützt keine Spracherkennung. Verwende Chrome oder Edge, um die Diktierfunktion zu nutzen.
+                </p>
+              )}
+            </section>
+            <p
+              style={{
+                margin: 0,
+                fontSize: "0.9rem",
+                lineHeight: 1.5,
+                color: "#4c5d73",
+                textAlign: "center"
+              }}
+            >
+              Deine Eingabe wird automatisch auf diesem Gerät gespeichert. Sie erscheint auch in der Desktop-Ansicht unter „Dein persönlicher Schritt“.
+            </p>
+          </div>
+        );
+      }
+      case 2: {
+        const isListening = listeningField === "childhoodExperience";
+        const status = !dictationSupported
+          ? "Nicht verfügbar"
+          : isListening
+          ? "Hört zu …"
+          : "Bereit";
+
+        return (
+          <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+            <section style={baseCardStyle} aria-labelledby="mobileChildhoodStep">
+              <h1
+                id="mobileChildhoodStep"
+                style={{ fontSize: "1.6rem", margin: 0, color: "#2c3e50" }}
+              >
+                👶 Kindheitserinnerung
+              </h1>
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: "1.05rem",
+                  lineHeight: 1.6,
+                  color: "#344767",
+                  textAlign: "center",
+                  fontWeight: 600
+                }}
+              >
+                {selectedNeed
+                  ? `Hast du „${selectedNeed}" schon in deiner Kindheit gespürt?`
+                  : "Hast du dieses Gefühl oder Bedürfnis schon einmal in der Kindheit erlebt?"}
+              </p>
+              <label
+                htmlFor="childhoodExperience"
+                style={{ fontSize: "1rem", fontWeight: 600, color: "#1f2933" }}
+              >
+                Antwort eingeben
+              </label>
+              <textarea
+                id="childhoodExperience"
+                value={childhoodExperience}
+                onChange={(event) => setChildhoodExperience(event.target.value)}
+                placeholder="Beschreibe hier deine Erinnerungen aus der Kindheit."
+                style={{
+                  width: "100%",
+                  minHeight: "160px",
+                  borderRadius: "20px",
+                  border: "1px solid rgba(56, 103, 214, 0.25)",
+                  padding: "16px",
+                  fontSize: "1.05rem",
+                  lineHeight: 1.5,
+                  resize: "vertical",
+                  boxShadow: "inset 0 1px 4px rgba(31, 61, 116, 0.12)"
+                }}
+              />
+              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <button
+                  type="button"
+                  onClick={() => handleDictation("childhoodExperience")}
+                  disabled={!dictationSupported}
+                  style={{
+                    flex: "0 0 auto",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "8px",
+                    padding: "12px 18px",
+                    borderRadius: "999px",
+                    border: "none",
+                    fontWeight: 600,
+                    fontSize: "1rem",
+                    background: !dictationSupported
+                      ? "#b0b9c6"
+                      : isListening
+                      ? "linear-gradient(135deg, #20bf6b, #1e9f5a)"
+                      : "linear-gradient(135deg, #8f72ff, #5c6cff)",
+                    color: "#fff",
+                    cursor: dictationSupported ? "pointer" : "not-allowed",
+                    boxShadow: !dictationSupported
+                      ? "none"
+                      : isListening
+                      ? "0 8px 18px rgba(112, 125, 255, 0.35)"
+                      : "0 14px 28px rgba(112, 125, 255, 0.28)",
+                    transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                    transform: isListening ? "scale(0.96)" : "none"
+                  }}
+                  aria-label="Antwort einsprechen"
+                >
+                  🎙️ Einsprechen
+                </button>
+                <span style={{ fontSize: "0.9rem", color: "#5b728f", fontWeight: 600 }}>{status}</span>
+              </div>
+              {!dictationSupported && (
+                <p
+                  style={{
+                    fontSize: "0.9rem",
+                    color: "#c0392b",
+                    background: "rgba(255, 235, 230, 0.9)",
+                    padding: "12px 14px",
+                    borderRadius: "16px"
+                  }}
+                >
+                  Dein Browser unterstützt keine Spracherkennung. Verwende Chrome oder Edge, um die Diktierfunktion zu nutzen.
+                </p>
+              )}
+            </section>
+            <p
+              style={{
+                margin: 0,
+                fontSize: "0.9rem",
+                lineHeight: 1.5,
+                color: "#4c5d73",
+                textAlign: "center"
+              }}
+            >
+              Deine Eingabe wird automatisch auf diesem Gerät gespeichert. Sie erscheint auch in der Desktop-Ansicht unter „Hast du dieses Gefühl in der Kindheit erlebt?“.
+            </p>
+          </div>
+        );
+      }
+      default:
+        return <div />;
+    }
+  };
+
   return (
     <main
       style={{
@@ -1290,195 +1719,136 @@ ${closingDetails}
               </div>
 
               <h3 style={{ color: "#2c3e50" }}>🕊️ Dein persönlicher Schritt</h3>
-              <ol
+              <div
                 style={{
-                  listStyle: "none",
-                  paddingLeft: 0,
-                  margin: "0 0 1rem 0",
                   display: "flex",
                   flexDirection: "column",
-                  gap: "0.6rem"
+                  gap: "1.25rem",
+                  marginTop: "0.75rem"
                 }}
               >
-                <li
+                <div
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: "0.6rem"
+                  }}
+                >
+                  {mobileStepMeta.map((step, index) => {
+                    const isActive = activeMobileStep === index;
+                    return (
+                      <button
+                        key={step.key}
+                        type="button"
+                        onClick={() => setActiveMobileStep(index)}
+                        style={{
+                          flex: "1 1 180px",
+                          borderRadius: "999px",
+                          border: "none",
+                          padding: "0.55rem 1rem",
+                          cursor: "pointer",
+                          background: isActive ? "#4b7bec" : "#e1e9ff",
+                          color: isActive ? "#fff" : "#1f3c88",
+                          fontWeight: 600,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: "0.4rem",
+                          boxShadow: isActive
+                            ? "0 12px 28px rgba(75, 123, 236, 0.25)"
+                            : "none",
+                          transition: "background-color 0.2s ease, box-shadow 0.2s ease"
+                        }}
+                      >
+                        <span aria-hidden="true">{step.icon}</span>
+                        <span>{step.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+                <div
+                  style={{
+                    borderRadius: "36px",
+                    overflow: "hidden",
+                    padding: "1.5rem",
+                    background: mobileStepMeta[activeMobileStep].background,
+                    boxShadow: "0 24px 48px rgba(31, 61, 116, 0.18)"
+                  }}
+                >
+                  {renderMobileStepContent()}
+                </div>
+                <div
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    gap: "0.65rem"
+                    justifyContent: "space-between",
+                    gap: "0.75rem"
                   }}
                 >
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setActiveMobileStep((previous) => Math.max(0, previous - 1))
+                    }
+                    disabled={activeMobileStep === 0}
+                    style={{
+                      border: "none",
+                      borderRadius: "999px",
+                      padding: "0.5rem 1.1rem",
+                      fontWeight: 600,
+                      cursor: activeMobileStep === 0 ? "not-allowed" : "pointer",
+                      background: activeMobileStep === 0 ? "#dfe6f3" : "#4b7bec",
+                      color: activeMobileStep === 0 ? "#5b728f" : "#fff",
+                      boxShadow:
+                        activeMobileStep === 0
+                          ? "none"
+                          : "0 10px 22px rgba(75, 123, 236, 0.2)"
+                    }}
+                  >
+                    ← Zurück
+                  </button>
                   <span
                     style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      width: "1.8rem",
-                      height: "1.8rem",
-                      borderRadius: "999px",
-                      backgroundColor: "#f0f4ff",
-                      color: "#2c3e50",
-                      fontWeight: 700
-                    }}
-                    aria-hidden="true"
-                  >
-                    1
-                  </span>
-                  <a
-                    href="/bibliothek/beduerfnis-erklaerung.html"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "0.4rem",
-                      fontSize: "0.95rem",
                       fontWeight: 600,
-                      color: "#3867d6",
-                      textDecoration: "none"
+                      color: "#344767",
+                      textAlign: "center",
+                      flex: "1 1 auto"
                     }}
                   >
-                    <span aria-hidden="true">📖</span>
-                    <span>Bedürfnis-Erklärung (Handy)</span>
-                  </a>
-                </li>
-                <li
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.65rem"
-                  }}
-                >
-                  <span
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      width: "1.8rem",
-                      height: "1.8rem",
-                      borderRadius: "999px",
-                      backgroundColor: "#f0f4ff",
-                      color: "#2c3e50",
-                      fontWeight: 700
-                    }}
-                    aria-hidden="true"
-                  >
-                    2
+                    {mobileStepMeta[activeMobileStep].label}
                   </span>
-                  <a
-                    href="/bibliothek/persoenlicher-schritt.html"
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setActiveMobileStep((previous) =>
+                        Math.min(mobileStepMeta.length - 1, previous + 1)
+                      )
+                    }
+                    disabled={activeMobileStep === mobileStepMeta.length - 1}
                     style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "0.4rem",
-                      fontSize: "0.95rem",
-                      fontWeight: 600,
-                      color: "#3867d6",
-                      textDecoration: "none"
-                    }}
-                  >
-                    <span aria-hidden="true">📱</span>
-                    <span>Handy-Ansicht · Persönlicher Schritt</span>
-                  </a>
-                </li>
-                <li
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.65rem"
-                  }}
-                >
-                  <span
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      width: "1.8rem",
-                      height: "1.8rem",
+                      border: "none",
                       borderRadius: "999px",
-                      backgroundColor: "#f0f4ff",
-                      color: "#2c3e50",
-                      fontWeight: 700
-                    }}
-                    aria-hidden="true"
-                  >
-                    3
-                  </span>
-                  <a
-                    href="/bibliothek/kindheitserinnerung.html"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "0.4rem",
-                      fontSize: "0.95rem",
+                      padding: "0.5rem 1.1rem",
                       fontWeight: 600,
-                      color: "#3867d6",
-                      textDecoration: "none"
+                      cursor:
+                        activeMobileStep === mobileStepMeta.length - 1
+                          ? "not-allowed"
+                          : "pointer",
+                      background:
+                        activeMobileStep === mobileStepMeta.length - 1
+                          ? "#dfe6f3"
+                          : "#4b7bec",
+                      color:
+                        activeMobileStep === mobileStepMeta.length - 1 ? "#5b728f" : "#fff",
+                      boxShadow:
+                        activeMobileStep === mobileStepMeta.length - 1
+                          ? "none"
+                          : "0 10px 22px rgba(75, 123, 236, 0.2)"
                     }}
                   >
-                    <span aria-hidden="true">👶</span>
-                    <span>Handy-Ansicht · Kindheitserinnerung</span>
-                  </a>
-                </li>
-              </ol>
-              <div
-                style={{
-                  display: "flex",
-                  gap: "0.5rem",
-                  alignItems: "stretch",
-                  marginTop: "0.5rem",
-                  marginBottom: "1rem"
-                }}
-              >
-                <textarea
-                  id="personalNeed"
-                  value={personalNeed}
-                  onChange={(event) => setPersonalNeed(event.target.value)}
-                  rows={3}
-                  placeholder="Wie würdest du dein Bedürfnis mit eigenen Worten beschreiben?"
-                  style={{
-                    flex: 1,
-                    fontSize: "1rem",
-                    padding: "0.5rem",
-                    borderRadius: "6px",
-                    border: "1px solid #ccc"
-                  }}
-                />
-                <DictationButton field="personalNeed" ariaLabel="Persönlichen Schritt diktieren" />
-              </div>
-              <p style={{ marginTop: "1rem", fontWeight: 600 }}>
-                Hast du dieses Gefühl oder Bedürfnis schon einmal in der Kindheit erlebt?
-              </p>
-              <div
-                style={{
-                  display: "flex",
-                  gap: "0.5rem",
-                  alignItems: "stretch",
-                  marginTop: "0.5rem",
-                  marginBottom: "1rem"
-                }}
-              >
-                <textarea
-                  id="childhoodExperience"
-                  value={childhoodExperience}
-                  onChange={(event) => setChildhoodExperience(event.target.value)}
-                  rows={3}
-                  placeholder="Beschreibe hier deine Erinnerungen aus der Kindheit."
-                  style={{
-                    flex: 1,
-                    fontSize: "1rem",
-                    padding: "0.5rem",
-                    borderRadius: "6px",
-                    border: "1px solid #ccc"
-                  }}
-                />
-                <DictationButton
-                  field="childhoodExperience"
-                  ariaLabel="Kindheitserinnerungen diktieren"
-                />
+                    Weiter →
+                  </button>
+                </div>
               </div>
               <button
                 onClick={handlePersonalJesus}
