@@ -1649,7 +1649,7 @@ export default function Bibliothek() {
               <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
                 <button
                   type="button"
-                  onClick={handleIntroDiscussionSubmit}
+                  onClick={() => handleIntroDiscussion("initial")}
                   disabled={!hasQuestion}
                   style={{
                     backgroundColor: hasQuestion ? "#f4a259" : "#f5d1a8",
@@ -1668,7 +1668,7 @@ export default function Bibliothek() {
 
                 <button
                   type="button"
-                  onClick={() => handleIntroDiscussionSubmit(true)}
+                  onClick={() => handleIntroDiscussion("follow-up")}
                   disabled={!hasHistory}
                   style={{
                     backgroundColor: hasHistory ? "#fdebd2" : "#f6d7b7",
