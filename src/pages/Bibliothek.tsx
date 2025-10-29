@@ -728,6 +728,65 @@ export default function Bibliothek() {
     window.open(`https://chat.openai.com/?q=${prompt}`, "_blank", "noopener,noreferrer");
   };
 
+  const closingPromptContextItems = useMemo(() => {
+    const entries: Array<{ label: string; value: string }> = [];
+
+    const addEntry = (label: string, value?: string | null) => {
+      if (!value) {
+        return;
+      }
+
+      const trimmed = value.trim();
+      if (!trimmed) {
+        return;
+      }
+
+      entries.push({ label, value: trimmed });
+    };
+
+    addEntry("Aktuelles Anliegen", problem);
+    addEntry("Ausgewähltes Bedürfnis", selectedNeed ?? "");
+    addEntry("Deine Beschreibung des Bedürfnisses", personalNeed);
+    addEntry("Kindheitserinnerung", childhoodExperience);
+    addEntry("Worte Jesu aus der Meditation", meditationNotes);
+    addEntry("Jesus-Impuls aus der Bedürfnis-Erklärung", selectedNeedData?.jesus ?? "");
+
+    return entries;
+  }, [problem, selectedNeed, personalNeed, childhoodExperience, meditationNotes, selectedNeedData]);
+
+  const closingPrompt = useMemo(() => {
+    if (closingPromptContextItems.length === 0) {
+      return "";
+    }
+
+    const instructions = [
+      "Rolle: Du bist eine seelsorgliche, psychologisch geschulte geistliche Begleitung. Sprich die Person warmherzig in der Du-Form an und nimm Bezug auf Jesu Gegenwart.",
+      "Aufgabe: Formuliere zuerst unter der Überschrift \"Anerkennung\" zwei bis drei Sätze, die den Weg dieser Person würdigen. Schreibe danach unter der Überschrift \"Alltagstipps\" drei konkrete, kleine Schritte in einer nummerierten Liste, wie sie Jesu Zuspruch in den kommenden Tagen leben kann.",
+      "Stil: Schreibe auf Deutsch, hoffnungsvoll, ermutigend und praxisnah. Greife Aussagen über Jesu Blick und Einladung auf, ohne zu moralisieren."
+    ];
+
+    const contextLines = closingPromptContextItems
+      .map((item) => `- ${item.label}: ${item.value}`)
+      .join("\n");
+
+    return `${instructions.join("\n\n")}\n\nKontext:\n${contextLines}`;
+  }, [closingPromptContextItems]);
+
+  const hasClosingPrompt = closingPrompt.trim().length > 0;
+
+  const handleClosingChatGPT = useCallback(() => {
+    if (!hasClosingPrompt) {
+      return;
+    }
+
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const prompt = encodeURIComponent(closingPrompt);
+    window.open(`https://chat.openai.com/?q=${prompt}`, "_blank", "noopener,noreferrer");
+  }, [closingPrompt, hasClosingPrompt]);
+
   const buildDetailList = (
     items: Array<{ label: string; value: string }>
   ): string =>
@@ -2350,7 +2409,7 @@ export default function Bibliothek() {
                     padding: "1rem 1.2rem",
                     display: "flex",
                     flexDirection: "column",
-                    gap: "0.6rem",
+                    gap: "0.9rem",
                     textAlign: "left"
                   }}
                 >
@@ -2363,33 +2422,63 @@ export default function Bibliothek() {
                   >
                     Anerkennung & Alltagstipps
                   </h2>
-                  <ul
+                  <p
                     style={{
                       margin: 0,
-                      paddingLeft: "1.1rem",
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "0.45rem",
-                      color: "#2c3e50"
+                      fontSize: "0.95rem",
+                      lineHeight: 1.5,
+                      color: "#344767"
                     }}
                   >
-                    <li>
-                      Halte kurz inne und danke Jesus dafür, dass er dir in deiner Schwachheit begegnet
-                      ist.
-                    </li>
-                    <li>
-                      Teile, wenn möglich, deine Einsichten mit einem vertrauensvollen Menschen, der
-                      mit dir beten kann.
-                    </li>
-                    <li>
-                      Plane einen konkreten kleinen Schritt für die kommenden Tage, der zu deinem
-                      Bedürfnis passt.
-                    </li>
-                    <li>
-                      Vereinbare mit dir selbst einen Termin, um in ein paar Tagen erneut kurz zu
-                      reflektieren.
-                    </li>
-                  </ul>
+                    Mit diesem Prompt öffnest du ChatGPT direkt mit einer wertschätzenden Antwort-Vorlage
+                    für Anerkennung und konkrete Alltagsschritte.
+                  </p>
+                  <div
+                    style={{
+                      borderRadius: "18px",
+                      background: "rgba(255, 255, 255, 0.85)",
+                      padding: "1rem 1.1rem",
+                      border: "1px solid rgba(79, 111, 198, 0.25)",
+                      fontSize: "0.95rem",
+                      lineHeight: 1.6,
+                      color: "#1f2933",
+                      whiteSpace: "pre-wrap",
+                      minHeight: "120px"
+                    }}
+                  >
+                    {hasClosingPrompt ? (
+                      closingPrompt
+                    ) : (
+                      <span style={{ color: "#5b728f" }}>
+                        Sobald du oben dein Anliegen, das Bedürfnis und Jesu Zuspruch festgehalten hast,
+                        erscheint hier automatisch dein persönlicher Prompt.
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleClosingChatGPT}
+                    disabled={!hasClosingPrompt}
+                    style={{
+                      alignSelf: "flex-start",
+                      border: "none",
+                      borderRadius: "999px",
+                      padding: "0.7rem 1.4rem",
+                      fontWeight: 700,
+                      fontSize: "1rem",
+                      background: hasClosingPrompt
+                        ? "linear-gradient(135deg, #4b7bec, #6dd5ed)"
+                        : "#c7d2f3",
+                      color: hasClosingPrompt ? "#fff" : "#5b728f",
+                      cursor: hasClosingPrompt ? "pointer" : "not-allowed",
+                      boxShadow: hasClosingPrompt
+                        ? "0 16px 30px rgba(75, 123, 236, 0.25)"
+                        : "none",
+                      transition: "background-color 0.2s ease, box-shadow 0.2s ease"
+                    }}
+                  >
+                    💡 Anerkennung von ChatGPT holen
+                  </button>
                 </div>
                 <p
                   style={{
