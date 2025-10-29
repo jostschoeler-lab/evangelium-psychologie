@@ -394,9 +394,6 @@ export default function Bibliothek() {
   const [personalNeed, setPersonalNeed] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [meditationNotes, setMeditationNotes] = useState("");
-  const closingReflectionStateTuple = useState("");
-  const closingReflectionState = closingReflectionStateTuple[0];
-  const setClosingReflectionState = closingReflectionStateTuple[1];
   const [listeningField, setListeningField] = useState<DictationField | null>(null);
   const [childhoodExperience, setChildhoodExperience] = useState("");
   const [chatUserInput, setChatUserInput] = useState("");
@@ -458,14 +455,6 @@ export default function Bibliothek() {
       /* ignore */
     }
 
-    try {
-      const storedClosingReflection = localStorage.getItem("bibliothekClosingReflection");
-      if (storedClosingReflection) {
-        setClosingReflectionState(storedClosingReflection);
-      }
-    } catch {
-      /* ignore */
-    }
   }, []);
 
   useEffect(() => {
@@ -728,65 +717,6 @@ export default function Bibliothek() {
     window.open(`https://chat.openai.com/?q=${prompt}`, "_blank", "noopener,noreferrer");
   };
 
-  const closingPromptContextItems = useMemo(() => {
-    const entries: Array<{ label: string; value: string }> = [];
-
-    const addEntry = (label: string, value?: string | null) => {
-      if (!value) {
-        return;
-      }
-
-      const trimmed = value.trim();
-      if (!trimmed) {
-        return;
-      }
-
-      entries.push({ label, value: trimmed });
-    };
-
-    addEntry("Aktuelles Anliegen", problem);
-    addEntry("Ausgewähltes Bedürfnis", selectedNeed ?? "");
-    addEntry("Deine Beschreibung des Bedürfnisses", personalNeed);
-    addEntry("Kindheitserinnerung", childhoodExperience);
-    addEntry("Worte Jesu aus der Meditation", meditationNotes);
-    addEntry("Jesus-Impuls aus der Bedürfnis-Erklärung", selectedNeedData?.jesus ?? "");
-
-    return entries;
-  }, [problem, selectedNeed, personalNeed, childhoodExperience, meditationNotes, selectedNeedData]);
-
-  const closingPrompt = useMemo(() => {
-    if (closingPromptContextItems.length === 0) {
-      return "";
-    }
-
-    const instructions = [
-      "Rolle: Du bist eine seelsorgliche, psychologisch geschulte geistliche Begleitung. Sprich die Person warmherzig in der Du-Form an und nimm Bezug auf Jesu Gegenwart.",
-      "Aufgabe: Formuliere zuerst unter der Überschrift \"Anerkennung\" zwei bis drei Sätze, die den Weg dieser Person würdigen. Schreibe danach unter der Überschrift \"Alltagstipps\" drei konkrete, kleine Schritte in einer nummerierten Liste, wie sie Jesu Zuspruch in den kommenden Tagen leben kann.",
-      "Stil: Schreibe auf Deutsch, hoffnungsvoll, ermutigend und praxisnah. Greife Aussagen über Jesu Blick und Einladung auf, ohne zu moralisieren."
-    ];
-
-    const contextLines = closingPromptContextItems
-      .map((item) => `- ${item.label}: ${item.value}`)
-      .join("\n");
-
-    return `${instructions.join("\n\n")}\n\nKontext:\n${contextLines}`;
-  }, [closingPromptContextItems]);
-
-  const hasClosingPrompt = closingPrompt.trim().length > 0;
-
-  const handleClosingChatGPT = useCallback(() => {
-    if (!hasClosingPrompt) {
-      return;
-    }
-
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    const prompt = encodeURIComponent(closingPrompt);
-    window.open(`https://chat.openai.com/?q=${prompt}`, "_blank", "noopener,noreferrer");
-  }, [closingPrompt, hasClosingPrompt]);
-
   const buildDetailList = (
     items: Array<{ label: string; value: string }>
   ): string =>
@@ -827,7 +757,7 @@ export default function Bibliothek() {
     return segments.join("\n\n");
   };
 
-  const handleAskJesus = () => {
+  const askJesusPrompt = useMemo(() => {
     const contextDetails = buildDetailList([
       { label: "Was dich beschäftigt", value: problem },
       {
@@ -862,11 +792,80 @@ export default function Bibliothek() {
       promptLines.push("", "Bedürfnis-Erklärung aus der Bibliothek:", needExplanation);
     }
 
-    const promptText = promptLines.join("\n");
+    return promptLines.join("\n").trim();
+  }, [problem, selectedNeed, personalNeed, childhoodExperience, selectedNeedData]);
+
+  const handleAskJesus = () => {
+    const promptText = askJesusPrompt.trim();
+    if (!promptText) {
+      return;
+    }
 
     const prompt = encodeURIComponent(promptText);
     window.open(`https://chat.openai.com/?q=${prompt}`, "_blank", "noopener,noreferrer");
   };
+
+  const closingPromptContextItems = useMemo(() => {
+    const entries: Array<{ label: string; value: string }> = [];
+
+    const addEntry = (label: string, value?: string | null) => {
+      if (!value) {
+        return;
+      }
+
+      const trimmed = value.trim();
+      if (!trimmed) {
+        return;
+      }
+
+      entries.push({ label, value: trimmed });
+    };
+
+    addEntry("Aktuelles Anliegen", problem);
+    addEntry("Ausgewähltes Bedürfnis", selectedNeed ?? "");
+    addEntry("Deine Beschreibung des Bedürfnisses", personalNeed);
+    addEntry("Kindheitserinnerung", childhoodExperience);
+    addEntry("Worte Jesu aus der Meditation", meditationNotes);
+    addEntry("Frage an Jesus (ChatGPT-Prompt)", askJesusPrompt);
+    addEntry("Jesus-Impuls aus der Bedürfnis-Erklärung", selectedNeedData?.jesus ?? "");
+
+    return entries;
+  }, [askJesusPrompt, problem, selectedNeed, personalNeed, childhoodExperience, meditationNotes, selectedNeedData]);
+
+  const closingPrompt = useMemo(() => {
+    if (closingPromptContextItems.length === 0) {
+      return "";
+    }
+
+    const instructions = [
+      "Rolle: Du bist eine seelsorgliche, psychologisch geschulte geistliche Begleitung. Sprich die Person warmherzig in der Du-Form an und nimm Bezug auf Jesu Gegenwart.",
+      "Aufgabe: Verfasse einen Abschlusskommentar. Beginne mit der Überschrift \"Abschluss\" und würdige in zwei bis drei Sätzen den Weg dieser Person und das Wirken Jesu.",
+      "Struktur: Schreibe danach unter der Überschrift \"Alltagstipps\" drei konkrete, kleine Schritte in einer nummerierten Liste, wie die Person Jesu Zuspruch im Alltag leben kann.",
+      "Bezug: Verknüpfe deine Worte mit allen Angaben, besonders mit der Frage an Jesus und dem gehörten Zuspruch.",
+      "Stil: Schreibe auf Deutsch, hoffnungsvoll, ermutigend und praxisnah. Greife Aussagen über Jesu Blick und Einladung auf, ohne zu moralisieren."
+    ];
+
+    const contextLines = closingPromptContextItems
+      .map((item) => `- ${item.label}: ${item.value}`)
+      .join("\n");
+
+    return `${instructions.join("\n\n")}\n\nKontext:\n${contextLines}`;
+  }, [closingPromptContextItems]);
+
+  const hasClosingPrompt = closingPrompt.trim().length > 0;
+
+  const handleClosingChatGPT = useCallback(() => {
+    if (!hasClosingPrompt) {
+      return;
+    }
+
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const prompt = encodeURIComponent(closingPrompt);
+    window.open(`https://chat.openai.com/?q=${prompt}`, "_blank", "noopener,noreferrer");
+  }, [closingPrompt, hasClosingPrompt]);
 
 
   const handleSaveChat = () => {
@@ -1019,27 +1018,6 @@ export default function Bibliothek() {
       </button>
     );
   };
-
-  const handleClosingReflectionChange = useCallback(
-    (value: string) => {
-      setClosingReflectionState(value);
-
-      if (typeof window === "undefined") {
-        return;
-      }
-
-      try {
-        if (!value.trim()) {
-          localStorage.removeItem("bibliothekClosingReflection");
-        } else {
-          localStorage.setItem("bibliothekClosingReflection", value);
-        }
-      } catch {
-        /* ignore */
-      }
-    },
-    [setClosingReflectionState]
-  );
 
   const mobileStepMeta = [
     {
@@ -2376,32 +2354,6 @@ export default function Bibliothek() {
                   gap: "0.75rem"
                 }}
               >
-                <label
-                  htmlFor="mobileClosingReflection"
-                  style={{ fontWeight: 600, color: "#1f3c88", textAlign: "left" }}
-                >
-                  Deine Antwort auf die Abschlussfrage
-                </label>
-                <textarea
-                  id="mobileClosingReflection"
-                  value={closingReflectionState}
-                  onChange={(event) => handleClosingReflectionChange(event.target.value)}
-                  rows={4}
-                  placeholder="Schreibe hier, wie du Jesu Zuspruch in den Alltag tragen möchtest."
-                  style={{
-                    width: "100%",
-                    borderRadius: "20px",
-                    border: "1px solid rgba(31, 60, 136, 0.2)",
-                    padding: "1rem",
-                    fontSize: "1.05rem",
-                    lineHeight: 1.5,
-                    color: "#1f2933",
-                    backgroundColor: "#fff",
-                    boxShadow: "inset 0 1px 4px rgba(36, 53, 103, 0.08)",
-                    resize: "vertical",
-                    outline: "none"
-                  }}
-                />
                 <div
                   style={{
                     background: "rgba(79, 111, 198, 0.1)",
@@ -2420,7 +2372,7 @@ export default function Bibliothek() {
                       color: "#2c3e50"
                     }}
                   >
-                    Anerkennung & Alltagstipps
+                    Abschluss- und Alltagstipps
                   </h2>
                   <p
                     style={{
@@ -2430,8 +2382,8 @@ export default function Bibliothek() {
                       color: "#344767"
                     }}
                   >
-                    Mit diesem Prompt öffnest du ChatGPT direkt mit einer wertschätzenden Antwort-Vorlage
-                    für Anerkennung und konkrete Alltagsschritte.
+                    Mit diesem Prompt öffnest du ChatGPT direkt, um einen Abschlusskommentar auf Basis deiner
+                    bisherigen Eingaben zu erhalten.
                   </p>
                   <div
                     style={{
@@ -2477,7 +2429,7 @@ export default function Bibliothek() {
                       transition: "background-color 0.2s ease, box-shadow 0.2s ease"
                     }}
                   >
-                    💡 Anerkennung von ChatGPT holen
+                    💡 Abschlusskommentar von ChatGPT holen
                   </button>
                 </div>
                 <p
@@ -2490,7 +2442,7 @@ export default function Bibliothek() {
                   }}
                 >
                   Deine Notizen bleiben nur auf diesem Gerät gespeichert und sind auch in der
-                  Desktop-Ansicht unter „Abschluss von ChatGPT“ sichtbar.
+                  Desktop-Ansicht unter „Abschlusskommentar von ChatGPT“ sichtbar.
                 </p>
               </div>
             </section>
