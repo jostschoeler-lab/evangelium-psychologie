@@ -863,13 +863,12 @@ export default function Bibliothek() {
 
   const handleStartIntro = useCallback(() => {
     setIntroVisible(false);
-    setIntroExpanded(false);
     if (typeof window !== "undefined") {
       window.setTimeout(() => {
         formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
       }, 100);
     }
-  }, [setIntroVisible, setIntroExpanded]);
+  }, [setIntroVisible]);
 
   const handleContinueFromStepOne = useCallback(() => {
     setActiveMobileStep(2);
