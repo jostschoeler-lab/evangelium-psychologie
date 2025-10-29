@@ -463,7 +463,6 @@ export default function Bibliothek() {
   const [closingChatResponse, setClosingChatResponse] = useState("");
   const [savedChats, setSavedChats] = useState<SavedChat[]>([]);
   const [introVisible, setIntroVisible] = useState(false);
-  const [introExpanded, setIntroExpanded] = useState(false);
   const [activeMobileStep, setActiveMobileStep] = useState(0);
   const [introDiscussionQuestion, setIntroDiscussionQuestion] = useState("");
   const [introDiscussionHistory, setIntroDiscussionHistory] = useState("");
@@ -1542,9 +1541,7 @@ export default function Bibliothek() {
       return <IntroCard onStart={handleStartIntro} />;
     }
 
-    const displayedLeadParagraphs = introExpanded
-      ? introLeadParagraphs
-      : introLeadParagraphs.slice(0, 1);
+    const displayedLeadParagraphs = introLeadParagraphs;
 
     const renderIntroSectionCard = (section: IntroSection) => {
       if (section.variant === "discussion") {
@@ -1748,14 +1745,6 @@ export default function Bibliothek() {
       );
     };
 
-    const collapsedBeforeToggleSections = introSections.filter(
-      (section) => section.displayInCollapsed && section.collapsedPlacement !== "afterToggle"
-    );
-    const collapsedAfterToggleSections = introSections.filter(
-      (section) => section.displayInCollapsed && section.collapsedPlacement === "afterToggle"
-    );
-    const expandableSections = introSections.filter((section) => !section.displayInCollapsed);
-    const hasExpandableSections = expandableSections.length > 0;
 
     return (
       <section
@@ -1781,7 +1770,7 @@ export default function Bibliothek() {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            height: introExpanded ? "190px" : "150px"
+            height: "190px"
           }}
         >
           <img
@@ -1815,44 +1804,16 @@ export default function Bibliothek() {
           </p>
         </div>
 
-        {displayedLeadParagraphs.map((paragraph, index, array) => {
-          const isLast = index === array.length - 1;
-          return (
-            <p
-              key={paragraph}
-              style={{ margin: 0, fontSize: "0.95rem", lineHeight: 1.6, color: "#5f4630" }}
-            >
-              {introExpanded || !isLast ? paragraph : `${paragraph} …`}
-            </p>
-          );
-        })}
+        {displayedLeadParagraphs.map((paragraph) => (
+          <p
+            key={paragraph}
+            style={{ margin: 0, fontSize: "0.95rem", lineHeight: 1.6, color: "#5f4630" }}
+          >
+            {paragraph}
+          </p>
+        ))}
 
-        {collapsedBeforeToggleSections.map(renderIntroSectionCard)}
-
-        {hasExpandableSections && (
-          <>
-            <button
-              type="button"
-              onClick={() => setIntroExpanded((previous) => !previous)}
-              style={{
-                alignSelf: "flex-start",
-                background: "none",
-                border: "none",
-                color: "#3867d6",
-                textDecoration: "underline",
-                cursor: "pointer",
-                fontWeight: 600,
-                fontSize: "0.95rem"
-              }}
-            >
-              {introExpanded ? "Weniger anzeigen" : "Alles anzeigen"}
-            </button>
-
-            {introExpanded && expandableSections.map(renderIntroSectionCard)}
-          </>
-        )}
-
-        {collapsedAfterToggleSections.map(renderIntroSectionCard)}
+        {introSections.map(renderIntroSectionCard)}
       </section>
     );
   };
