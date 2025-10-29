@@ -394,6 +394,9 @@ export default function Bibliothek() {
   const [personalNeed, setPersonalNeed] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [meditationNotes, setMeditationNotes] = useState("");
+  const closingReflectionStateTuple = useState("");
+  const closingReflectionState = closingReflectionStateTuple[0];
+  const setClosingReflectionState = closingReflectionStateTuple[1];
   const [listeningField, setListeningField] = useState<DictationField | null>(null);
   const [childhoodExperience, setChildhoodExperience] = useState("");
   const [chatUserInput, setChatUserInput] = useState("");
@@ -450,6 +453,15 @@ export default function Bibliothek() {
       if (storedChildhoodExperience) {
         setChildhoodExperience(storedChildhoodExperience);
         dictationBaseRef.current.childhoodExperience = storedChildhoodExperience;
+      }
+    } catch {
+      /* ignore */
+    }
+
+    try {
+      const storedClosingReflection = localStorage.getItem("bibliothekClosingReflection");
+      if (storedClosingReflection) {
+        setClosingReflectionState(storedClosingReflection);
       }
     } catch {
       /* ignore */
@@ -949,6 +961,27 @@ export default function Bibliothek() {
     );
   };
 
+  const handleClosingReflectionChange = useCallback(
+    (value: string) => {
+      setClosingReflectionState(value);
+
+      if (typeof window === "undefined") {
+        return;
+      }
+
+      try {
+        if (!value.trim()) {
+          localStorage.removeItem("bibliothekClosingReflection");
+        } else {
+          localStorage.setItem("bibliothekClosingReflection", value);
+        }
+      } catch {
+        /* ignore */
+      }
+    },
+    [setClosingReflectionState]
+  );
+
   const mobileStepMeta = [
     {
       key: "intro",
@@ -998,6 +1031,12 @@ export default function Bibliothek() {
       icon: "🙏",
       background: "linear-gradient(180deg, #fef6ee 0%, #eaf9f1 100%)"
     },
+    {
+      key: "closing",
+      label: "9) Abschluss von ChatGPT",
+      icon: "🌟",
+      background: "linear-gradient(180deg, #fef9f3 0%, #eaf3ff 100%)"
+    }
   ] as const;
 
   const introEnabled = true;
@@ -2207,6 +2246,162 @@ export default function Bibliothek() {
                 >
                   Deine Worte bleiben auf diesem Gerät gespeichert und erscheinen auch in der Desktop-Ansicht im Feld
                   „Worte Jesu aus der Meditation“.
+                </p>
+              </div>
+            </section>
+          </div>
+        );
+      }
+      case 8: {
+        return (
+          <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+            <section style={baseCardStyle} aria-labelledby="mobileClosingHeading">
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "1rem",
+                  textAlign: "center",
+                  alignItems: "center"
+                }}
+              >
+                <div
+                  style={{
+                    width: "160px",
+                    height: "160px",
+                    borderRadius: "36px",
+                    background: "linear-gradient(135deg, #ffe8cc, #dfe9ff)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    boxShadow: "0 20px 38px rgba(111, 148, 214, 0.2)",
+                    fontSize: "3.5rem"
+                  }}
+                  aria-hidden="true"
+                >
+                  🤍
+                </div>
+                <h1
+                  id="mobileClosingHeading"
+                  style={{ fontSize: "1.5rem", margin: 0, color: "#2c3e50" }}
+                >
+                  🌟 Abschluss von ChatGPT
+                </h1>
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: "1.05rem",
+                    lineHeight: 1.6,
+                    color: "#344767"
+                  }}
+                >
+                  Danke, dass du dich auf diesen inneren Weg eingelassen hast. Würdige, was du mit
+                  Jesus durchlebt und ausgesprochen hast.
+                </p>
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: "1.05rem",
+                    lineHeight: 1.6,
+                    color: "#344767"
+                  }}
+                >
+                  Welche Einladung nimmst du aus diesem Gespräch in deinen Alltag mit?
+                </p>
+              </div>
+
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "0.75rem"
+                }}
+              >
+                <label
+                  htmlFor="mobileClosingReflection"
+                  style={{ fontWeight: 600, color: "#1f3c88", textAlign: "left" }}
+                >
+                  Deine Antwort auf die Abschlussfrage
+                </label>
+                <textarea
+                  id="mobileClosingReflection"
+                  value={closingReflectionState}
+                  onChange={(event) => handleClosingReflectionChange(event.target.value)}
+                  rows={4}
+                  placeholder="Schreibe hier, wie du Jesu Zuspruch in den Alltag tragen möchtest."
+                  style={{
+                    width: "100%",
+                    borderRadius: "20px",
+                    border: "1px solid rgba(31, 60, 136, 0.2)",
+                    padding: "1rem",
+                    fontSize: "1.05rem",
+                    lineHeight: 1.5,
+                    color: "#1f2933",
+                    backgroundColor: "#fff",
+                    boxShadow: "inset 0 1px 4px rgba(36, 53, 103, 0.08)",
+                    resize: "vertical",
+                    outline: "none"
+                  }}
+                />
+                <div
+                  style={{
+                    background: "rgba(79, 111, 198, 0.1)",
+                    borderRadius: "20px",
+                    padding: "1rem 1.2rem",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "0.6rem",
+                    textAlign: "left"
+                  }}
+                >
+                  <h2
+                    style={{
+                      margin: 0,
+                      fontSize: "1.1rem",
+                      color: "#2c3e50"
+                    }}
+                  >
+                    Anerkennung & Alltagstipps
+                  </h2>
+                  <ul
+                    style={{
+                      margin: 0,
+                      paddingLeft: "1.1rem",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "0.45rem",
+                      color: "#2c3e50"
+                    }}
+                  >
+                    <li>
+                      Halte kurz inne und danke Jesus dafür, dass er dir in deiner Schwachheit begegnet
+                      ist.
+                    </li>
+                    <li>
+                      Teile, wenn möglich, deine Einsichten mit einem vertrauensvollen Menschen, der
+                      mit dir beten kann.
+                    </li>
+                    <li>
+                      Plane einen konkreten kleinen Schritt für die kommenden Tage, der zu deinem
+                      Bedürfnis passt.
+                    </li>
+                    <li>
+                      Vereinbare mit dir selbst einen Termin, um in ein paar Tagen erneut kurz zu
+                      reflektieren.
+                    </li>
+                  </ul>
+                </div>
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: "0.95rem",
+                    lineHeight: 1.5,
+                    color: "#4c5d73",
+                    textAlign: "left"
+                  }}
+                >
+                  Deine Notizen bleiben nur auf diesem Gerät gespeichert und sind auch in der
+                  Desktop-Ansicht unter „Abschluss von ChatGPT“ sichtbar.
                 </p>
               </div>
             </section>
