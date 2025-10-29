@@ -14,11 +14,15 @@ type NeedContent = {
   jesus: string;
 };
 
+type SavedChatItem = {
+  label: string;
+  value: string;
+};
+
 type SavedChat = {
   id: string;
-  userInput: string;
-  assistantResponse: string;
   createdAt: string;
+  items: SavedChatItem[];
 };
 
 type DictationField = "problem" | "personalNeed" | "childhoodExperience" | "meditationNotes";
@@ -396,8 +400,9 @@ export default function Bibliothek() {
   const [meditationNotes, setMeditationNotes] = useState("");
   const [listeningField, setListeningField] = useState<DictationField | null>(null);
   const [childhoodExperience, setChildhoodExperience] = useState("");
-  const [chatUserInput, setChatUserInput] = useState("");
-  const [chatAssistantResponse, setChatAssistantResponse] = useState("");
+  const [needSuggestionsNotes, setNeedSuggestionsNotes] = useState("");
+  const [jesusChatResponse, setJesusChatResponse] = useState("");
+  const [closingChatResponse, setClosingChatResponse] = useState("");
   const [savedChats, setSavedChats] = useState<SavedChat[]>([]);
   const [introVisible, setIntroVisible] = useState(false);
   const [introExpanded, setIntroExpanded] = useState(false);
@@ -628,9 +633,64 @@ export default function Bibliothek() {
     }
 
     try {
-      const parsed = JSON.parse(stored) as SavedChat[];
-      if (Array.isArray(parsed)) {
-        setSavedChats(parsed);
+      const parsed = JSON.parse(stored) as Array<any>;
+      if (!Array.isArray(parsed)) {
+        return;
+      }
+
+      const normalized: SavedChat[] = parsed
+        .map((entry: any): SavedChat | null => {
+          if (!entry || typeof entry !== "object") {
+            return null;
+          }
+
+          if (Array.isArray(entry.items)) {
+            const items: SavedChatItem[] = entry.items
+              .filter((item: any) => item && typeof item.label === "string")
+              .map((item: any) => ({
+                label: item.label as string,
+                value: typeof item.value === "string" ? item.value : ""
+              }));
+
+            return {
+              id: typeof entry.id === "string" ? entry.id : `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+              createdAt:
+                typeof entry.createdAt === "string"
+                  ? entry.createdAt
+                  : new Date().toISOString(),
+              items
+            };
+          }
+
+          const legacyItems: SavedChatItem[] = [];
+          if (typeof entry.userInput === "string" && entry.userInput.trim().length > 0) {
+            legacyItems.push({
+              label: "Frühere Eingabe an ChatGPT",
+              value: entry.userInput.trim()
+            });
+          }
+          if (typeof entry.assistantResponse === "string" && entry.assistantResponse.trim().length > 0) {
+            legacyItems.push({
+              label: "Frühere Antwort von ChatGPT",
+              value: entry.assistantResponse.trim()
+            });
+          }
+
+          if (legacyItems.length === 0) {
+            return null;
+          }
+
+          return {
+            id: typeof entry.id === "string" ? entry.id : `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+            createdAt:
+              typeof entry.createdAt === "string" ? entry.createdAt : new Date().toISOString(),
+            items: legacyItems
+          };
+        })
+        .filter((entry): entry is SavedChat => entry !== null);
+
+      if (normalized.length > 0) {
+        setSavedChats(normalized);
       }
     } catch (error) {
       console.error("Konnte gespeicherte Chats nicht laden:", error);
@@ -868,30 +928,247 @@ export default function Bibliothek() {
   }, [closingPrompt, hasClosingPrompt]);
 
 
-  const handleSaveChat = () => {
-    const trimmedInput = chatUserInput.trim();
-    const trimmedResponse = chatAssistantResponse.trim();
+  const chatSaveItems = useMemo(
+    () => [
+      {
+        label: "Punkt 2 – Was dich beschäftigt",
+        value: problem
+      },
+      {
+        label: "Punkt 3 – Ausgewähltes Bedürfnis",
+        value: selectedNeed
+      },
+      {
+        label: "Punkt 3 – ChatGPT-Vorschläge für Bedürfnisse",
+        value: needSuggestionsNotes
+      },
+      {
+        label: "Punkt 5 – Dein persönlicher Schritt",
+        value: personalNeed
+      },
+      {
+        label: "Punkt 6 – Kindheitserinnerung",
+        value: childhoodExperience
+      },
+      {
+        label: "Punkt 7 – ChatGPT-Antwort",
+        value: jesusChatResponse
+      },
+      {
+        label: "Punkt 8 – Frage an Jesus (deine Notizen)",
+        value: meditationNotes
+      },
+      {
+        label: "Punkt 9 – Abschluss von ChatGPT",
+        value: closingChatResponse
+      }
+    ],
+    [
+      problem,
+      selectedNeed,
+      needSuggestionsNotes,
+      personalNeed,
+      childhoodExperience,
+      jesusChatResponse,
+      meditationNotes,
+      closingChatResponse
+    ]
+  );
 
-    if (!trimmedInput && !trimmedResponse) {
-      alert("Bitte füge zuerst deine Eingabe oder die Antwort von ChatGPT ein.");
+  const canSaveChat = useMemo(
+    () => chatSaveItems.some((item) => item.value.trim().length > 0),
+    [chatSaveItems]
+  );
+
+  const handleSaveChat = () => {
+    const trimmedItems = chatSaveItems.map((item) => ({
+      label: item.label,
+      value: item.value.trim()
+    }));
+
+    if (!trimmedItems.some((item) => item.value.length > 0)) {
+      alert("Bitte füge zuerst Inhalte aus den Schritten 2–9 ein.");
       return;
     }
 
     const newChat: SavedChat = {
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-      userInput: trimmedInput,
-      assistantResponse: trimmedResponse,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      items: trimmedItems
     };
 
     setSavedChats((previous) => [newChat, ...previous]);
-    setChatUserInput("");
-    setChatAssistantResponse("");
+    setNeedSuggestionsNotes("");
+    setJesusChatResponse("");
+    setClosingChatResponse("");
   };
 
   const handleDeleteChat = (id: string) => {
     setSavedChats((previous) => previous.filter((chat) => chat.id !== id));
   };
+
+  const renderChatSaveSection = () => (
+    <section
+      style={{
+        backgroundColor: "#fff",
+        padding: "1.5rem",
+        borderRadius: "10px",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+        marginTop: 0
+      }}
+      aria-labelledby="chatSaveHeading"
+    >
+      <h3 id="chatSaveHeading" style={{ marginTop: 0, display: "flex", alignItems: "center", gap: "0.5rem" }}>
+        <span aria-hidden="true">💾</span> Gesamten Chat speichern
+      </h3>
+      <p style={{ marginTop: 0 }}>
+        Füge hier die drei ChatGPT-Antworten ein und sichere außerdem deine Eingaben aus den Schritten 2 bis 9
+        (außer der Bedürfnis-Erklärung in Schritt 4).
+      </p>
+
+      <label htmlFor="chatNeedSuggestions" style={{ display: "block", fontWeight: 600, marginTop: "1rem" }}>
+        ChatGPT – Vorschläge für Bedürfnisse (Punkt 3)
+      </label>
+      <textarea
+        id="chatNeedSuggestions"
+        value={needSuggestionsNotes}
+        onChange={(event) => setNeedSuggestionsNotes(event.target.value)}
+        rows={3}
+        placeholder="Füge hier die Impulse von ChatGPT aus Schritt 3 ein..."
+        style={{
+          width: "100%",
+          fontSize: "1rem",
+          padding: "0.5rem",
+          marginTop: "0.5rem",
+          borderRadius: "6px",
+          border: "1px solid #ccc"
+        }}
+      />
+
+      <label htmlFor="chatJesusAnswer" style={{ display: "block", fontWeight: 600, marginTop: "1rem" }}>
+        ChatGPT – Antwort auf deine Frage (Punkt 7)
+      </label>
+      <textarea
+        id="chatJesusAnswer"
+        value={jesusChatResponse}
+        onChange={(event) => setJesusChatResponse(event.target.value)}
+        rows={4}
+        placeholder="Füge hier die ChatGPT-Antwort aus Schritt 7 ein..."
+        style={{
+          width: "100%",
+          fontSize: "1rem",
+          padding: "0.5rem",
+          marginTop: "0.5rem",
+          borderRadius: "6px",
+          border: "1px solid #ccc"
+        }}
+      />
+
+      <label htmlFor="chatClosingAnswer" style={{ display: "block", fontWeight: 600, marginTop: "1rem" }}>
+        ChatGPT – Abschluss (Punkt 9)
+      </label>
+      <textarea
+        id="chatClosingAnswer"
+        value={closingChatResponse}
+        onChange={(event) => setClosingChatResponse(event.target.value)}
+        rows={4}
+        placeholder="Füge hier den Abschluss von ChatGPT aus Schritt 9 ein..."
+        style={{
+          width: "100%",
+          fontSize: "1rem",
+          padding: "0.5rem",
+          marginTop: "0.5rem",
+          borderRadius: "6px",
+          border: "1px solid #ccc"
+        }}
+      />
+
+      <button
+        onClick={handleSaveChat}
+        style={{
+          width: "100%",
+          backgroundColor: canSaveChat ? "#3867d6" : "#aac1e8",
+          color: "#fff",
+          border: "none",
+          borderRadius: "6px",
+          padding: "0.6rem 1rem",
+          cursor: canSaveChat ? "pointer" : "not-allowed",
+          fontSize: "1rem",
+          marginTop: "1rem"
+        }}
+        disabled={!canSaveChat}
+      >
+        💾 Chat sichern
+      </button>
+
+      <div
+        style={{
+          backgroundColor: "#f9fbff",
+          borderRadius: "8px",
+          padding: "1rem",
+          marginTop: "1.5rem",
+          border: "1px solid #d6e0f5"
+        }}
+      >
+        <h4 style={{ color: "#2c3e50", marginTop: 0 }}>Gespeicherte Chats</h4>
+        {savedChats.length === 0 ? (
+          <p style={{ margin: 0 }}>
+            Noch keine Chats gespeichert. Füge oben deine ChatGPT-Antworten und Notizen ein.
+          </p>
+        ) : (
+          <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+            {savedChats.map((chat) => (
+              <li
+                key={chat.id}
+                style={{
+                  backgroundColor: "#fff",
+                  borderRadius: "6px",
+                  padding: "0.75rem",
+                  boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
+                  border: "1px solid #e0e8f8"
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: "0.5rem"
+                  }}
+                >
+                  <strong>
+                    {new Date(chat.createdAt).toLocaleString("de-DE", {
+                      dateStyle: "short",
+                      timeStyle: "short"
+                    })}
+                  </strong>
+                  <button
+                    onClick={() => handleDeleteChat(chat.id)}
+                    style={{
+                      backgroundColor: "transparent",
+                      color: "#eb3b5a",
+                      border: "none",
+                      cursor: "pointer",
+                      fontWeight: 600
+                    }}
+                  >
+                    ✖️ Löschen
+                  </button>
+                </div>
+                <ul style={{ margin: 0, paddingLeft: "1rem", display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+                  {chat.items.map((item) => (
+                    <li key={`${chat.id}-${item.label}`} style={{ whiteSpace: "pre-wrap", lineHeight: 1.5 }}>
+                      <strong>{item.label}:</strong> {item.value ? item.value : "—"}
+                    </li>
+                  ))}
+                </ul>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </section>
+  );
 
   const handleDictation = useCallback(
     (field: DictationField) => {
@@ -1073,6 +1350,12 @@ export default function Bibliothek() {
       label: "9) Abschluss von ChatGPT",
       icon: "🌟",
       background: "linear-gradient(180deg, #fef9f3 0%, #eaf3ff 100%)"
+    },
+    {
+      key: "chat-save",
+      label: "10) Chat speichern",
+      icon: "💾",
+      background: "linear-gradient(180deg, #f1f5ff 0%, #e3fcef 100%)"
     }
   ] as const;
 
@@ -1525,6 +1808,8 @@ export default function Bibliothek() {
       </div>
     </section>
   );
+
+  const chatSaveStepIndex = mobileStepMeta.length - 1;
 
   const renderMobileStepContent = (): JSX.Element => {
     const baseCardStyle: CSSProperties = {
@@ -2558,7 +2843,9 @@ export default function Bibliothek() {
                       boxShadow: "0 24px 48px rgba(31, 61, 116, 0.18)"
                     }}
                   >
-                    {renderMobileStepContent()}
+                    {activeMobileStep === chatSaveStepIndex
+                      ? renderChatSaveSection()
+                      : renderMobileStepContent()}
                   </div>
                   <div
                     style={{
@@ -2632,148 +2919,6 @@ export default function Bibliothek() {
                       Weiter →
                     </button>
                   </div>
-                </div>
-                <h3 style={{ color: "#2c3e50", marginTop: "1.5rem" }}>
-                  💾 Gesamten Chat speichern
-                </h3>
-                <p>
-                  Füge hier deine Eingabe und die Antwort von ChatGPT ein, um sie für spätere Reflexionen zu sichern.
-                </p>
-                <label
-                  htmlFor="chatUserInput"
-                  style={{ display: "block", fontWeight: 600, marginTop: "1rem" }}
-                >
-                  Deine Eingabe an ChatGPT
-                </label>
-                <textarea
-                  id="chatUserInput"
-                  value={chatUserInput}
-                  onChange={(event) => setChatUserInput(event.target.value)}
-                  rows={3}
-                  placeholder="Füge hier deinen Prompt oder deine Frage ein..."
-                  style={{
-                    width: "100%",
-                    fontSize: "1rem",
-                    padding: "0.5rem",
-                    marginTop: "0.5rem",
-                    borderRadius: "6px",
-                    border: "1px solid #ccc"
-                  }}
-                />
-                <label
-                  htmlFor="chatAssistantResponse"
-                  style={{ display: "block", fontWeight: 600, marginTop: "1rem" }}
-                >
-                  Antwort von ChatGPT
-                </label>
-                <textarea
-                  id="chatAssistantResponse"
-                  value={chatAssistantResponse}
-                  onChange={(event) => setChatAssistantResponse(event.target.value)}
-                  rows={5}
-                  placeholder="Füge hier die Antwort von ChatGPT ein..."
-                  style={{
-                    width: "100%",
-                    fontSize: "1rem",
-                    padding: "0.5rem",
-                    marginTop: "0.5rem",
-                    borderRadius: "6px",
-                    border: "1px solid #ccc"
-                  }}
-                />
-                <button
-                  onClick={handleSaveChat}
-                  style={{
-                    width: "100%",
-                    backgroundColor:
-                      chatUserInput.trim() || chatAssistantResponse.trim()
-                        ? "#3867d6"
-                        : "#aac1e8",
-                    color: "#fff",
-                    border: "none",
-                    borderRadius: "6px",
-                    padding: "0.6rem 1rem",
-                    cursor:
-                      chatUserInput.trim() || chatAssistantResponse.trim()
-                        ? "pointer"
-                        : "not-allowed",
-                    fontSize: "1rem",
-                    marginTop: "1rem"
-                  }}
-                  disabled={!chatUserInput.trim() && !chatAssistantResponse.trim()}
-                >
-                  💾 Chat sichern
-                </button>
-
-                <div
-                  style={{
-                    backgroundColor: "#f9fbff",
-                    borderRadius: "8px",
-                    padding: "1rem",
-                    marginTop: "1.5rem",
-                    border: "1px solid #d6e0f5"
-                  }}
-                >
-                  <h4 style={{ color: "#2c3e50", marginTop: 0 }}>Gespeicherte Chats</h4>
-                  {savedChats.length === 0 ? (
-                    <p style={{ margin: 0 }}>
-                      Noch keine Chats gespeichert. Füge oben deine ersten Notizen hinzu.
-                    </p>
-                  ) : (
-                    <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-                      {savedChats.map((chat) => (
-                        <li
-                          key={chat.id}
-                          style={{
-                            backgroundColor: "#fff",
-                            borderRadius: "6px",
-                            padding: "0.75rem",
-                            boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
-                            border: "1px solid #e0e8f8",
-                            marginBottom: "0.75rem"
-                          }}
-                        >
-                          <div
-                            style={{
-                              display: "flex",
-                              justifyContent: "space-between",
-                              alignItems: "center",
-                              marginBottom: "0.5rem"
-                            }}
-                          >
-                            <strong>
-                              {new Date(chat.createdAt).toLocaleString("de-DE", {
-                                dateStyle: "short",
-                                timeStyle: "short"
-                              })}
-                            </strong>
-                            <button
-                              onClick={() => handleDeleteChat(chat.id)}
-                              style={{
-                                backgroundColor: "transparent",
-                                color: "#eb3b5a",
-                                border: "none",
-                                cursor: "pointer",
-                                fontWeight: 600
-                              }}
-                            >
-                              ✖️ Löschen
-                            </button>
-                          </div>
-                          {chat.userInput ? (
-                            <p style={{ whiteSpace: "pre-wrap", marginBottom: "0.5rem" }}>
-                              <strong>Du:</strong> {chat.userInput}
-                            </p>
-                          ) : null}
-                          {chat.assistantResponse ? (
-                            <p style={{ whiteSpace: "pre-wrap", margin: 0 }}>
-                              <strong>ChatGPT:</strong> {chat.assistantResponse}
-                            </p>
-                          ) : null}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
                 </div>
               </div>
             ) : null}
