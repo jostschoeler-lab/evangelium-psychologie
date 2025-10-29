@@ -25,7 +25,12 @@ type SavedChat = {
   items: SavedChatItem[];
 };
 
-type DictationField = "problem" | "personalNeed" | "childhoodExperience" | "meditationNotes";
+type DictationField =
+  | "problem"
+  | "personalNeed"
+  | "childhoodExperience"
+  | "meditationNotes"
+  | "introDiscussionQuestion";
 
 const needs: Record<string, NeedContent> = {
   "Gesehen / gehört / gewürdigt werden": {
@@ -152,6 +157,7 @@ type IntroSection = {
   title: string;
   paragraphs?: string[];
   list?: string[];
+  variant?: "default" | "discussion";
 };
 
 const introLeadParagraphs: string[] = [
@@ -162,6 +168,16 @@ const introLeadParagraphs: string[] = [
   "Er wollte seine Schwachheit sogar wegbeten und nannte sie einen „Engel Satans“. (2. Korinther 12,7–8)",
   "Aber genau diese Schwachheit war der Ort, wo Gottes Kraft offenbar wurde. Dort lag die Verwandlung."
 ];
+
+const INTRO_DISCUSSION_PROMPT_BASE = [
+  "Rolle: Du begleitest ein Kind Gottes seelsorglich mit biblischem Blick.",
+  "Stil: Verwende möglichst wenig psychologische Ausdrücke. Die Wörter „Bedürfnis“, „Gefühl“ und „inneres Kind“ sind erlaubt. Nutze biblische Begriffe und gib kurz die Bibelstelle an, wenn du einen biblischen Ausdruck erwähnst.",
+  "Rüstung: Erkläre die Rüstung des Kindes Gottes als Festungswerke (2. Korinther 10,4), die das innere Kind beschützen. Du darfst diese Festungswerke auch den Balken nennen, der die Sicht verändert, um das eigene Auge zu schützen (Matthäus 7,3).",
+  "Verwandlung: Zeige, wie Armut im Geist (Matthäus 5,3), Traurigkeit (Matthäus 5,4), zugelassene Gefühle und Schwachheit (2. Korinther 12,9) in der Gegenwart Jesu zur Verwandlung führen.",
+  "Haltung: Sei empathisch und zugleich leicht konfrontierend.",
+  "Hinweis: Hebe kurz hervor, welches Bedürfnis angesprochen ist und wie Jesus darin begegnet.",
+  "Bitte beende jede Antwort mit einer kurzen Rückfrage, damit das Gespräch weitergehen kann."
+].join("\n");
 
 const introSections: IntroSection[] = [
   {
@@ -231,6 +247,15 @@ const introSections: IntroSection[] = [
     ]
   },
   {
+    icon: "💬",
+    title: "Diskussion mit ChatGPT",
+    paragraphs: [
+      "Falls du nicht einig bist oder es nicht verstehst oder Fragen hast, dann stelle deine Frage hier. Ich werde antworten.",
+      "Kopiere nach jeder Antwort von ChatGPT die Worte unten in das Feld „Vorherige Antwort“, damit die nächste Nachricht darauf aufbauen kann."
+    ],
+    variant: "discussion"
+  },
+  {
     icon: "✅",
     title: "Abschluss",
     paragraphs: [
@@ -246,7 +271,7 @@ type IntroCardProps = {
 const IntroCard = ({ onStart }: IntroCardProps) => {
   return (
     <section
-      aria-label="Verwandlung als Gotteskind"
+      aria-label="Verwandlung als Kind Gottes"
       style={{
         margin: "0 auto 2rem",
         maxWidth: "380px",
@@ -289,7 +314,7 @@ const IntroCard = ({ onStart }: IntroCardProps) => {
               fontWeight: 700
             }}
           >
-            Verwandlung als Gotteskind
+            Verwandlung als Kind Gottes
           </h2>
           <p
             style={{
@@ -313,7 +338,9 @@ const IntroCard = ({ onStart }: IntroCardProps) => {
           </p>
         ))}
 
-        {introSections.map((section) => (
+        {introSections
+          .filter((section) => section.variant !== "discussion")
+          .map((section) => (
           <div
             key={section.title}
             style={{
@@ -407,6 +434,8 @@ export default function Bibliothek() {
   const [introVisible, setIntroVisible] = useState(false);
   const [introExpanded, setIntroExpanded] = useState(false);
   const [activeMobileStep, setActiveMobileStep] = useState(0);
+  const [introDiscussionQuestion, setIntroDiscussionQuestion] = useState("");
+  const [introDiscussionHistory, setIntroDiscussionHistory] = useState("");
 
   const dictationSupported =
     typeof window !== "undefined" &&
@@ -422,7 +451,8 @@ export default function Bibliothek() {
     problem: "",
     personalNeed: "",
     childhoodExperience: "",
-    meditationNotes: ""
+    meditationNotes: "",
+    introDiscussionQuestion: ""
   });
 
   useEffect(() => {
@@ -455,6 +485,25 @@ export default function Bibliothek() {
       if (storedChildhoodExperience) {
         setChildhoodExperience(storedChildhoodExperience);
         dictationBaseRef.current.childhoodExperience = storedChildhoodExperience;
+      }
+    } catch {
+      /* ignore */
+    }
+
+    try {
+      const storedIntroQuestion = localStorage.getItem("bibliothekIntroDiscussionQuestion");
+      if (storedIntroQuestion) {
+        setIntroDiscussionQuestion(storedIntroQuestion);
+        dictationBaseRef.current.introDiscussionQuestion = storedIntroQuestion;
+      }
+    } catch {
+      /* ignore */
+    }
+
+    try {
+      const storedIntroHistory = localStorage.getItem("bibliothekIntroDiscussionHistory");
+      if (storedIntroHistory) {
+        setIntroDiscussionHistory(storedIntroHistory);
       }
     } catch {
       /* ignore */
@@ -509,6 +558,38 @@ export default function Bibliothek() {
     }
   }, [childhoodExperience]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    try {
+      if (!introDiscussionQuestion.trim()) {
+        localStorage.removeItem("bibliothekIntroDiscussionQuestion");
+      } else {
+        localStorage.setItem("bibliothekIntroDiscussionQuestion", introDiscussionQuestion);
+      }
+    } catch {
+      /* ignore */
+    }
+  }, [introDiscussionQuestion]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    try {
+      if (!introDiscussionHistory.trim()) {
+        localStorage.removeItem("bibliothekIntroDiscussionHistory");
+      } else {
+        localStorage.setItem("bibliothekIntroDiscussionHistory", introDiscussionHistory);
+      }
+    } catch {
+      /* ignore */
+    }
+  }, [introDiscussionHistory]);
+
   const setFieldValue = useCallback(
     (field: DictationField, value: string) => {
       switch (field) {
@@ -518,17 +599,20 @@ export default function Bibliothek() {
         case "personalNeed":
           setPersonalNeed(value);
           break;
-        case "childhoodExperience":
-          setChildhoodExperience(value);
-          break;
-        case "meditationNotes":
-          setMeditationNotes(value);
-          break;
-        default:
-          break;
+      case "childhoodExperience":
+        setChildhoodExperience(value);
+        break;
+      case "meditationNotes":
+        setMeditationNotes(value);
+        break;
+      case "introDiscussionQuestion":
+        setIntroDiscussionQuestion(value);
+        break;
+      default:
+        break;
       }
     },
-    [setProblem, setPersonalNeed, setChildhoodExperience, setMeditationNotes]
+    [setProblem, setPersonalNeed, setChildhoodExperience, setMeditationNotes, setIntroDiscussionQuestion]
   );
 
   const startRecognition = useCallback(
@@ -766,6 +850,52 @@ export default function Bibliothek() {
     }
   }, [setActiveMobileStep, stepTwoRef]);
 
+  const buildIntroDiscussionPrompt = useCallback(
+    (mode: "initial" | "follow-up") => {
+      const currentMessage = introDiscussionQuestion.trim();
+      if (!currentMessage) {
+        return "";
+      }
+
+      const segments: string[] = [INTRO_DISCUSSION_PROMPT_BASE];
+
+      if (mode === "initial") {
+        segments.push("Aufgabe: Antworte auf die folgende Frage oder Aussage eines Kindes Gottes.");
+      } else {
+        segments.push(
+          "Aufgabe: Antworte auf die folgende Rückmeldung des Kindes Gottes, beziehe dich auf die bisherigen Gedanken und führe das Gespräch weiter."
+        );
+      }
+
+      const previousAnswer = introDiscussionHistory.trim();
+      if (previousAnswer) {
+        segments.push("Deine vorherige Antwort, auf die du eingehen kannst:", previousAnswer);
+      }
+
+      segments.push("Nachricht der Person:", currentMessage);
+
+      return segments.join("\n\n");
+    },
+    [introDiscussionHistory, introDiscussionQuestion]
+  );
+
+  const handleIntroDiscussion = useCallback(
+    (mode: "initial" | "follow-up") => {
+      const promptText = buildIntroDiscussionPrompt(mode).trim();
+      if (!promptText) {
+        return;
+      }
+
+      if (typeof window === "undefined") {
+        return;
+      }
+
+      const prompt = encodeURIComponent(promptText);
+      window.open(`https://chat.openai.com/?q=${prompt}`, "_blank", "noopener,noreferrer");
+    },
+    [buildIntroDiscussionPrompt]
+  );
+
   const handleChatGPT = () => {
     const prompt = encodeURIComponent(
       "Analysiere die folgende Situation mit einem einfühlsamen, psychologisch-christlichen Blick. Das Ziel ist, zu erkennen, welches Bedürfnis hinter der beschriebenen Reaktion oder dem Konflikt steckt. " +
@@ -931,6 +1061,14 @@ export default function Bibliothek() {
   const chatSaveItems = useMemo(
     () => [
       {
+        label: "Punkt 1 – Deine Nachricht an ChatGPT",
+        value: introDiscussionQuestion
+      },
+      {
+        label: "Punkt 1 – ChatGPT-Dialog (kopierte Antworten)",
+        value: introDiscussionHistory
+      },
+      {
         label: "Punkt 2 – Was dich beschäftigt",
         value: problem
       },
@@ -964,6 +1102,8 @@ export default function Bibliothek() {
       }
     ],
     [
+      introDiscussionQuestion,
+      introDiscussionHistory,
       problem,
       selectedNeed,
       needSuggestionsNotes,
@@ -1023,7 +1163,8 @@ export default function Bibliothek() {
       </h3>
       <p style={{ marginTop: 0 }}>
         Füge hier die drei ChatGPT-Antworten ein und sichere außerdem deine Eingaben aus den Schritten 2 bis 9
-        (außer der Bedürfnis-Erklärung in Schritt 4).
+        (außer der Bedürfnis-Erklärung in Schritt 4). Der Dialog aus Schritt 1 wird automatisch mitgespeichert,
+        sobald du oben deine Fragen und die Antworten von ChatGPT ergänzt hast.
       </p>
 
       <label htmlFor="chatNeedSuggestions" style={{ display: "block", fontWeight: 600, marginTop: "1rem" }}>
@@ -1299,7 +1440,7 @@ export default function Bibliothek() {
   const mobileStepMeta = [
     {
       key: "intro",
-      label: "1) Verwandlung als Gotteskind",
+      label: "1) Verwandlung als Kind Gottes",
       icon: "🌅",
       background: "linear-gradient(180deg, #fff5e6 0%, #fdebd2 100%)"
     },
@@ -1374,11 +1515,13 @@ export default function Bibliothek() {
       ? introLeadParagraphs
       : introLeadParagraphs.slice(0, 1);
 
-    const displayedSections = introExpanded ? introSections : introSections.slice(0, 1);
+    const displayedSections = introExpanded
+      ? introSections
+      : introSections.filter((section, index) => index === 0 || section.variant === "discussion");
 
     return (
       <section
-        aria-label="Einführung: Verwandlung als Gotteskind"
+        aria-label="Einführung: Verwandlung als Kind Gottes"
         style={{
           margin: "0 auto 2rem",
           maxWidth: "420px",
@@ -1419,7 +1562,7 @@ export default function Bibliothek() {
               color: "#5c3b1f"
             }}
           >
-            Verwandlung als Gotteskind
+            Verwandlung als Kind Gottes
           </h2>
           <p
             style={{
@@ -1446,59 +1589,196 @@ export default function Bibliothek() {
           );
         })}
 
-        {displayedSections.map((section) => (
-          <div
-            key={section.title}
-            style={{
-              borderRadius: "18px",
-              backgroundColor: "#fff",
-              padding: "0.9rem 1rem",
-              border: "1px solid rgba(240, 194, 123, 0.4)",
-              display: "flex",
-              flexDirection: "column",
-              gap: "0.5rem"
-            }}
-          >
-            <h3
-              style={{
-                margin: 0,
-                fontSize: "1rem",
-                color: "#5c3b1f",
-                display: "flex",
-                alignItems: "center",
-                gap: "0.4rem"
-              }}
-            >
-              <span aria-hidden="true">{section.icon}</span>
-              <span>{section.title}</span>
-            </h3>
-            {section.paragraphs?.map((paragraph) => (
-              <p
-                key={paragraph}
-                style={{ margin: 0, fontSize: "0.92rem", lineHeight: 1.55, color: "#5f4630" }}
-              >
-                {paragraph}
-              </p>
-            ))}
-            {section.list && (
-              <ul
+        {displayedSections.map((section) => {
+          if (section.variant === "discussion") {
+            const hasQuestion = introDiscussionQuestion.trim().length > 0;
+            const hasHistory = introDiscussionHistory.trim().length > 0;
+
+            return (
+              <div
+                key={section.title}
                 style={{
-                  margin: 0,
-                  paddingLeft: "1.1rem",
+                  borderRadius: "18px",
+                  backgroundColor: "#fff",
+                  padding: "1rem",
+                  border: "1px solid rgba(240, 194, 123, 0.4)",
                   display: "flex",
                   flexDirection: "column",
-                  gap: "0.35rem",
-                  color: "#4a3524",
-                  fontSize: "0.92rem"
+                  gap: "0.75rem"
                 }}
               >
-                {section.list.map((item) => (
-                  <li key={item}>{item}</li>
+                <h3
+                  style={{
+                    margin: 0,
+                    fontSize: "1rem",
+                    color: "#5c3b1f",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.4rem"
+                  }}
+                >
+                  <span aria-hidden="true">{section.icon}</span>
+                  <span>{section.title}</span>
+                </h3>
+                {section.paragraphs?.map((paragraph) => (
+                  <p
+                    key={paragraph}
+                    style={{ margin: 0, fontSize: "0.92rem", lineHeight: 1.55, color: "#5f4630" }}
+                  >
+                    {paragraph}
+                  </p>
                 ))}
-              </ul>
-            )}
-          </div>
-        ))}
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.45rem" }}>
+                  <label htmlFor="introDiscussionQuestion" style={{ fontWeight: 600, color: "#5c3b1f" }}>
+                    Deine Frage oder Antwort an ChatGPT
+                  </label>
+                  <textarea
+                    id="introDiscussionQuestion"
+                    value={introDiscussionQuestion}
+                    onChange={(event) => setIntroDiscussionQuestion(event.target.value)}
+                    rows={3}
+                    placeholder="Formuliere hier deine Frage oder Antwort an ChatGPT..."
+                    style={{
+                      width: "100%",
+                      borderRadius: "12px",
+                      border: "1px solid rgba(92, 59, 31, 0.25)",
+                      padding: "0.75rem",
+                      fontSize: "0.95rem",
+                      lineHeight: 1.5,
+                      color: "#3a2a18",
+                      backgroundColor: "#fffdf7"
+                    }}
+                  />
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <DictationButton
+                      field="introDiscussionQuestion"
+                      ariaLabel="Frage oder Antwort für Punkt 1 diktieren"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleIntroDiscussion("initial")}
+                      disabled={!hasQuestion}
+                      style={{
+                        background: hasQuestion
+                          ? "linear-gradient(135deg, #f4b860, #d98c3f)"
+                          : "linear-gradient(135deg, #f5d5a8, #e8c28e)",
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: "999px",
+                        padding: "0.55rem 1.4rem",
+                        fontSize: "0.92rem",
+                        fontWeight: 600,
+                        cursor: hasQuestion ? "pointer" : "not-allowed",
+                        boxShadow: hasQuestion ? "0 10px 18px rgba(212, 136, 65, 0.25)" : "none"
+                      }}
+                    >
+                      Antwort erhalten
+                    </button>
+                  </div>
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.45rem" }}>
+                  <label htmlFor="introDiscussionHistory" style={{ fontWeight: 600, color: "#5c3b1f" }}>
+                    Vorherige Antwort von ChatGPT (kopieren, damit der Dialog weitergeht)
+                  </label>
+                  <textarea
+                    id="introDiscussionHistory"
+                    value={introDiscussionHistory}
+                    onChange={(event) => setIntroDiscussionHistory(event.target.value)}
+                    rows={4}
+                    placeholder="Füge hier die vorherige Antwort von ChatGPT ein..."
+                    style={{
+                      width: "100%",
+                      borderRadius: "12px",
+                      border: "1px solid rgba(92, 59, 31, 0.25)",
+                      padding: "0.75rem",
+                      fontSize: "0.95rem",
+                      lineHeight: 1.5,
+                      color: "#3a2a18",
+                      backgroundColor: "#fffdf7"
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleIntroDiscussion("follow-up")}
+                    disabled={!hasQuestion || !hasHistory}
+                    style={{
+                      alignSelf: "flex-end",
+                      background: hasQuestion && hasHistory
+                        ? "linear-gradient(135deg, #57a0d3, #3867d6)"
+                        : "linear-gradient(135deg, #b6c7e2, #90a8d9)",
+                      color: "#fff",
+                      border: "none",
+                      borderRadius: "999px",
+                      padding: "0.55rem 1.6rem",
+                      fontSize: "0.92rem",
+                      fontWeight: 600,
+                      cursor: hasQuestion && hasHistory ? "pointer" : "not-allowed",
+                      boxShadow: hasQuestion && hasHistory ? "0 10px 18px rgba(88, 133, 220, 0.25)" : "none"
+                    }}
+                  >
+                    Rückfrage stellen
+                  </button>
+                </div>
+              </div>
+            );
+          }
+
+          return (
+            <div
+              key={section.title}
+              style={{
+                borderRadius: "18px",
+                backgroundColor: "#fff",
+                padding: "0.9rem 1rem",
+                border: "1px solid rgba(240, 194, 123, 0.4)",
+                display: "flex",
+                flexDirection: "column",
+                gap: "0.5rem"
+              }}
+            >
+              <h3
+                style={{
+                  margin: 0,
+                  fontSize: "1rem",
+                  color: "#5c3b1f",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.4rem"
+                }}
+              >
+                <span aria-hidden="true">{section.icon}</span>
+                <span>{section.title}</span>
+              </h3>
+              {section.paragraphs?.map((paragraph) => (
+                <p
+                  key={paragraph}
+                  style={{ margin: 0, fontSize: "0.92rem", lineHeight: 1.55, color: "#5f4630" }}
+                >
+                  {paragraph}
+                </p>
+              ))}
+              {section.list && (
+                <ul
+                  style={{
+                    margin: 0,
+                    paddingLeft: "1.1rem",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "0.35rem",
+                    color: "#4a3524",
+                    fontSize: "0.92rem"
+                  }}
+                >
+                  {section.list.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          );
+        })}
 
         <button
           type="button"
