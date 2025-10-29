@@ -158,6 +158,8 @@ type IntroSection = {
   paragraphs?: string[];
   list?: string[];
   variant?: "default" | "discussion";
+  displayInCollapsed?: boolean;
+  collapsedPlacement?: "beforeToggle" | "afterToggle";
 };
 
 const introLeadParagraphs: string[] = [
@@ -192,6 +194,31 @@ const introSections: IntroSection[] = [
       "Trost ohne Trauer",
       "Himmelreich ohne Armut",
       "Glauben ohne Hilflosigkeit"
+    ],
+    displayInCollapsed: true
+  },
+  {
+    icon: "👶",
+    title: "Als Kind Gottes",
+    paragraphs: [
+      "Dann machen wir eine fromme Fassade: „Ich bin stark, ich bin getröstet, alles ist in Ordnung.“ Aber das ist Verdrängung – nicht Verwandlung.",
+      "❤️ Der verborgene Schatz",
+      "Hinter schmerzhaften Gefühlen liegt fast immer ein unbefriedigtes Bedürfnis. Und Jesus möchte dieses Bedürfnis stillen.",
+      "Wenn ich das Bedürfnis aber nicht erkenne, kann ich es Jesus nicht bringen – und Er kann mich nicht verändern.",
+      "Viele Christen verwechseln Schwachheit mit Sünde. Aber das stimmt nicht: Das ist die Schwachheit, in der Gottes Kraft wirkt.",
+      "🌿 Der Weg Jesu",
+      "Warum vermeiden wir das trotzdem? Weil es weh tut, weil wir uns hilflos fühlen, weil Wahrheit uns entblößt.",
+      "Aber das Evangelium sagt: „Durch Leiden zur Herrlichkeit.“ (Römer 8,17) Das ist der Weg Jesu.",
+      "🙏 Eine Einladung",
+      "Nimm dir einen Moment. Schließe die Augen.",
+      "Spüre das Gefühl, das du sonst wegdrückst. Sprich es aus.",
+      "Du kannst es in dieser App einsprechen oder schreiben. Dann zeigt dir die App Vorschläge, welches Bedürfnis dahinter liegt.",
+      "Am Anfang kann das fremd wirken. Denn wir sind nicht gewohnt, Bedürfnisse zu erkennen. Aber dort begegnet Jesus.",
+      "⏳ Wenn Gefühle nicht sofort kommen",
+      "Der Verstand begreift schnell. Das Herz begreift langsam. Der Körper hat sein eigenes Tempo.",
+      "Das ist normal. So erleben wir das ganze Leben hindurch Schwachheit – und immer wieder Gottes Güte.",
+      "👑 Das ist nicht Knechtschaft",
+      "Das ist Sohnschaft: Mit Jesus leiden, mit Jesus verherrlicht werden (Römer 8,17), die Werke des Leibes töten (Römer 8,13) und echte Verwandlung erleben."
     ]
   },
   {
@@ -253,14 +280,18 @@ const introSections: IntroSection[] = [
       "Falls du nicht einig bist oder es nicht verstehst oder Fragen hast, dann stelle deine Frage hier. Ich werde antworten.",
       "Kopiere nach jeder Antwort von ChatGPT die Worte unten in das Feld „Vorherige Antwort“, damit die nächste Nachricht darauf aufbauen kann."
     ],
-    variant: "discussion"
+    variant: "discussion",
+    displayInCollapsed: true,
+    collapsedPlacement: "afterToggle"
   },
   {
     icon: "✅",
     title: "Abschluss",
     paragraphs: [
       "Wenn du bereit bist, kannst du jetzt dein Gefühl oder dein Problem eingeben."
-    ]
+    ],
+    displayInCollapsed: true,
+    collapsedPlacement: "afterToggle"
   }
 ];
 
@@ -1515,9 +1546,216 @@ export default function Bibliothek() {
       ? introLeadParagraphs
       : introLeadParagraphs.slice(0, 1);
 
-    const displayedSections = introExpanded
-      ? introSections
-      : introSections.filter((section, index) => index === 0 || section.variant === "discussion");
+    const renderIntroSectionCard = (section: IntroSection) => {
+      if (section.variant === "discussion") {
+        const hasQuestion = introDiscussionQuestion.trim().length > 0;
+        const hasHistory = introDiscussionHistory.trim().length > 0;
+
+        return (
+          <div
+            key={section.title}
+            style={{
+              borderRadius: "18px",
+              backgroundColor: "#fff",
+              padding: "1.15rem 1rem 1.2rem",
+              border: "1px solid rgba(240, 194, 123, 0.4)",
+              display: "flex",
+              flexDirection: "column",
+              gap: "0.6rem"
+            }}
+          >
+            <h3
+              style={{
+                margin: 0,
+                fontSize: "1rem",
+                color: "#5c3b1f",
+                display: "flex",
+                alignItems: "center",
+                gap: "0.4rem"
+              }}
+            >
+              <span aria-hidden="true">{section.icon}</span>
+              <span>{section.title}</span>
+            </h3>
+
+            <p style={{ margin: 0, fontSize: "0.92rem", lineHeight: 1.55, color: "#5f4630" }}>
+              {section.paragraphs?.[0]}
+            </p>
+            <p style={{ margin: 0, fontSize: "0.92rem", lineHeight: 1.55, color: "#5f4630" }}>
+              {section.paragraphs?.[1]}
+            </p>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
+              <textarea
+                aria-label="Deine Frage oder Antwort"
+                value={introDiscussionQuestion}
+                onChange={(event) => {
+                  const { value } = event.target;
+                  setIntroDiscussionQuestion(value);
+                  try {
+                    localStorage.setItem("bibliothekIntroDiscussionQuestion", value);
+                  } catch {
+                    /* ignore */
+                  }
+                }}
+                placeholder="Deine Frage oder Antwort an ChatGPT"
+                rows={3}
+                style={{
+                  width: "100%",
+                  borderRadius: "14px",
+                  border: "1px solid rgba(56, 103, 214, 0.18)",
+                  padding: "0.75rem 0.85rem",
+                  fontSize: "0.95rem",
+                  lineHeight: 1.45,
+                  color: "#1f2933",
+                  backgroundColor: "#fff",
+                  boxShadow: "inset 0 1px 4px rgba(36, 53, 103, 0.08)",
+                  resize: "vertical",
+                  minHeight: "5rem"
+                }}
+              />
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
+                <label htmlFor="intro-discussion-history" style={{ fontSize: "0.85rem", color: "#5f4630" }}>
+                  Vorherige Antwort von ChatGPT (kopieren, damit der Dialog weitergeht)
+                </label>
+                <textarea
+                  id="intro-discussion-history"
+                  aria-label="Vorherige Antwort von ChatGPT"
+                  value={introDiscussionHistory}
+                  onChange={(event) => {
+                    const { value } = event.target;
+                    setIntroDiscussionHistory(value);
+                    try {
+                      localStorage.setItem("bibliothekIntroDiscussionHistory", value);
+                    } catch {
+                      /* ignore */
+                    }
+                  }}
+                  placeholder="Füge hier die vorherige Antwort von ChatGPT ein..."
+                  rows={3}
+                  style={{
+                    width: "100%",
+                    borderRadius: "14px",
+                    border: "1px solid rgba(56, 103, 214, 0.18)",
+                    padding: "0.75rem 0.85rem",
+                    fontSize: "0.95rem",
+                    lineHeight: 1.45,
+                    color: "#1f2933",
+                    backgroundColor: "#fff",
+                    boxShadow: "inset 0 1px 4px rgba(36, 53, 103, 0.08)",
+                    resize: "vertical",
+                    minHeight: "5rem"
+                  }}
+                />
+              </div>
+
+              <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+                <button
+                  type="button"
+                  onClick={handleIntroDiscussionSubmit}
+                  disabled={!hasQuestion}
+                  style={{
+                    backgroundColor: hasQuestion ? "#f4a259" : "#f5d1a8",
+                    color: hasQuestion ? "#fff" : "#6f4e37",
+                    border: "none",
+                    borderRadius: "999px",
+                    padding: "0.65rem 1.6rem",
+                    fontSize: "0.95rem",
+                    fontWeight: 600,
+                    cursor: hasQuestion ? "pointer" : "not-allowed",
+                    boxShadow: hasQuestion ? "0 10px 18px rgba(244, 162, 89, 0.35)" : "none"
+                  }}
+                >
+                  Antwort erhalten
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleIntroDiscussionSubmit(true)}
+                  disabled={!hasHistory}
+                  style={{
+                    backgroundColor: hasHistory ? "#fdebd2" : "#f6d7b7",
+                    color: "#8c5d32",
+                    border: "1px solid rgba(244, 162, 89, 0.45)",
+                    borderRadius: "999px",
+                    padding: "0.65rem 1.6rem",
+                    fontSize: "0.95rem",
+                    fontWeight: 600,
+                    cursor: hasHistory ? "pointer" : "not-allowed"
+                  }}
+                >
+                  Rückfrage stellen
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      return (
+        <div
+          key={section.title}
+          style={{
+            borderRadius: "18px",
+            backgroundColor: "#fff",
+            padding: "0.9rem 1rem",
+            border: "1px solid rgba(240, 194, 123, 0.4)",
+            display: "flex",
+            flexDirection: "column",
+            gap: "0.5rem"
+          }}
+        >
+          <h3
+            style={{
+              margin: 0,
+              fontSize: "1rem",
+              color: "#5c3b1f",
+              display: "flex",
+              alignItems: "center",
+              gap: "0.4rem"
+            }}
+          >
+            <span aria-hidden="true">{section.icon}</span>
+            <span>{section.title}</span>
+          </h3>
+          {section.paragraphs?.map((paragraph) => (
+            <p
+              key={paragraph}
+              style={{ margin: 0, fontSize: "0.92rem", lineHeight: 1.55, color: "#5f4630" }}
+            >
+              {paragraph}
+            </p>
+          ))}
+          {section.list && (
+            <ul
+              style={{
+                margin: 0,
+                paddingLeft: "1.1rem",
+                display: "flex",
+                flexDirection: "column",
+                gap: "0.35rem",
+                color: "#4a3524",
+                fontSize: "0.92rem"
+              }}
+            >
+              {section.list.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+      );
+    };
+
+    const collapsedBeforeToggleSections = introSections.filter(
+      (section) => section.displayInCollapsed && section.collapsedPlacement !== "afterToggle"
+    );
+    const collapsedAfterToggleSections = introSections.filter(
+      (section) => section.displayInCollapsed && section.collapsedPlacement === "afterToggle"
+    );
+    const expandableSections = introSections.filter((section) => !section.displayInCollapsed);
+    const hasExpandableSections = expandableSections.length > 0;
 
     return (
       <section
@@ -1589,213 +1827,32 @@ export default function Bibliothek() {
           );
         })}
 
-        {displayedSections.map((section) => {
-          if (section.variant === "discussion") {
-            const hasQuestion = introDiscussionQuestion.trim().length > 0;
-            const hasHistory = introDiscussionHistory.trim().length > 0;
+        {collapsedBeforeToggleSections.map(renderIntroSectionCard)}
 
-            return (
-              <div
-                key={section.title}
-                style={{
-                  borderRadius: "18px",
-                  backgroundColor: "#fff",
-                  padding: "1rem",
-                  border: "1px solid rgba(240, 194, 123, 0.4)",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "0.75rem"
-                }}
-              >
-                <h3
-                  style={{
-                    margin: 0,
-                    fontSize: "1rem",
-                    color: "#5c3b1f",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.4rem"
-                  }}
-                >
-                  <span aria-hidden="true">{section.icon}</span>
-                  <span>{section.title}</span>
-                </h3>
-                {section.paragraphs?.map((paragraph) => (
-                  <p
-                    key={paragraph}
-                    style={{ margin: 0, fontSize: "0.92rem", lineHeight: 1.55, color: "#5f4630" }}
-                  >
-                    {paragraph}
-                  </p>
-                ))}
-
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.45rem" }}>
-                  <label htmlFor="introDiscussionQuestion" style={{ fontWeight: 600, color: "#5c3b1f" }}>
-                    Deine Frage oder Antwort an ChatGPT
-                  </label>
-                  <textarea
-                    id="introDiscussionQuestion"
-                    value={introDiscussionQuestion}
-                    onChange={(event) => setIntroDiscussionQuestion(event.target.value)}
-                    rows={3}
-                    placeholder="Formuliere hier deine Frage oder Antwort an ChatGPT..."
-                    style={{
-                      width: "100%",
-                      borderRadius: "12px",
-                      border: "1px solid rgba(92, 59, 31, 0.25)",
-                      padding: "0.75rem",
-                      fontSize: "0.95rem",
-                      lineHeight: 1.5,
-                      color: "#3a2a18",
-                      backgroundColor: "#fffdf7"
-                    }}
-                  />
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <DictationButton
-                      field="introDiscussionQuestion"
-                      ariaLabel="Frage oder Antwort für Punkt 1 diktieren"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleIntroDiscussion("initial")}
-                      disabled={!hasQuestion}
-                      style={{
-                        background: hasQuestion
-                          ? "linear-gradient(135deg, #f4b860, #d98c3f)"
-                          : "linear-gradient(135deg, #f5d5a8, #e8c28e)",
-                        color: "#fff",
-                        border: "none",
-                        borderRadius: "999px",
-                        padding: "0.55rem 1.4rem",
-                        fontSize: "0.92rem",
-                        fontWeight: 600,
-                        cursor: hasQuestion ? "pointer" : "not-allowed",
-                        boxShadow: hasQuestion ? "0 10px 18px rgba(212, 136, 65, 0.25)" : "none"
-                      }}
-                    >
-                      Antwort erhalten
-                    </button>
-                  </div>
-                </div>
-
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.45rem" }}>
-                  <label htmlFor="introDiscussionHistory" style={{ fontWeight: 600, color: "#5c3b1f" }}>
-                    Vorherige Antwort von ChatGPT (kopieren, damit der Dialog weitergeht)
-                  </label>
-                  <textarea
-                    id="introDiscussionHistory"
-                    value={introDiscussionHistory}
-                    onChange={(event) => setIntroDiscussionHistory(event.target.value)}
-                    rows={4}
-                    placeholder="Füge hier die vorherige Antwort von ChatGPT ein..."
-                    style={{
-                      width: "100%",
-                      borderRadius: "12px",
-                      border: "1px solid rgba(92, 59, 31, 0.25)",
-                      padding: "0.75rem",
-                      fontSize: "0.95rem",
-                      lineHeight: 1.5,
-                      color: "#3a2a18",
-                      backgroundColor: "#fffdf7"
-                    }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleIntroDiscussion("follow-up")}
-                    disabled={!hasQuestion || !hasHistory}
-                    style={{
-                      alignSelf: "flex-end",
-                      background: hasQuestion && hasHistory
-                        ? "linear-gradient(135deg, #57a0d3, #3867d6)"
-                        : "linear-gradient(135deg, #b6c7e2, #90a8d9)",
-                      color: "#fff",
-                      border: "none",
-                      borderRadius: "999px",
-                      padding: "0.55rem 1.6rem",
-                      fontSize: "0.92rem",
-                      fontWeight: 600,
-                      cursor: hasQuestion && hasHistory ? "pointer" : "not-allowed",
-                      boxShadow: hasQuestion && hasHistory ? "0 10px 18px rgba(88, 133, 220, 0.25)" : "none"
-                    }}
-                  >
-                    Rückfrage stellen
-                  </button>
-                </div>
-              </div>
-            );
-          }
-
-          return (
-            <div
-              key={section.title}
+        {hasExpandableSections && (
+          <>
+            <button
+              type="button"
+              onClick={() => setIntroExpanded((previous) => !previous)}
               style={{
-                borderRadius: "18px",
-                backgroundColor: "#fff",
-                padding: "0.9rem 1rem",
-                border: "1px solid rgba(240, 194, 123, 0.4)",
-                display: "flex",
-                flexDirection: "column",
-                gap: "0.5rem"
+                alignSelf: "flex-start",
+                background: "none",
+                border: "none",
+                color: "#3867d6",
+                textDecoration: "underline",
+                cursor: "pointer",
+                fontWeight: 600,
+                fontSize: "0.95rem"
               }}
             >
-              <h3
-                style={{
-                  margin: 0,
-                  fontSize: "1rem",
-                  color: "#5c3b1f",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.4rem"
-                }}
-              >
-                <span aria-hidden="true">{section.icon}</span>
-                <span>{section.title}</span>
-              </h3>
-              {section.paragraphs?.map((paragraph) => (
-                <p
-                  key={paragraph}
-                  style={{ margin: 0, fontSize: "0.92rem", lineHeight: 1.55, color: "#5f4630" }}
-                >
-                  {paragraph}
-                </p>
-              ))}
-              {section.list && (
-                <ul
-                  style={{
-                    margin: 0,
-                    paddingLeft: "1.1rem",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "0.35rem",
-                    color: "#4a3524",
-                    fontSize: "0.92rem"
-                  }}
-                >
-                  {section.list.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          );
-        })}
+              {introExpanded ? "Weniger anzeigen" : "Alles anzeigen"}
+            </button>
 
-        <button
-          type="button"
-          onClick={() => setIntroExpanded((previous) => !previous)}
-          style={{
-            alignSelf: "flex-start",
-            background: "none",
-            border: "none",
-            color: "#3867d6",
-            textDecoration: "underline",
-            cursor: "pointer",
-            fontWeight: 600,
-            fontSize: "0.95rem"
-          }}
-        >
-          {introExpanded ? "Weniger anzeigen" : "Alles anzeigen"}
-        </button>
+            {introExpanded && expandableSections.map(renderIntroSectionCard)}
+          </>
+        )}
+
+        {collapsedAfterToggleSections.map(renderIntroSectionCard)}
       </section>
     );
   };
