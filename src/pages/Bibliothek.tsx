@@ -328,8 +328,8 @@ const IntroCard = ({ onStart }: IntroCardProps) => {
         }}
       >
         <img
-          src="/bibliothek/verwandlung-intro.svg"
-          alt="Jesus hält ein weinendes Kind im Arm"
+          src="/Images/kindmitpanzer.png"
+          alt="Illustration eines Kindes mit Panzer"
           style={{ width: "100%", height: "100%", objectFit: "cover" }}
         />
       </div>
