@@ -1531,7 +1531,7 @@ export default function Bibliothek() {
 
   const introEnabled = true;
 
-  const renderIntroSection = () => {
+  const renderIntroSection = ({ hideHeading = false }: { hideHeading?: boolean } = {}) => {
     if (!introEnabled) {
       return null;
     }
@@ -1779,29 +1779,31 @@ export default function Bibliothek() {
           />
         </div>
 
-        <div>
-          <h2
-            style={{
-              margin: 0,
-              fontSize: "1.45rem",
-              lineHeight: 1.3,
-              color: "#5c3b1f"
-            }}
-          >
-            Verwandlung als Kind Gottes
-          </h2>
-          <p
-            style={{
-              margin: "0.3rem 0 0",
-              fontSize: "0.95rem",
-              lineHeight: 1.5,
-              color: "#8c5d32",
-              fontStyle: "italic"
-            }}
-          >
-            „Selig sind die Trauernden, denn sie werden getröstet werden.“ (Matthäus 5,4)
-          </p>
-        </div>
+        {!hideHeading && (
+          <div>
+            <h2
+              style={{
+                margin: 0,
+                fontSize: "1.45rem",
+                lineHeight: 1.3,
+                color: "#5c3b1f"
+              }}
+            >
+              Verwandlung als Kind Gottes
+            </h2>
+            <p
+              style={{
+                margin: "0.3rem 0 0",
+                fontSize: "0.95rem",
+                lineHeight: 1.5,
+                color: "#8c5d32",
+                fontStyle: "italic"
+              }}
+            >
+              „Selig sind die Trauernden, denn sie werden getröstet werden.“ (Matthäus 5,4)
+            </p>
+          </div>
+        )}
 
         {displayedLeadParagraphs.map((paragraph) => (
           <p
@@ -2132,7 +2134,7 @@ export default function Bibliothek() {
       case 0: {
         return (
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-            {renderIntroSection()}
+            {renderIntroSection({ hideHeading: true })}
           </div>
         );
       }
