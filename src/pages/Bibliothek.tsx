@@ -921,24 +921,6 @@ export default function Bibliothek() {
     window.open(`https://chat.openai.com/?q=${prompt}`, "_blank", "noopener,noreferrer");
   };
 
-  const normalizedMeditationNotes = useMemo(() => {
-    const trimmed = meditationNotes.trim();
-    if (trimmed.length > 0) {
-      return trimmed;
-    }
-
-    if (typeof window === "undefined") {
-      return "";
-    }
-
-    try {
-      const storedMeditationNotes = localStorage.getItem("bibliothekMeditationNotes");
-      return storedMeditationNotes?.trim() ?? "";
-    } catch {
-      return "";
-    }
-  }, [meditationNotes]);
-
   const closingPromptContextItems = useMemo(() => {
     const entries: Array<{ label: string; value: string }> = [];
 
@@ -959,20 +941,12 @@ export default function Bibliothek() {
     addEntry("Ausgewähltes Bedürfnis", selectedNeed ?? "");
     addEntry("Deine Beschreibung des Bedürfnisses", personalNeed);
     addEntry("Kindheitserinnerung", childhoodExperience);
-    addEntry("Antwort von Jesus aus Schritt 8", normalizedMeditationNotes);
+    addEntry("Antwort von Jesus aus Schritt 8", meditationNotes);
     addEntry("Frage an Jesus (ChatGPT-Prompt)", askJesusPrompt);
     addEntry("Jesus-Impuls aus der Bedürfnis-Erklärung", selectedNeedData?.jesus ?? "");
 
     return entries;
-  }, [
-    askJesusPrompt,
-    problem,
-    selectedNeed,
-    personalNeed,
-    childhoodExperience,
-    normalizedMeditationNotes,
-    selectedNeedData
-  ]);
+  }, [askJesusPrompt, problem, selectedNeed, personalNeed, childhoodExperience, meditationNotes, selectedNeedData]);
 
   const closingPrompt = useMemo(() => {
     if (closingPromptContextItems.length === 0) {
@@ -987,7 +961,7 @@ export default function Bibliothek() {
       "Stil: Schreibe auf Deutsch, hoffnungsvoll, ermutigend und praxisnah. Greife Aussagen über Jesu Blick und Einladung auf, ohne zu moralisieren."
     ];
 
-    const meditationAnswer = normalizedMeditationNotes;
+    const meditationAnswer = meditationNotes.trim();
     const askJesusQuestion = askJesusPrompt.trim();
 
     const contextLines = closingPromptContextItems
@@ -1007,7 +981,7 @@ export default function Bibliothek() {
     promptSections.push(`Kontext:\n${contextLines}`);
 
     return promptSections.join("\n\n");
-  }, [askJesusPrompt, closingPromptContextItems, normalizedMeditationNotes]);
+  }, [askJesusPrompt, closingPromptContextItems, meditationNotes]);
 
   const hasClosingPrompt = closingPrompt.trim().length > 0;
 
