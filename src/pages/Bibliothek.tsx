@@ -955,11 +955,11 @@ export default function Bibliothek() {
       entries.push({ label, value: trimmed });
     };
 
-    addEntry("Antwort von Jesus aus Schritt 8", normalizedMeditationNotes);
     addEntry("Aktuelles Anliegen", problem);
     addEntry("Ausgewähltes Bedürfnis", selectedNeed ?? "");
     addEntry("Deine Beschreibung des Bedürfnisses", personalNeed);
     addEntry("Kindheitserinnerung", childhoodExperience);
+    addEntry("Antwort von Jesus aus Schritt 8", normalizedMeditationNotes);
     addEntry("Frage an Jesus (ChatGPT-Prompt)", askJesusPrompt);
     addEntry("Jesus-Impuls aus der Bedürfnis-Erklärung", selectedNeedData?.jesus ?? "");
 
@@ -997,11 +997,7 @@ export default function Bibliothek() {
     const promptSections = [instructions.join("\n\n")];
 
     if (meditationAnswer) {
-      const formattedMeditationAnswer = [`Antwort aus Schritt 8 (Frage an Jesus):`, "\"\"\"", meditationAnswer, "\"\"\""].join(
-        "\n"
-      );
-
-      promptSections.push(formattedMeditationAnswer);
+      promptSections.push(`Antwort aus Schritt 8 (Frage an Jesus):\n${meditationAnswer}`);
     }
 
     if (askJesusQuestion) {
