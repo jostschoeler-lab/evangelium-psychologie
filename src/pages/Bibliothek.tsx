@@ -1860,7 +1860,7 @@ export default function Bibliothek() {
         }}
       >
         <img
-          src="/bibliothek/verwandlung-intro.svg"
+          src="/Bedürfnisse/verwandlung-intro.svg"
           alt="Illustration: Jesus tröstet ein Kind"
           style={{ width: "100%", height: "100%", objectFit: "cover" }}
         />
@@ -2320,12 +2320,12 @@ export default function Bibliothek() {
                 }}
               >
                 <img
-                  src="/bibliothek/personal-step-child.svg"
+                  src="/Bedürfnisse/personal-step-child.svg"
                   alt="Ein Kind streckt weinend die Hände aus"
                   style={{ width: "120px", height: "120px" }}
                 />
                 <img
-                  src="/bibliothek/personal-step-guide.svg"
+                  src="/Bedürfnisse/personal-step-guide.svg"
                   alt="Ein Begleiter lächelt warm und hört zu"
                   style={{ width: "120px", height: "120px" }}
                 />
@@ -2586,7 +2586,7 @@ export default function Bibliothek() {
                   }}
                 >
                   <img
-                    src="/bibliothek/jesus-traegt-weinendes-kind.svg"
+                    src="/Bedürfnisse/jesus-traegt-weinendes-kind.svg"
                     alt="Jesus hält ein weinendes Kind tröstend im Arm"
                     style={{ width: "140px", height: "140px", objectFit: "contain" }}
                   />

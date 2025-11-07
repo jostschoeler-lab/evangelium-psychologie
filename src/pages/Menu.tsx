@@ -13,7 +13,7 @@ export default function Menu() {
       <h1>Kombination Evangelium und Psychologie</h1>
 
       <div style={rowStyle}>
-        <Link to="/bibliothek" style={btnStyle}>Bedürfnisse</Link>
+        <Link to="/Bedürfnisse" style={btnStyle}>Bedürfnisse</Link>
         <Link to="/nbj" style={btnStyle}>Meditation</Link>
         <Link to="/spannungsmodell" style={btnStyle}>Spannungsmodell</Link>
         <Link to="/ep" style={btnStyle}>Crosslinks</Link>

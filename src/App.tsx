@@ -12,7 +12,7 @@ export default function App() {
       <Route path="/" element={<Menu />} />
       <Route path="/nbj/*" element={<NBJ />} />
       <Route path="/spannungsmodell" element={<Spannungsmodell />} />
-      <Route path="/bibliothek" element={<Bibliothek />} />
+      <Route path="/Bedürfnisse" element={<Bibliothek />} />
       <Route path="/ep" element={<EP />} />
       <Route path="/stuhldialog" element={<Stuhldialog />} />
       <Route path="*" element={<Navigate to="/" replace />} />
