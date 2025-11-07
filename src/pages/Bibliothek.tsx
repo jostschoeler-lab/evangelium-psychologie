@@ -2882,37 +2882,11 @@ export default function Bibliothek() {
               </div>
 
               {hasContext && (
-                <div
-                  style={{
-                    background: "rgba(125, 95, 255, 0.08)",
-                    borderRadius: "20px",
-                    padding: "1.1rem 1.25rem",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "0.6rem"
-                  }}
-                >
-                  <h2
-                    style={{
-                      margin: 0,
-                      fontSize: "1.05rem",
-                      color: "#3a3f5c"
-                    }}
-                  >
-                    Diese Angaben fließen im Hintergrund in den Prompt ein
-                  </h2>
-                  <ul
-                    style={{
-                      margin: 0,
-                      paddingLeft: "1.1rem",
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "0.45rem",
-                      color: "#2c3e50"
-                    }}
-                  >
+                <div aria-hidden="true" style={{ display: "none" }}>
+                  <h2>Diese Angaben fließen im Hintergrund in den Prompt ein</h2>
+                  <ul>
                     {closingPromptContextItems.map((item) => (
-                      <li key={item.label} style={{ whiteSpace: "pre-line", lineHeight: 1.5 }}>
+                      <li key={item.label}>
                         <strong>{item.label}:</strong> {item.value}
                       </li>
                     ))}
