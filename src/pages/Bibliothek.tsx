@@ -1262,6 +1262,8 @@ export default function Bibliothek() {
             return childhoodExperience;
           case "meditationNotes":
             return meditationNotes;
+          case "introDiscussionQuestion":
+            return introDiscussionQuestion;
           default:
             return "";
         }
@@ -1294,7 +1296,16 @@ export default function Bibliothek() {
 
       startRecognition(field, baseValue);
     },
-    [dictationSupported, listeningField, problem, personalNeed, childhoodExperience, meditationNotes, startRecognition]
+    [
+      dictationSupported,
+      listeningField,
+      problem,
+      personalNeed,
+      childhoodExperience,
+      meditationNotes,
+      introDiscussionQuestion,
+      startRecognition
+    ]
   );
 
   const DictationButton = ({
@@ -1505,6 +1516,13 @@ export default function Bibliothek() {
                   minHeight: "5rem"
                 }}
               />
+              <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                <DictationButton
+                  field="introDiscussionQuestion"
+                  ariaLabel="Antwort für ChatGPT diktieren"
+                  variant="icon"
+                />
+              </div>
 
               <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
                 <label htmlFor="intro-discussion-history" style={{ fontSize: "0.85rem", color: "#5f4630" }}>
