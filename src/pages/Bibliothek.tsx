@@ -2838,116 +2838,20 @@ export default function Bibliothek() {
                   Danke, dass du dich auf diesen inneren Weg eingelassen hast. Würdige, was du mit
                   Jesus durchlebt und ausgesprochen hast.
                 </p>
-                <p
-                  style={{
-                    margin: 0,
-                    fontSize: "1.05rem",
-                    lineHeight: 1.6,
-                    color: "#344767"
-                  }}
-                >
-                  Welche Einladung nimmst du aus diesem Gespräch in deinen Alltag mit?
-                </p>
               </div>
 
-              <div
+              <p
                 style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "0.75rem"
+                  margin: 0,
+                  fontSize: "0.95rem",
+                  lineHeight: 1.5,
+                  color: "#4c5d73",
+                  textAlign: "left"
                 }}
               >
-                <div
-                  style={{
-                    background: "rgba(79, 111, 198, 0.1)",
-                    borderRadius: "20px",
-                    padding: "1rem 1.2rem",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "0.9rem",
-                    textAlign: "left"
-                  }}
-                >
-                  <h2
-                    style={{
-                      margin: 0,
-                      fontSize: "1.1rem",
-                      color: "#2c3e50"
-                    }}
-                  >
-                    Abschluss- und Alltagstipps
-                  </h2>
-                  <p
-                    style={{
-                      margin: 0,
-                      fontSize: "0.95rem",
-                      lineHeight: 1.5,
-                      color: "#344767"
-                    }}
-                  >
-                    Mit diesem Prompt öffnest du ChatGPT direkt, um einen Abschlusskommentar auf Basis deiner
-                    bisherigen Eingaben zu erhalten.
-                  </p>
-                  <div
-                    style={{
-                      borderRadius: "18px",
-                      background: "rgba(255, 255, 255, 0.85)",
-                      padding: "1rem 1.1rem",
-                      border: "1px solid rgba(79, 111, 198, 0.25)",
-                      fontSize: "0.95rem",
-                      lineHeight: 1.6,
-                      color: "#1f2933",
-                      whiteSpace: "pre-wrap",
-                      minHeight: "120px"
-                    }}
-                  >
-                    {hasClosingPrompt ? (
-                      closingPrompt
-                    ) : (
-                      <span style={{ color: "#5b728f" }}>
-                        Sobald du oben dein Anliegen, das Bedürfnis und Jesu Zuspruch festgehalten hast,
-                        erscheint hier automatisch dein persönlicher Prompt.
-                      </span>
-                    )}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleClosingChatGPT}
-                    disabled={!hasClosingPrompt}
-                    style={{
-                      alignSelf: "flex-start",
-                      border: "none",
-                      borderRadius: "999px",
-                      padding: "0.7rem 1.4rem",
-                      fontWeight: 700,
-                      fontSize: "1rem",
-                      background: hasClosingPrompt
-                        ? "linear-gradient(135deg, #4b7bec, #6dd5ed)"
-                        : "#c7d2f3",
-                      color: hasClosingPrompt ? "#fff" : "#5b728f",
-                      cursor: hasClosingPrompt ? "pointer" : "not-allowed",
-                      boxShadow: hasClosingPrompt
-                        ? "0 16px 30px rgba(75, 123, 236, 0.25)"
-                        : "none",
-                      transition: "background-color 0.2s ease, box-shadow 0.2s ease"
-                    }}
-                  >
-                    💡 Abschlusskommentar von ChatGPT holen
-                  </button>
-                </div>
-                <p
-                  style={{
-                    margin: 0,
-                    fontSize: "0.95rem",
-                    lineHeight: 1.5,
-                    color: "#4c5d73",
-                    textAlign: "left"
-                  }}
-                >
-                  Deine Notizen bleiben nur auf diesem Gerät gespeichert und sind auch in der
-                  Desktop-Ansicht unter „Abschlusskommentar von ChatGPT“ sichtbar.
-                </p>
-              </div>
+                Deine Notizen bleiben nur auf diesem Gerät gespeichert und sind auch in der
+                Desktop-Ansicht unter „Abschlusskommentar von ChatGPT“ sichtbar.
+              </p>
             </section>
           </div>
         );
