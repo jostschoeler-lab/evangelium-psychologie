@@ -184,7 +184,8 @@ const introLeadParagraphs: string[] = [
 const problemLeadParagraphs: string[] = [
   "Hier darfst du aussprechen, was dich drückt. Kein Gefühl ist Jesus fremd – Er begegnet dir gerade in deiner Schwachheit.",
   "Beschreibe konkret, was dich belastet oder bewegt. Damit öffnest du dein Herz, damit Er dich trösten und führen kann.",
-  "Halte nichts zurück: Alles, was du hier teilst, darf zum Ort werden, an dem Gottes Trost sichtbar wird."
+  "Halte nichts zurück: Alles, was du hier teilst, darf zum Ort werden, an dem Gottes Trost sichtbar wird.",
+  "Die Antwort ist anonym und wird nicht automatisch gespeichert. Am Ende kannst du wählen, ob du speichern möchtest – für dich alleine oder es zu Entwicklungszwecken weitergeben möchtest."
 ];
 
 const INTRO_DISCUSSION_PROMPT_BASE = [
