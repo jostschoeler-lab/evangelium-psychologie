@@ -935,8 +935,9 @@ export default function Bibliothek() {
       "Stil: Schreibe auf Deutsch, hoffnungsvoll, ermutigend und praxisnah. Greife Aussagen über Jesu Blick und Einladung auf, ohne zu moralisieren."
     ];
 
-    const meditationAnswer = meditationNotes.trim();
-    const askJesusQuestion = askJesusPrompt.trim();
+    const jesusResponse = closingPromptContextItems.find((item) =>
+      item.label.startsWith("Antwort von Jesus")
+    );
 
     const contextLines = closingPromptContextItems
       .map((item) => `- ${item.label}: ${item.value}`)
@@ -944,18 +945,14 @@ export default function Bibliothek() {
 
     const promptSections = [instructions.join("\n\n")];
 
-    if (meditationAnswer) {
-      promptSections.push(`Antwort aus Schritt 8 (Frage an Jesus):\n${meditationAnswer}`);
-    }
-
-    if (askJesusQuestion) {
-      promptSections.push(`Frage aus Schritt 8:\n${askJesusQuestion}`);
+    if (jesusResponse) {
+      promptSections.push(`Antwort von Jesus aus Schritt 8:\n${jesusResponse.value}`);
     }
 
     promptSections.push(`Kontext:\n${contextLines}`);
 
     return promptSections.join("\n\n");
-  }, [askJesusPrompt, closingPromptContextItems, meditationNotes]);
+  }, [closingPromptContextItems]);
 
   const hasClosingPrompt = closingPrompt.trim().length > 0;
 
