@@ -915,7 +915,7 @@ export default function Bibliothek() {
     addEntry("Ausgewähltes Bedürfnis", selectedNeed ?? "");
     addEntry("Deine Beschreibung des Bedürfnisses", personalNeed);
     addEntry("Kindheitserinnerung", childhoodExperience);
-    addEntry("Antwort von Jesus aus Schritt 8", meditationNotes);
+    addEntry("Worte Jesu aus der Meditation", meditationNotes);
     addEntry("Frage an Jesus (ChatGPT-Prompt)", askJesusPrompt);
     addEntry("Jesus-Impuls aus der Bedürfnis-Erklärung", selectedNeedData?.jesus ?? "");
 
@@ -935,23 +935,11 @@ export default function Bibliothek() {
       "Stil: Schreibe auf Deutsch, hoffnungsvoll, ermutigend und praxisnah. Greife Aussagen über Jesu Blick und Einladung auf, ohne zu moralisieren."
     ];
 
-    const jesusResponse = closingPromptContextItems.find((item) =>
-      item.label.startsWith("Antwort von Jesus")
-    );
-
     const contextLines = closingPromptContextItems
       .map((item) => `- ${item.label}: ${item.value}`)
       .join("\n");
 
-    const promptSections = [instructions.join("\n\n")];
-
-    if (jesusResponse) {
-      promptSections.push(`Antwort von Jesus aus Schritt 8:\n${jesusResponse.value}`);
-    }
-
-    promptSections.push(`Kontext:\n${contextLines}`);
-
-    return promptSections.join("\n\n");
+    return `${instructions.join("\n\n")}\n\nKontext:\n${contextLines}`;
   }, [closingPromptContextItems]);
 
   const hasClosingPrompt = closingPrompt.trim().length > 0;
