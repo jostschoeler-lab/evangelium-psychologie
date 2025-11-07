@@ -2793,6 +2793,7 @@ export default function Bibliothek() {
         );
       }
       case 8: {
+        const hasContext = closingPromptContextItems.length > 0;
         return (
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
             <section style={baseCardStyle} aria-labelledby="mobileClosingHeading">
@@ -2839,6 +2840,85 @@ export default function Bibliothek() {
                   Jesus durchlebt und ausgesprochen hast.
                 </p>
               </div>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+                <button
+                  type="button"
+                  onClick={handleClosingChatGPT}
+                  disabled={!hasClosingPrompt}
+                  style={{
+                    border: "none",
+                    borderRadius: "999px",
+                    padding: "0.85rem 1.35rem",
+                    fontSize: "1.05rem",
+                    fontWeight: 700,
+                    background: hasClosingPrompt
+                      ? "linear-gradient(135deg, #7d5fff, #4b7bec)"
+                      : "#cbd2d9",
+                    color: hasClosingPrompt ? "#fff" : "#5b728f",
+                    cursor: hasClosingPrompt ? "pointer" : "not-allowed",
+                    boxShadow: hasClosingPrompt
+                      ? "0 18px 34px rgba(75, 123, 236, 0.3)"
+                      : "none",
+                    transition: "background-color 0.2s ease, transform 0.2s ease"
+                  }}
+                >
+                  ✨ Abschlussantwort in ChatGPT öffnen
+                </button>
+
+                {!hasClosingPrompt && (
+                  <p
+                    style={{
+                      margin: 0,
+                      fontSize: "0.95rem",
+                      lineHeight: 1.5,
+                      color: "#4c5d73"
+                    }}
+                  >
+                    Sobald deine Angaben aus den vorherigen Schritten vollständig sind, kannst du hier die
+                    Abschlussantwort mit ChatGPT öffnen.
+                  </p>
+                )}
+              </div>
+
+              {hasContext && (
+                <div
+                  style={{
+                    background: "rgba(125, 95, 255, 0.08)",
+                    borderRadius: "20px",
+                    padding: "1.1rem 1.25rem",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "0.6rem"
+                  }}
+                >
+                  <h2
+                    style={{
+                      margin: 0,
+                      fontSize: "1.05rem",
+                      color: "#3a3f5c"
+                    }}
+                  >
+                    Diese Angaben fließen im Hintergrund in den Prompt ein
+                  </h2>
+                  <ul
+                    style={{
+                      margin: 0,
+                      paddingLeft: "1.1rem",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "0.45rem",
+                      color: "#2c3e50"
+                    }}
+                  >
+                    {closingPromptContextItems.map((item) => (
+                      <li key={item.label} style={{ whiteSpace: "pre-line", lineHeight: 1.5 }}>
+                        <strong>{item.label}:</strong> {item.value}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
               <p
                 style={{
