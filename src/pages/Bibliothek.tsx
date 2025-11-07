@@ -915,7 +915,7 @@ export default function Bibliothek() {
     addEntry("Ausgewähltes Bedürfnis", selectedNeed ?? "");
     addEntry("Deine Beschreibung des Bedürfnisses", personalNeed);
     addEntry("Kindheitserinnerung", childhoodExperience);
-    addEntry("Worte Jesu aus der Meditation", meditationNotes);
+    addEntry("Antwort aus Schritt 8 – Frage an Jesus", meditationNotes);
     addEntry("Frage an Jesus (ChatGPT-Prompt)", askJesusPrompt);
     addEntry("Jesus-Impuls aus der Bedürfnis-Erklärung", selectedNeedData?.jesus ?? "");
 
