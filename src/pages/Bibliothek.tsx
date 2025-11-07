@@ -430,6 +430,16 @@ export default function Bibliothek() {
     }
 
     try {
+      const storedMeditationNotes = localStorage.getItem("bibliothekMeditationNotes");
+      if (storedMeditationNotes) {
+        setMeditationNotes(storedMeditationNotes);
+        dictationBaseRef.current.meditationNotes = storedMeditationNotes;
+      }
+    } catch {
+      /* ignore */
+    }
+
+    try {
       const storedIntroQuestion = localStorage.getItem("bibliothekIntroDiscussionQuestion");
       if (storedIntroQuestion) {
         setIntroDiscussionQuestion(storedIntroQuestion);
@@ -487,6 +497,22 @@ export default function Bibliothek() {
       /* ignore */
     }
   }, [childhoodExperience]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    try {
+      if (!meditationNotes.trim()) {
+        localStorage.removeItem("bibliothekMeditationNotes");
+      } else {
+        localStorage.setItem("bibliothekMeditationNotes", meditationNotes);
+      }
+    } catch {
+      /* ignore */
+    }
+  }, [meditationNotes]);
 
   useEffect(() => {
     if (typeof window === "undefined") {
