@@ -922,6 +922,9 @@ export default function Bibliothek() {
     return entries;
   }, [askJesusPrompt, problem, selectedNeed, personalNeed, childhoodExperience, meditationNotes, selectedNeedData]);
 
+  const meditationNotesReference =
+    "Das Texteingabefeld mit der Frage „Was hat Jesus dir in dieser Meditation gesagt?“ findest du in src/pages/Bibliothek.tsx. Dort wird innerhalb des mobilen Abschnitts ein <textarea> mit der id=\"mobileMeditationNotes\" gerendert, und direkt daneben sitzt der DictationButton, über den du die Eingaben diktieren kannst.";
+
   const closingPrompt = useMemo(() => {
     if (closingPromptContextItems.length === 0) {
       return "";
@@ -953,8 +956,12 @@ export default function Bibliothek() {
       .map((item) => `- ${item.label}: ${item.value}`)
       .join("\n");
 
-    return `${instructions.join("\n\n")}\n\nKontext:\n${contextLines}`;
-  }, [closingPromptContextItems]);
+    return [
+      instructions.join("\n\n"),
+      `Kontext:\n${contextLines}\n${meditationNotesReference}`,
+      `Angaben der Person:\n${meditationNotesReference}`
+    ].join("\n\n");
+  }, [closingPromptContextItems, meditationNotesReference]);
 
   const hasClosingPrompt = closingPrompt.trim().length > 0;
 
