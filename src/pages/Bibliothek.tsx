@@ -11,7 +11,12 @@ import {
 import kindMitPanzerImage from "../assets/images/kindmitpanzer.png";
 import childImage from "../assets/images/kind.png";
 
-const HIGH_PRIEST_IMAGE_PATH = "/public-images/www.hohepriester.png";
+const HIGH_PRIEST_IMAGE_CANDIDATES = [
+  "/public-images/Hohepriester.png",
+  "/public-images/hohepriester.png",
+  "/public-images/www.hohepriester.png",
+  "/Images/hohepriester.png"
+] as const;
 
 type NeedContent = {
   resonance: string[];
@@ -471,7 +476,8 @@ export default function Bibliothek() {
   const [activeMobileStep, setActiveMobileStep] = useState(0);
   const [introDiscussionQuestion, setIntroDiscussionQuestion] = useState("");
   const [introDiscussionHistory, setIntroDiscussionHistory] = useState("");
-  const [isHighPriestImageAvailable, setHighPriestImageAvailable] = useState(true);
+  const [highPriestImageSrc, setHighPriestImageSrc] = useState<string | null>(null);
+  const [isHighPriestImageAvailable, setHighPriestImageAvailable] = useState(false);
 
   const dictationSupported =
     typeof window !== "undefined" &&
@@ -490,6 +496,50 @@ export default function Bibliothek() {
     meditationNotes: "",
     introDiscussionQuestion: ""
   });
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    let cancelled = false;
+
+    const tryCandidate = (index: number) => {
+      if (index >= HIGH_PRIEST_IMAGE_CANDIDATES.length) {
+        if (!cancelled) {
+          setHighPriestImageSrc(null);
+          setHighPriestImageAvailable(false);
+        }
+        return;
+      }
+
+      const candidate = HIGH_PRIEST_IMAGE_CANDIDATES[index];
+      const image = new Image();
+
+      image.onload = () => {
+        if (cancelled) {
+          return;
+        }
+        setHighPriestImageSrc(candidate);
+        setHighPriestImageAvailable(true);
+      };
+
+      image.onerror = () => {
+        if (cancelled) {
+          return;
+        }
+        tryCandidate(index + 1);
+      };
+
+      image.src = candidate;
+    };
+
+    tryCandidate(0);
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -2770,12 +2820,15 @@ export default function Bibliothek() {
                     overflow: "hidden"
                   }}
                 >
-                  {isHighPriestImageAvailable ? (
+                  {isHighPriestImageAvailable && highPriestImageSrc ? (
                     <img
-                      src={HIGH_PRIEST_IMAGE_PATH}
+                      src={highPriestImageSrc}
                       alt="Jesus als barmherziger Hohepriester"
                       style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                      onError={() => setHighPriestImageAvailable(false)}
+                      onError={() => {
+                        setHighPriestImageSrc(null);
+                        setHighPriestImageAvailable(false);
+                      }}
                     />
                   ) : (
                     <svg
