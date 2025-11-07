@@ -2594,8 +2594,8 @@ export default function Bibliothek() {
               >
                 <div
                   style={{
-                    width: "160px",
-                    height: "160px",
+                    width: "320px",
+                    height: "320px",
                     borderRadius: "36px",
                     background: "linear-gradient(135deg, #ffe7d6, #d9f5ff)",
                     display: "flex",
@@ -2626,7 +2626,7 @@ export default function Bibliothek() {
                       viewBox="0 0 160 160"
                       role="img"
                       aria-label="Skizze: Jesus hält ein Kind im Arm"
-                      style={{ width: "130px", height: "130px" }}
+                      style={{ width: "260px", height: "260px" }}
                     >
                       <defs>
                         <linearGradient id="robeGradient" x1="0%" y1="0%" x2="0%" y2="100%">
