@@ -311,153 +311,6 @@ const introSections: IntroSection[] = [
   }
 ];
 
-type IntroCardProps = {
-  onStart: () => void;
-};
-
-const IntroCard = ({ onStart }: IntroCardProps) => {
-  return (
-    <section
-      aria-label="Verwandlung als Kind Gottes"
-      style={{
-        margin: "0 auto 2rem",
-        maxWidth: "380px",
-        backgroundColor: "#fdf6ec",
-        borderRadius: "28px",
-        padding: "1.75rem 1.5rem",
-        boxShadow: "0 20px 45px rgba(32, 40, 52, 0.18)",
-        display: "flex",
-        flexDirection: "column",
-        gap: "1.25rem"
-      }}
-    >
-      <div
-        style={{
-          width: "100%",
-          borderRadius: "22px",
-          overflow: "hidden",
-          background: "linear-gradient(135deg, #f8e1b3, #f38181)"
-        }}
-      >
-        <img
-          src={kindMitPanzerImage}
-          alt="Illustration eines Kindes mit Panzer"
-          style={{ width: "100%", height: "auto", display: "block" }}
-        />
-      </div>
-
-      <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-        <h2
-          style={{
-            margin: 0,
-            fontSize: "1.6rem",
-            lineHeight: 1.2,
-            color: "#3a2a18",
-            fontWeight: 700
-          }}
-        >
-          Verwandlung als Kind Gottes
-        </h2>
-        <p
-          style={{
-            margin: "0.5rem 0 0",
-            fontSize: "1rem",
-            lineHeight: 1.6,
-            color: "#5f4630",
-            fontStyle: "italic"
-          }}
-        >
-          „Selig sind die Trauernden, denn sie werden getröstet werden.“ (Matthäus 5,4)
-        </p>
-
-        {introLeadParagraphs.map((paragraph) => (
-          <p
-            key={paragraph}
-            style={{ margin: 0, fontSize: "0.98rem", lineHeight: 1.6, color: "#463626" }}
-          >
-            {paragraph}
-          </p>
-        ))}
-
-        {introSections
-          .filter((section) => section.variant !== "discussion")
-          .map((section) => (
-          <div
-            key={section.title}
-            style={{
-              borderRadius: "18px",
-              backgroundColor: "#fff8f0",
-              padding: "1rem",
-              border: "1px solid rgba(240, 194, 123, 0.4)",
-              display: "flex",
-              flexDirection: "column",
-              gap: "0.6rem"
-            }}
-          >
-            <h3
-              style={{
-                margin: 0,
-                fontSize: "1.05rem",
-                color: "#3a2a18",
-                display: "flex",
-                alignItems: "center",
-                gap: "0.4rem"
-              }}
-            >
-              <span aria-hidden="true">{section.icon}</span>
-              <span>{section.title}</span>
-            </h3>
-            {section.paragraphs?.map((paragraph) => (
-              <p
-                key={paragraph}
-                style={{ margin: 0, fontSize: "0.95rem", lineHeight: 1.55, color: "#5f4630" }}
-              >
-                {paragraph}
-              </p>
-            ))}
-            {section.list && (
-              <ul
-                style={{
-                  margin: 0,
-                  paddingLeft: "1.1rem",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "0.35rem",
-                  color: "#4a3524",
-                  fontSize: "0.95rem"
-                }}
-              >
-                {section.list.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-            )}
-          </div>
-        ))}
-      </div>
-
-      <button
-        onClick={onStart}
-        style={{
-          alignSelf: "center",
-          marginTop: "0.5rem",
-          background: "linear-gradient(135deg, #f4b860, #d98c3f)",
-          color: "#fff",
-          border: "none",
-          borderRadius: "999px",
-          padding: "0.85rem 2.5rem",
-          fontSize: "1rem",
-          fontWeight: 600,
-          cursor: "pointer",
-          boxShadow: "0 12px 24px rgba(212, 136, 65, 0.35)"
-        }}
-      >
-        Starten
-      </button>
-    </section>
-  );
-};
-
 export default function Bibliothek() {
   const nav = useNavigate();
   const [problem, setProblem] = useState("");
@@ -472,7 +325,6 @@ export default function Bibliothek() {
   const [jesusChatResponse, setJesusChatResponse] = useState("");
   const [closingChatResponse, setClosingChatResponse] = useState("");
   const [savedChats, setSavedChats] = useState<SavedChat[]>([]);
-  const [introVisible, setIntroVisible] = useState(true);
   const [activeMobileStep, setActiveMobileStep] = useState(0);
   const [introDiscussionQuestion, setIntroDiscussionQuestion] = useState("");
   const [introDiscussionHistory, setIntroDiscussionHistory] = useState("");
@@ -916,15 +768,6 @@ export default function Bibliothek() {
     setShowResult(true);
     setActiveMobileStep(3);
   };
-
-  const handleStartIntro = useCallback(() => {
-    setIntroVisible(false);
-    if (typeof window !== "undefined") {
-      window.setTimeout(() => {
-        formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-      }, 100);
-    }
-  }, [setIntroVisible]);
 
   const handleContinueFromStepOne = useCallback(() => {
     setActiveMobileStep(2);
@@ -1592,10 +1435,6 @@ export default function Bibliothek() {
       return null;
     }
 
-    if (introVisible) {
-      return <IntroCard onStart={handleStartIntro} />;
-    }
-
     const displayedLeadParagraphs = introLeadParagraphs;
 
     const renderIntroSectionCard = (section: IntroSection) => {
@@ -2197,7 +2036,7 @@ export default function Bibliothek() {
       case 0: {
         return (
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-            {renderIntroSection({ hideHeading: true })}
+            {renderIntroSection()}
           </div>
         );
       }
@@ -3146,163 +2985,159 @@ export default function Bibliothek() {
       </button>
 
       <section style={{ maxWidth: "800px", margin: "0 auto" }}>
-        {introVisible ? (
-          renderIntroSection()
-        ) : (
-          <div>
-            {!showResult && (
-              <>
-                {renderProblemSection({ attachRef: true })}
-                {renderNeedSelectionSection({ attachRef: true })}
-              </>
-            )}
-            {showResult ? (
+        <div>
+          {!showResult && (
+            <>
+              {renderProblemSection({ attachRef: true })}
+              {renderNeedSelectionSection({ attachRef: true })}
+            </>
+          )}
+          {showResult ? (
+            <div
+              style={{
+                backgroundColor: "#fff",
+                padding: "1.5rem",
+                borderRadius: "10px",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                marginTop: "1.5rem"
+              }}
+            >
               <div
                 style={{
-                  backgroundColor: "#fff",
-                  padding: "1.5rem",
-                  borderRadius: "10px",
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                  marginTop: "1.5rem"
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "1.25rem",
+                  marginTop: "0.75rem"
                 }}
               >
                 <div
                   style={{
                     display: "flex",
-                    flexDirection: "column",
-                    gap: "1.25rem",
-                    marginTop: "0.75rem"
+                    flexWrap: "wrap",
+                    gap: "0.6rem"
                   }}
                 >
-                  <div
+                  {mobileStepMeta.map((step, index) => {
+                    const isActive = activeMobileStep === index;
+                    return (
+                      <button
+                        key={step.key}
+                        type="button"
+                        onClick={() => setActiveMobileStep(index)}
+                        style={{
+                          flex: "1 1 180px",
+                          borderRadius: "999px",
+                          border: "none",
+                          padding: "0.55rem 1rem",
+                          cursor: "pointer",
+                          background: isActive ? "#4b7bec" : "#e1e9ff",
+                          color: isActive ? "#fff" : "#1f3c88",
+                          fontWeight: 600,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: "0.4rem",
+                          boxShadow: isActive
+                            ? "0 12px 28px rgba(75, 123, 236, 0.25)"
+                            : "none",
+                          transition: "background-color 0.2s ease, box-shadow 0.2s ease"
+                        }}
+                      >
+                        <span aria-hidden="true">{step.icon}</span>
+                        <span>{step.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+                <div
+                  style={{
+                    borderRadius: "36px",
+                    overflow: "hidden",
+                    padding: "1.5rem",
+                    background: mobileStepMeta[activeMobileStep].background,
+                    boxShadow: "0 24px 48px rgba(31, 61, 116, 0.18)"
+                  }}
+                >
+                  {activeMobileStep === chatSaveStepIndex
+                    ? renderChatSaveSection()
+                    : renderMobileStepContent()}
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: "0.75rem"
+                  }}
+                >
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setActiveMobileStep((previous) => Math.max(0, previous - 1))
+                    }
+                    disabled={activeMobileStep === 0}
                     style={{
-                      display: "flex",
-                      flexWrap: "wrap",
-                      gap: "0.6rem"
+                      border: "none",
+                      borderRadius: "999px",
+                      padding: "0.5rem 1.1rem",
+                      fontWeight: 600,
+                      cursor: activeMobileStep === 0 ? "not-allowed" : "pointer",
+                      background: activeMobileStep === 0 ? "#dfe6f3" : "#4b7bec",
+                      color: activeMobileStep === 0 ? "#5b728f" : "#fff",
+                      boxShadow:
+                        activeMobileStep === 0
+                          ? "none"
+                          : "0 10px 22px rgba(75, 123, 236, 0.2)"
                     }}
                   >
-                    {mobileStepMeta.map((step, index) => {
-                      const isActive = activeMobileStep === index;
-                      return (
-                        <button
-                          key={step.key}
-                          type="button"
-                          onClick={() => setActiveMobileStep(index)}
-                          style={{
-                            flex: "1 1 180px",
-                            borderRadius: "999px",
-                            border: "none",
-                            padding: "0.55rem 1rem",
-                            cursor: "pointer",
-                            background: isActive ? "#4b7bec" : "#e1e9ff",
-                            color: isActive ? "#fff" : "#1f3c88",
-                            fontWeight: 600,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            gap: "0.4rem",
-                            boxShadow: isActive
-                              ? "0 12px 28px rgba(75, 123, 236, 0.25)"
-                              : "none",
-                            transition: "background-color 0.2s ease, box-shadow 0.2s ease"
-                          }}
-                        >
-                          <span aria-hidden="true">{step.icon}</span>
-                          <span>{step.label}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                  <div
+                    ← Zurück
+                  </button>
+                  <span
                     style={{
-                      borderRadius: "36px",
-                      overflow: "hidden",
-                      padding: "1.5rem",
-                      background: mobileStepMeta[activeMobileStep].background,
-                      boxShadow: "0 24px 48px rgba(31, 61, 116, 0.18)"
+                      fontWeight: 600,
+                      color: "#344767",
+                      textAlign: "center",
+                      flex: "1 1 auto"
                     }}
                   >
-                    {activeMobileStep === chatSaveStepIndex
-                      ? renderChatSaveSection()
-                      : renderMobileStepContent()}
-                  </div>
-                  <div
+                    {mobileStepMeta[activeMobileStep].label}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setActiveMobileStep((previous) =>
+                        Math.min(mobileStepMeta.length - 1, previous + 1)
+                      )
+                    }
+                    disabled={activeMobileStep === mobileStepMeta.length - 1}
                     style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      gap: "0.75rem"
+                      border: "none",
+                      borderRadius: "999px",
+                      padding: "0.5rem 1.1rem",
+                      fontWeight: 600,
+                      cursor:
+                        activeMobileStep === mobileStepMeta.length - 1
+                          ? "not-allowed"
+                          : "pointer",
+                      background:
+                        activeMobileStep === mobileStepMeta.length - 1
+                          ? "#dfe6f3"
+                          : "#4b7bec",
+                      color:
+                        activeMobileStep === mobileStepMeta.length - 1 ? "#5b728f" : "#fff",
+                      boxShadow:
+                        activeMobileStep === mobileStepMeta.length - 1
+                          ? "none"
+                          : "0 10px 22px rgba(75, 123, 236, 0.2)"
                     }}
                   >
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setActiveMobileStep((previous) => Math.max(0, previous - 1))
-                      }
-                      disabled={activeMobileStep === 0}
-                      style={{
-                        border: "none",
-                        borderRadius: "999px",
-                        padding: "0.5rem 1.1rem",
-                        fontWeight: 600,
-                        cursor: activeMobileStep === 0 ? "not-allowed" : "pointer",
-                        background: activeMobileStep === 0 ? "#dfe6f3" : "#4b7bec",
-                        color: activeMobileStep === 0 ? "#5b728f" : "#fff",
-                        boxShadow:
-                          activeMobileStep === 0
-                            ? "none"
-                            : "0 10px 22px rgba(75, 123, 236, 0.2)"
-                      }}
-                    >
-                      ← Zurück
-                    </button>
-                    <span
-                      style={{
-                        fontWeight: 600,
-                        color: "#344767",
-                        textAlign: "center",
-                        flex: "1 1 auto"
-                      }}
-                    >
-                      {mobileStepMeta[activeMobileStep].label}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setActiveMobileStep((previous) =>
-                          Math.min(mobileStepMeta.length - 1, previous + 1)
-                        )
-                      }
-                      disabled={activeMobileStep === mobileStepMeta.length - 1}
-                      style={{
-                        border: "none",
-                        borderRadius: "999px",
-                        padding: "0.5rem 1.1rem",
-                        fontWeight: 600,
-                        cursor:
-                          activeMobileStep === mobileStepMeta.length - 1
-                            ? "not-allowed"
-                            : "pointer",
-                        background:
-                          activeMobileStep === mobileStepMeta.length - 1
-                            ? "#dfe6f3"
-                            : "#4b7bec",
-                        color:
-                          activeMobileStep === mobileStepMeta.length - 1 ? "#5b728f" : "#fff",
-                        boxShadow:
-                          activeMobileStep === mobileStepMeta.length - 1
-                            ? "none"
-                            : "0 10px 22px rgba(75, 123, 236, 0.2)"
-                      }}
-                    >
-                      Weiter →
-                    </button>
-                  </div>
+                    Weiter →
+                  </button>
                 </div>
               </div>
-            ) : null}
-          </div>
-        )}
+            </div>
+          ) : null}
+        </div>
       </section>
     </main>
   );
