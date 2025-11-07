@@ -327,7 +327,6 @@ export default function Bibliothek() {
   const [savedChats, setSavedChats] = useState<SavedChat[]>([]);
   const [activeMobileStep, setActiveMobileStep] = useState(0);
   const [introDiscussionQuestion, setIntroDiscussionQuestion] = useState("");
-  const [introDiscussionHistory, setIntroDiscussionHistory] = useState("");
   const [highPriestImageSrc, setHighPriestImageSrc] = useState<string | null>(null);
   const [isHighPriestImageAvailable, setHighPriestImageAvailable] = useState(false);
 
@@ -439,15 +438,6 @@ export default function Bibliothek() {
       /* ignore */
     }
 
-    try {
-      const storedIntroHistory = localStorage.getItem("bibliothekIntroDiscussionHistory");
-      if (storedIntroHistory) {
-        setIntroDiscussionHistory(storedIntroHistory);
-      }
-    } catch {
-      /* ignore */
-    }
-
   }, []);
 
   useEffect(() => {
@@ -512,22 +502,6 @@ export default function Bibliothek() {
       /* ignore */
     }
   }, [introDiscussionQuestion]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    try {
-      if (!introDiscussionHistory.trim()) {
-        localStorage.removeItem("bibliothekIntroDiscussionHistory");
-      } else {
-        localStorage.setItem("bibliothekIntroDiscussionHistory", introDiscussionHistory);
-      }
-    } catch {
-      /* ignore */
-    }
-  }, [introDiscussionHistory]);
 
   const setFieldValue = useCallback(
     (field: DictationField, value: string) => {
@@ -797,16 +771,11 @@ export default function Bibliothek() {
         );
       }
 
-      const previousAnswer = introDiscussionHistory.trim();
-      if (previousAnswer) {
-        segments.push("Deine vorherige Antwort, auf die du eingehen kannst:", previousAnswer);
-      }
-
       segments.push("Nachricht der Person:", currentMessage);
 
       return segments.join("\n\n");
     },
-    [introDiscussionHistory, introDiscussionQuestion]
+    [introDiscussionQuestion]
   );
 
   const handleIntroDiscussion = useCallback(
@@ -995,10 +964,6 @@ export default function Bibliothek() {
         value: introDiscussionQuestion
       },
       {
-        label: "Punkt 1 – ChatGPT-Dialog (kopierte Antworten)",
-        value: introDiscussionHistory
-      },
-      {
         label: "Punkt 2 – Was dich beschäftigt",
         value: problem
       },
@@ -1033,7 +998,6 @@ export default function Bibliothek() {
     ],
     [
       introDiscussionQuestion,
-      introDiscussionHistory,
       problem,
       selectedNeed,
       needSuggestionsNotes,
@@ -1453,7 +1417,6 @@ export default function Bibliothek() {
     const renderIntroSectionCard = (section: IntroSection) => {
       if (section.variant === "discussion") {
         const hasQuestion = introDiscussionQuestion.trim().length > 0;
-        const hasHistory = introDiscussionHistory.trim().length > 0;
 
         return (
           <div
@@ -1549,40 +1512,9 @@ export default function Bibliothek() {
 
               </div>
 
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
-                <label htmlFor="intro-discussion-history" style={{ fontSize: "0.85rem", color: "#5f4630" }}>
-                  Vorherige Antwort von ChatGPT (kopieren, damit der Dialog weitergeht)
-                </label>
-                <textarea
-                  id="intro-discussion-history"
-                  aria-label="Vorherige Antwort von ChatGPT"
-                  value={introDiscussionHistory}
-                  onChange={(event) => {
-                    const { value } = event.target;
-                    setIntroDiscussionHistory(value);
-                    try {
-                      localStorage.setItem("bibliothekIntroDiscussionHistory", value);
-                    } catch {
-                      /* ignore */
-                    }
-                  }}
-                  placeholder="Füge hier die vorherige Antwort von ChatGPT ein..."
-                  rows={3}
-                  style={{
-                    width: "100%",
-                    borderRadius: "14px",
-                    border: "1px solid rgba(56, 103, 214, 0.18)",
-                    padding: "0.75rem 0.85rem",
-                    fontSize: "0.95rem",
-                    lineHeight: 1.45,
-                    color: "#1f2933",
-                    backgroundColor: "#fff",
-                    boxShadow: "inset 0 1px 4px rgba(36, 53, 103, 0.08)",
-                    resize: "vertical",
-                    minHeight: "5rem"
-                  }}
-                />
-              </div>
+              <p style={{ margin: 0, fontSize: "0.92rem", lineHeight: 1.55, color: "#5f4630" }}>
+                Wenn du weiter mit ChatGPT chatten willst, dann tue das in ChatGPT.
+              </p>
 
             </div>
           </div>
