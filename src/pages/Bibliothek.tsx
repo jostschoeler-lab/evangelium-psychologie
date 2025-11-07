@@ -11,6 +11,8 @@ import {
 import kindMitPanzerImage from "../assets/images/kindmitpanzer.png";
 import childImage from "../assets/images/kind.png";
 
+const HIGH_PRIEST_IMAGE_PATH = "/public-images/www.hohepriester.png";
+
 type NeedContent = {
   resonance: string[];
   dialog: string[];
@@ -469,6 +471,7 @@ export default function Bibliothek() {
   const [activeMobileStep, setActiveMobileStep] = useState(0);
   const [introDiscussionQuestion, setIntroDiscussionQuestion] = useState("");
   const [introDiscussionHistory, setIntroDiscussionHistory] = useState("");
+  const [isHighPriestImageAvailable, setHighPriestImageAvailable] = useState(true);
 
   const dictationSupported =
     typeof window !== "undefined" &&
@@ -2767,42 +2770,51 @@ export default function Bibliothek() {
                     overflow: "hidden"
                   }}
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 160 160"
-                    role="img"
-                    aria-label="Skizze: Jesus hält ein Kind im Arm"
-                    style={{ width: "130px", height: "130px" }}
-                  >
-                    <defs>
-                      <linearGradient id="robeGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stopColor="#fff" stopOpacity="0.9" />
-                        <stop offset="100%" stopColor="#cfe7ff" stopOpacity="0.8" />
-                      </linearGradient>
-                    </defs>
-                    <circle cx="86" cy="40" r="22" fill="#f5c6aa" opacity="0.95" />
-                    <path
-                      d="M60 70 C45 100 55 135 86 135 C117 135 127 100 112 70"
-                      fill="url(#robeGradient)"
-                      stroke="#9fb8d3"
-                      strokeWidth="3"
+                  {isHighPriestImageAvailable ? (
+                    <img
+                      src={HIGH_PRIEST_IMAGE_PATH}
+                      alt="Jesus als barmherziger Hohepriester"
+                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                      onError={() => setHighPriestImageAvailable(false)}
                     />
-                    <circle cx="56" cy="78" r="16" fill="#f7d9c4" opacity="0.95" />
-                    <path
-                      d="M70 92 C64 118 80 132 96 128"
-                      fill="none"
-                      stroke="#f5c6aa"
-                      strokeWidth="10"
-                      strokeLinecap="round"
-                    />
-                    <path
-                      d="M108 92 C112 120 100 134 84 132"
-                      fill="none"
-                      stroke="#f5c6aa"
-                      strokeWidth="10"
-                      strokeLinecap="round"
-                    />
-                  </svg>
+                  ) : (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 160 160"
+                      role="img"
+                      aria-label="Skizze: Jesus hält ein Kind im Arm"
+                      style={{ width: "130px", height: "130px" }}
+                    >
+                      <defs>
+                        <linearGradient id="robeGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                          <stop offset="0%" stopColor="#fff" stopOpacity="0.9" />
+                          <stop offset="100%" stopColor="#cfe7ff" stopOpacity="0.8" />
+                        </linearGradient>
+                      </defs>
+                      <circle cx="86" cy="40" r="22" fill="#f5c6aa" opacity="0.95" />
+                      <path
+                        d="M60 70 C45 100 55 135 86 135 C117 135 127 100 112 70"
+                        fill="url(#robeGradient)"
+                        stroke="#9fb8d3"
+                        strokeWidth="3"
+                      />
+                      <circle cx="56" cy="78" r="16" fill="#f7d9c4" opacity="0.95" />
+                      <path
+                        d="M70 92 C64 118 80 132 96 128"
+                        fill="none"
+                        stroke="#f5c6aa"
+                        strokeWidth="10"
+                        strokeLinecap="round"
+                      />
+                      <path
+                        d="M108 92 C112 120 100 134 84 132"
+                        fill="none"
+                        stroke="#f5c6aa"
+                        strokeWidth="10"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                  )}
                 </div>
                 <h1
                   id="mobileAskJesusPrompt"
