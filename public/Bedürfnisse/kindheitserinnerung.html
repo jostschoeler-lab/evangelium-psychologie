@@ -153,7 +153,19 @@
       </header>
       <section class="card" aria-labelledby="stepTitle">
         <h1 id="stepTitle">👶 Kindheitserinnerung</h1>
-        <p class="subtitle">Hast du dieses Gefühl schon einmal in der Kindheit erlebt?</p>
+        <p class="subtitle">
+          Schließe für einen Moment die Augen.
+          <br />
+          Dieses Gefühl, das du gerade hast …
+          <br />
+          Kannst du dich an eine Situation in deiner Kindheit erinnern,
+          <br />
+          in der du dich genauso gefühlt hast – traurig, allein, überfordert, beschämt oder nicht sicher?
+          <br />
+          Was ist damals passiert?
+          <br />
+          Wenn du nichts erinnerst, kann du diesen Punkt überspringen.
+        </p>
         <label for="childhoodExperience">Antwort eingeben</label>
         <textarea
           id="childhoodExperience"
@@ -170,30 +182,16 @@
         </p>
       </section>
       <p class="hint">
-        Deine Eingabe wird automatisch auf diesem Gerät gespeichert. Sie erscheint auch in der Desktop-Ansicht unter „Hast du dieses Gefühl in der Kindheit erlebt?“.
+        Deine Eingabe wird automatisch auf diesem Gerät gespeichert. Sie erscheint auch in der Desktop-Ansicht unter „Kindheitserinnerung“.
       </p>
     </main>
     <script>
       (function () {
         const storageKey = "bibliothekChildhoodExperience";
-        const needDetailsKey = "bibliothekNeedDetails";
         const textarea = document.getElementById("childhoodExperience");
         const dictationBtn = document.getElementById("dictationBtn");
         const statusEl = document.getElementById("dictationStatus");
         const noticeEl = document.getElementById("dictationNotice");
-        const subtitleEl = document.querySelector(".subtitle");
-
-        try {
-          const needStored = localStorage.getItem(needDetailsKey);
-          if (needStored && subtitleEl) {
-            const parsed = JSON.parse(needStored);
-            if (parsed && typeof parsed.need === "string" && parsed.need.trim()) {
-              subtitleEl.textContent = `Hast du „${parsed.need}" schon in deiner Kindheit gespürt?`;
-            }
-          }
-        } catch (error) {
-          console.warn("Konnte Bedürfnisdetails für die Kindheitserinnerung nicht laden", error);
-        }
 
         const loadValue = () => {
           try {
