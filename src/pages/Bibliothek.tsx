@@ -456,7 +456,7 @@ export default function Bibliothek() {
   const [jesusChatResponse, setJesusChatResponse] = useState("");
   const [closingChatResponse, setClosingChatResponse] = useState("");
   const [savedChats, setSavedChats] = useState<SavedChat[]>([]);
-  const [introVisible, setIntroVisible] = useState(false);
+  const [introVisible, setIntroVisible] = useState(true);
   const [activeMobileStep, setActiveMobileStep] = useState(0);
   const [introDiscussionQuestion, setIntroDiscussionQuestion] = useState("");
   const [introDiscussionHistory, setIntroDiscussionHistory] = useState("");
