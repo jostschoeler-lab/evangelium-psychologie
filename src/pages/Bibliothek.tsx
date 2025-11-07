@@ -2591,9 +2591,9 @@ export default function Bibliothek() {
                   }}
                 >
                   <img
-                    src="/Bedürfnisse/jesus-traegt-weinendes-kind.svg"
-                    alt="Jesus hält ein weinendes Kind tröstend im Arm"
-                    style={{ width: "140px", height: "140px", objectFit: "contain" }}
+                    src="/Images/jesus.png"
+                    alt="Jesus breitet tröstend die Arme aus"
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
                   />
                 </div>
                 <h1
