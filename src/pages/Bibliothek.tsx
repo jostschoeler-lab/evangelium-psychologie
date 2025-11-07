@@ -2277,9 +2277,17 @@ export default function Bibliothek() {
                   fontWeight: 600
                 }}
               >
-                {selectedNeed
-                  ? `Hast du „${selectedNeed}" schon in deiner Kindheit gespürt?`
-                  : "Hast du dieses Gefühl oder Bedürfnis schon einmal in der Kindheit erlebt?"}
+                Schließe für einen Moment die Augen.
+                <br />
+                Dieses Gefühl, das du gerade hast …
+                <br />
+                Kannst du dich an eine Situation in deiner Kindheit erinnern,
+                <br />
+                in der du dich genauso gefühlt hast – traurig, allein, überfordert, beschämt oder nicht sicher?
+                <br />
+                Was ist damals passiert?
+                <br />
+                Wenn du nichts erinnerst, kann du diesen Punkt überspringen.
               </p>
               <label
                 htmlFor="childhoodExperience"
@@ -2364,7 +2372,7 @@ export default function Bibliothek() {
                 textAlign: "center"
               }}
             >
-              Deine Eingabe wird automatisch auf diesem Gerät gespeichert. Sie erscheint auch in der Desktop-Ansicht unter „Hast du dieses Gefühl in der Kindheit erlebt?“.
+              Deine Eingabe wird automatisch auf diesem Gerät gespeichert. Sie erscheint auch in der Desktop-Ansicht unter „Kindheitserinnerung“.
             </p>
           </div>
         );
