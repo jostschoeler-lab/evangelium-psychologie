@@ -927,6 +927,10 @@ export default function Bibliothek() {
       return "";
     }
 
+    const stepEightEntry = closingPromptContextItems.find((item) =>
+      item.label.toLowerCase().includes("antwort aus schritt 8")
+    );
+
     const instructions = [
       "Rolle: Du bist eine seelsorgliche, psychologisch geschulte geistliche Begleitung. Sprich die Person warmherzig in der Du-Form an und nimm Bezug auf Jesu Gegenwart.",
       "Aufgabe: Verfasse einen Abschlusskommentar. Beginne mit der Überschrift \"Abschluss\" und würdige in zwei bis drei Sätzen den Weg dieser Person und das Wirken Jesu.",
@@ -934,6 +938,16 @@ export default function Bibliothek() {
       "Bezug: Verknüpfe deine Worte mit allen Angaben, besonders mit der Frage an Jesus und dem gehörten Zuspruch.",
       "Stil: Schreibe auf Deutsch, hoffnungsvoll, ermutigend und praxisnah. Greife Aussagen über Jesu Blick und Einladung auf, ohne zu moralisieren."
     ];
+
+    if (stepEightEntry) {
+      instructions.push(
+        [
+          "Verarbeite ausdrücklich diese empfangene Antwort aus Schritt 8 in deinem Abschluss und nimm darauf Bezug.",
+          "Antwort aus Schritt 8:",
+          stepEightEntry.value
+        ].join("\n")
+      );
+    }
 
     const contextLines = closingPromptContextItems
       .map((item) => `- ${item.label}: ${item.value}`)
