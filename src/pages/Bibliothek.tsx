@@ -304,7 +304,7 @@ const introSections: IntroSection[] = [
     icon: "✅",
     title: "Abschluss",
     paragraphs: [
-      "Wenn du bereit bist, kannst du jetzt dein Gefühl oder dein Problem eingeben."
+      "Wenn du bereit bist, kannst du in dem nächsten Punkt eingeben, was dich belastet oder dich bewegt."
     ],
     displayInCollapsed: true,
     collapsedPlacement: "afterToggle"
