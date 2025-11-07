@@ -171,6 +171,12 @@ const introLeadParagraphs: string[] = [
   "Aber genau diese Schwachheit war der Ort, wo Gottes Kraft offenbar wurde. Dort lag die Verwandlung."
 ];
 
+const problemLeadParagraphs: string[] = [
+  "Hier darfst du aussprechen, was dich drückt. Kein Gefühl ist Jesus fremd – Er begegnet dir gerade in deiner Schwachheit.",
+  "Beschreibe konkret, was dich belastet oder bewegt. Damit öffnest du dein Herz, damit Er dich trösten und führen kann.",
+  "Halte nichts zurück: Alles, was du hier teilst, darf zum Ort werden, an dem Gottes Trost sichtbar wird."
+];
+
 const INTRO_DISCUSSION_PROMPT_BASE = [
   "Rolle: Du begleitest ein Kind Gottes seelsorglich mit biblischem Blick.",
   "Stil: Verwende möglichst wenig psychologische Ausdrücke. Die Wörter „Bedürfnis“, „Gefühl“ und „inneres Kind“ sind erlaubt. Nutze biblische Begriffe und gib kurz die Bibelstelle an, wenn du einen biblischen Ausdruck erwähnst.",
@@ -1845,10 +1851,21 @@ export default function Bibliothek() {
         }}
       >
         <img
-          src="/Bedürfnisse/verwandlung-intro.svg"
-          alt="Illustration: Jesus tröstet ein Kind"
+          src="/Images/kind.png"
+          alt="Illustration eines Kindes, das seine Last Jesus bringt"
           style={{ width: "100%", height: "100%", objectFit: "cover" }}
         />
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+        {problemLeadParagraphs.map((paragraph) => (
+          <p
+            key={paragraph}
+            style={{ margin: 0, fontSize: "1rem", lineHeight: 1.6, color: "#3d2f1d" }}
+          >
+            {paragraph}
+          </p>
+        ))}
       </div>
 
       <label
