@@ -2663,7 +2663,7 @@ export default function Bibliothek() {
                   id="mobileAskJesusPrompt"
                   style={{ fontSize: "1.5rem", margin: 0, color: "#2c3e50" }}
                 >
-                  🙏 Frage an Jesus
+                  🙏 Frage an Jesus – als barmherziger Hohepriester
                 </h1>
                 <p
                   style={{
@@ -2673,8 +2673,8 @@ export default function Bibliothek() {
                     color: "#344767"
                   }}
                 >
-                  Setze dich im Glauben auf den Gnadenthron, wo Jesus als barmherziger Hohepriester sitzt. Stell dir vor, wie
-                  er dich ansieht und dir jetzt Gnade schenkt.
+                  Stell dir vor, du bist jetzt Jesus, der auf dem Gnadenthron sitzt – der barmherzige Hohepriester aus Hebräer
+                  4. Schau auf dich selbst hinunter, wie ein liebevoller Hohepriester auf einen Menschen, der Hilfe braucht.
                 </p>
                 <p
                   style={{
@@ -2684,8 +2684,79 @@ export default function Bibliothek() {
                     color: "#344767"
                   }}
                 >
-                  Meditiere 1–2 Minuten über seine Gegenwart. Sprich dann laut oder schriftlich aus, was du Jesus antwortest,
-                  und halte fest, was er dir zuspricht.
+                  Frage an dich selbst:
+                </p>
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: "1.05rem",
+                    lineHeight: 1.6,
+                    color: "#344767"
+                  }}
+                >
+                  Wenn du Jesus bist – voller Erbarmen, Geduld und Gnade – was würdest du der Person da unten sagen, die jetzt
+                  du bist?
+                </p>
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: "1.05rem",
+                    lineHeight: 1.6,
+                    color: "#344767"
+                  }}
+                >
+                  Nimm 1–2 Minuten, um innerlich zu hören.
+                </p>
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: "1.05rem",
+                    lineHeight: 1.6,
+                    color: "#344767"
+                  }}
+                >
+                  Dann schreibe auf, was du als Jesus antwortest.
+                </p>
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: "1.05rem",
+                    lineHeight: 1.6,
+                    color: "#344767"
+                  }}
+                >
+                  Halte fest, welche Worte der Barmherzigkeit, Ermutigung oder Wahrheit du empfangen hast.
+                </p>
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: "1.05rem",
+                    lineHeight: 1.6,
+                    color: "#344767"
+                  }}
+                >
+                  Bibelwort Hebräer 4, 16 :
+                </p>
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: "1.05rem",
+                    lineHeight: 1.6,
+                    color: "#344767"
+                  }}
+                >
+                  „So lasst uns nun mit Zuversicht hinzutreten zum Thron der Gnade,<br />damit wir Barmherzigkeit empfangen und
+                  Gnade finden zu rechtzeitiger Hilfe."
+                </p>
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: "1.05rem",
+                    lineHeight: 1.6,
+                    color: "#344767"
+                  }}
+                >
+                  Was hat Jesus dir in dieser Meditation gesagt?
                 </p>
               </div>
               <div
@@ -2697,7 +2768,7 @@ export default function Bibliothek() {
                 }}
               >
                 <label htmlFor="mobileMeditationNotes" style={{ fontWeight: 600, color: "#1f3c88" }}>
-                  Was hat Jesus dir in dieser Meditation zugesprochen?
+                  Was hat Jesus dir in dieser Meditation gesagt?
                 </label>
                 <textarea
                   id="mobileMeditationNotes"
