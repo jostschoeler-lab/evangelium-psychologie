@@ -331,30 +331,28 @@ const IntroCard = ({ onStart }: IntroCardProps) => {
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-        <div>
-          <h2
-            style={{
-              margin: 0,
-              fontSize: "1.6rem",
-              lineHeight: 1.2,
-              color: "#3a2a18",
-              fontWeight: 700
-            }}
-          >
-            Verwandlung als Kind Gottes
-          </h2>
-          <p
-            style={{
-              margin: "0.5rem 0 0",
-              fontSize: "1rem",
-              lineHeight: 1.6,
-              color: "#5f4630",
-              fontStyle: "italic"
-            }}
-          >
-            „Selig sind die Trauernden, denn sie werden getröstet werden.“ (Matthäus 5,4)
-          </p>
-        </div>
+        <h2
+          style={{
+            margin: 0,
+            fontSize: "1.6rem",
+            lineHeight: 1.2,
+            color: "#3a2a18",
+            fontWeight: 700
+          }}
+        >
+          Verwandlung als Kind Gottes
+        </h2>
+        <p
+          style={{
+            margin: "0.5rem 0 0",
+            fontSize: "1rem",
+            lineHeight: 1.6,
+            color: "#5f4630",
+            fontStyle: "italic"
+          }}
+        >
+          „Selig sind die Trauernden, denn sie werden getröstet werden.“ (Matthäus 5,4)
+        </p>
 
         {introLeadParagraphs.map((paragraph) => (
           <p
