@@ -2,6 +2,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { presetDialogues, type PresetKey } from "../data/stuhldialogPreset";
 
+import jesusImage from "../assets/stuhldialog/jesus.png";
+import anklaegerImage from "../assets/stuhldialog/anklaeger.png";
+import kindImage from "../assets/stuhldialog/kind.png";
+import erwachsenerImage from "../assets/stuhldialog/erwachsener.png";
+import copingImage from "../assets/stuhldialog/coping.png";
+
 type RoleKey = "ICH" | "KIND" | "ANKLAEGER" | "JESUS" | "COPING";
 
 type RoleMeta = {
@@ -26,33 +32,31 @@ type MeditationEntry = {
   draft?: boolean;
 };
 
-const asset = (file: string) => `/stuhldialog/${file}`;
-
 const ROLES: Record<RoleKey, RoleMeta> = {
   JESUS: {
     label: "Jesus – Hohepriester / Gnadenstuhl",
     color: "#059669",
-    defaultImg: asset("jesus.png"),
+    defaultImg: jesusImage,
   },
   ANKLAEGER: {
     label: "Ankläger / Strenge Eltern",
     color: "#DC2626",
-    defaultImg: asset("anklaeger.png"),
+    defaultImg: anklaegerImage,
   },
   KIND: {
     label: "Inneres Kind & Bedürfnisse",
     color: "#2563EB",
-    defaultImg: asset("kind.png"),
+    defaultImg: kindImage,
   },
   ICH: {
     label: "Ich / Erwachsener",
     color: "#EAB308",
-    defaultImg: asset("erwachsener.png"),
+    defaultImg: erwachsenerImage,
   },
   COPING: {
     label: "Bewältigungsstrategien",
     color: "#8B5CF6",
-    defaultImg: asset("coping.png"),
+    defaultImg: copingImage,
   },
 };
 
