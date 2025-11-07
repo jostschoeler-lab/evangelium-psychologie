@@ -2748,16 +2748,6 @@ export default function Bibliothek() {
                   „So lasst uns nun mit Zuversicht hinzutreten zum Thron der Gnade,<br />damit wir Barmherzigkeit empfangen und
                   Gnade finden zu rechtzeitiger Hilfe."
                 </p>
-                <p
-                  style={{
-                    margin: 0,
-                    fontSize: "1.05rem",
-                    lineHeight: 1.6,
-                    color: "#344767"
-                  }}
-                >
-                  Was hat Jesus dir in dieser Meditation gesagt?
-                </p>
               </div>
               <div
                 style={{
