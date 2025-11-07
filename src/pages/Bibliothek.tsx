@@ -338,6 +338,7 @@ export default function Bibliothek() {
   const recognitionRef = useRef<any>(null);
   const formRef = useRef<HTMLDivElement | null>(null);
   const stepTwoRef = useRef<HTMLDivElement | null>(null);
+  const introDiscussionQuestionRef = useRef<HTMLTextAreaElement | null>(null);
   const activeFieldRef = useRef<DictationField | null>(null);
   const pendingFieldRef = useRef<DictationField | null>(null);
   const pendingBaseRef = useRef<string>("");
@@ -780,7 +781,8 @@ export default function Bibliothek() {
 
   const buildIntroDiscussionPrompt = useCallback(
     (mode: "initial" | "follow-up") => {
-      const currentMessage = introDiscussionQuestion.trim();
+      const currentMessage =
+        introDiscussionQuestionRef.current?.value.trim() ?? introDiscussionQuestion.trim();
       if (!currentMessage) {
         return "";
       }
@@ -1490,6 +1492,7 @@ export default function Bibliothek() {
             <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
               <textarea
                 aria-label="Deine Frage oder Antwort"
+                ref={introDiscussionQuestionRef}
                 value={introDiscussionQuestion}
                 onChange={(event) => {
                   const { value } = event.target;
