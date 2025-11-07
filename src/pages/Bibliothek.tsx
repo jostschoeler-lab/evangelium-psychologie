@@ -1527,6 +1527,28 @@ export default function Bibliothek() {
                 />
               </div>
 
+              <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+                <button
+                  type="button"
+                  onClick={() => handleIntroDiscussion("initial")}
+                  disabled={!hasQuestion}
+                  style={{
+                    backgroundColor: hasQuestion ? "#f4a259" : "#f5d1a8",
+                    color: hasQuestion ? "#fff" : "#6f4e37",
+                    border: "none",
+                    borderRadius: "999px",
+                    padding: "0.65rem 1.6rem",
+                    fontSize: "0.95rem",
+                    fontWeight: 600,
+                    cursor: hasQuestion ? "pointer" : "not-allowed",
+                    boxShadow: hasQuestion ? "0 10px 18px rgba(244, 162, 89, 0.35)" : "none"
+                  }}
+                >
+                  Antwort erhalten
+                </button>
+
+              </div>
+
               <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
                 <label htmlFor="intro-discussion-history" style={{ fontSize: "0.85rem", color: "#5f4630" }}>
                   Vorherige Antwort von ChatGPT (kopieren, damit der Dialog weitergeht)
@@ -1562,27 +1584,6 @@ export default function Bibliothek() {
                 />
               </div>
 
-              <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
-                <button
-                  type="button"
-                  onClick={() => handleIntroDiscussion("initial")}
-                  disabled={!hasQuestion}
-                  style={{
-                    backgroundColor: hasQuestion ? "#f4a259" : "#f5d1a8",
-                    color: hasQuestion ? "#fff" : "#6f4e37",
-                    border: "none",
-                    borderRadius: "999px",
-                    padding: "0.65rem 1.6rem",
-                    fontSize: "0.95rem",
-                    fontWeight: 600,
-                    cursor: hasQuestion ? "pointer" : "not-allowed",
-                    boxShadow: hasQuestion ? "0 10px 18px rgba(244, 162, 89, 0.35)" : "none"
-                  }}
-                >
-                  Antwort erhalten
-                </button>
-
-              </div>
             </div>
           </div>
         );
