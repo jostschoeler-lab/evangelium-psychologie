@@ -8,6 +8,9 @@ import {
   type CSSProperties
 } from "react";
 
+import kindMitPanzerImage from "../assets/images/kindmitpanzer.png";
+import childImage from "../assets/images/kind.png";
+
 type NeedContent = {
   resonance: string[];
   dialog: string[];
@@ -330,7 +333,7 @@ const IntroCard = ({ onStart }: IntroCardProps) => {
         }}
       >
         <img
-          src="/Images/kindmitpanzer.png"
+          src={kindMitPanzerImage}
           alt="Illustration eines Kindes mit Panzer"
           style={{ width: "100%", height: "auto", display: "block" }}
         />
@@ -1769,7 +1772,7 @@ export default function Bibliothek() {
           }}
         >
           <img
-            src="/Images/kindmitpanzer.png"
+            src={kindMitPanzerImage}
             alt="Illustration eines Kindes mit Panzer"
             style={{ width: "100%", height: "auto", display: "block" }}
           />
@@ -1851,7 +1854,7 @@ export default function Bibliothek() {
         }}
       >
         <img
-          src="/Images/kind.png"
+          src={childImage}
           alt="Illustration eines Kindes, das seine Last Jesus bringt"
           style={{ width: "100%", height: "100%", objectFit: "cover" }}
         />
