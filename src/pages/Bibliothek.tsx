@@ -320,22 +320,13 @@ const IntroCard = ({ onStart }: IntroCardProps) => {
           width: "100%",
           borderRadius: "22px",
           overflow: "hidden",
-          background: "linear-gradient(135deg, #f8e1b3, #f38181)",
-          position: "relative",
-          paddingBottom: "100%",
-          aspectRatio: "1 / 1"
+          background: "linear-gradient(135deg, #f8e1b3, #f38181)"
         }}
       >
         <img
           src="/Images/kindmitpanzer.png"
           alt="Illustration eines Kindes mit Panzer"
-          style={{
-            position: "absolute",
-            inset: 0,
-            width: "100%",
-            height: "100%",
-            objectFit: "cover"
-          }}
+          style={{ width: "100%", height: "auto", display: "block" }}
         />
       </div>
 
@@ -1770,17 +1761,13 @@ export default function Bibliothek() {
             width: "100%",
             borderRadius: "20px",
             overflow: "hidden",
-            background: "linear-gradient(135deg, #f8e1b3, #f38181)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            height: "190px"
+            background: "linear-gradient(135deg, #f8e1b3, #f38181)"
           }}
         >
           <img
             src="/Images/kindmitpanzer.png"
             alt="Illustration eines Kindes mit Panzer"
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            style={{ width: "100%", height: "auto", display: "block" }}
           />
         </div>
 
