@@ -1582,23 +1582,6 @@ export default function Bibliothek() {
                   Antwort erhalten
                 </button>
 
-                <button
-                  type="button"
-                  onClick={() => handleIntroDiscussion("follow-up")}
-                  disabled={!hasHistory}
-                  style={{
-                    backgroundColor: hasHistory ? "#fdebd2" : "#f6d7b7",
-                    color: "#8c5d32",
-                    border: "1px solid rgba(244, 162, 89, 0.45)",
-                    borderRadius: "999px",
-                    padding: "0.65rem 1.6rem",
-                    fontSize: "0.95rem",
-                    fontWeight: 600,
-                    cursor: hasHistory ? "pointer" : "not-allowed"
-                  }}
-                >
-                  Rückfrage stellen
-                </button>
               </div>
             </div>
           </div>
