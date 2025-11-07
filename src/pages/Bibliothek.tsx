@@ -2824,7 +2824,12 @@ export default function Bibliothek() {
                     <img
                       src={highPriestImageSrc}
                       alt="Jesus als barmherziger Hohepriester"
-                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "contain",
+                        objectPosition: "center"
+                      }}
                       onError={() => {
                         setHighPriestImageSrc(null);
                         setHighPriestImageAvailable(false);
