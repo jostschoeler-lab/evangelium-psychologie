@@ -2,7 +2,7 @@ body {
   font-family: Arial, sans-serif;
   background: #fafafa;
   color: #222;
-  padding: 40px;
+  padding: clamp(16px, 5vw, 40px);
 }
 
 h1 {
@@ -20,4 +20,10 @@ button {
 }
 button:hover {
   background: #3d5eb5;
+}
+
+@media (max-width: 600px) {
+  body {
+    padding: 14px;
+  }
 }

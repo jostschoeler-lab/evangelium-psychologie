@@ -1,7 +1,10 @@
 import { Link } from "react-router-dom";
 
 export default function Menu() {
-  const pageStyle: React.CSSProperties = { padding: 40, fontFamily: "Arial, sans-serif" };
+  const pageStyle: React.CSSProperties = {
+    padding: "clamp(16px, 5vw, 40px)",
+    fontFamily: "Arial, sans-serif",
+  };
   const rowStyle: React.CSSProperties = { display: "flex", flexWrap: "wrap", gap: 12, marginTop: 20 };
   const btnStyle: React.CSSProperties = {
     display: "inline-block", padding: "10px 15px", borderRadius: 8,
