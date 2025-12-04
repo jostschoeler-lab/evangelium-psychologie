@@ -1288,25 +1288,43 @@ export default function Bibliothek() {
 
   const shareChatAsPdf = async (chat: SavedChat) => {
     const pdfBlob = createChatPdfBlob(chat);
-    const pdfFile = new File([pdfBlob], `chat-${new Date(chat.createdAt).toISOString()}.pdf`, {
+    const fileName = `chat-${new Date(chat.createdAt).toISOString()}.pdf`;
+    const pdfFile = new File([pdfBlob], fileName, {
       type: "application/pdf"
     });
 
-    if (navigator.canShare?.({ files: [pdfFile] })) {
+    const shareData: ShareData = {
+      files: [pdfFile],
+      title: "Gespeicherter Chat",
+      text: "Hier ist der gespeicherte Chat als PDF."
+    };
+
+    if (navigator.share && (!navigator.canShare || navigator.canShare(shareData))) {
       try {
-        await navigator.share({
-          files: [pdfFile],
-          title: "Gespeicherter Chat",
-          text: "Hier ist der gespeicherte Chat als PDF."
-        });
+        await navigator.share(shareData);
+        return;
       } catch (error) {
         console.error("Teilen abgebrochen oder fehlgeschlagen", error);
       }
-    } else {
-      alert(
-        "Teilen per Telegram wird von diesem Gerät oder Browser nicht unterstützt. Bitte lade die PDF herunter und teile sie manuell."
-      );
     }
+
+    const pdfUrl = URL.createObjectURL(pdfBlob);
+
+    const downloadLink = document.createElement("a");
+    downloadLink.href = pdfUrl;
+    downloadLink.download = fileName;
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    downloadLink.remove();
+
+    const telegramMessage =
+      "Dein Browser unterstützt das direkte Teilen als Datei nicht. " +
+      "Die PDF wurde gespeichert. Öffne Telegram und hänge die Datei aus deinem Download-Ordner an.";
+    const telegramShareUrl = `https://t.me/share/url?text=${encodeURIComponent(telegramMessage)}`;
+    window.open(telegramShareUrl, "_blank", "noopener,noreferrer");
+
+    setTimeout(() => URL.revokeObjectURL(pdfUrl), 60_000);
+    alert(telegramMessage);
   };
 
   const renderChatSaveSection = () => (
