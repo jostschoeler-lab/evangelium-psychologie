@@ -1183,10 +1183,10 @@ export default function Bibliothek() {
         contentStreamBytes.push(...encodedLine, 0x20, 0x54, 0x6a, 0x20, 0x54, 0x2a, 0x0a); // " Tj T*\n"
       };
 
-      const contentStreamPrefix = "BT\n/F1 12 Tf\n1 16 TL\n50 780 Td\n";
+      const contentStreamPrefix = "BT\n/F1 12 Tf\n16 TL\n50 780 Td\n";
       contentStreamBytes.push(...Array.from(contentStreamPrefix).map((char) => char.charCodeAt(0)));
       pageLines.forEach(addTextLine);
-      contentStreamBytes.push(...Array.from("ET").map((char) => char.charCodeAt(0)));
+      contentStreamBytes.push(...Array.from("ET\n").map((char) => char.charCodeAt(0)));
 
       return contentStreamBytes;
     };
