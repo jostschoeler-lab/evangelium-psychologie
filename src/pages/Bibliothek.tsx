@@ -2145,18 +2145,19 @@ export default function Bibliothek() {
                   setError(null);
                 }}
                 style={{
-                  borderRadius: "18px",
-                  padding: "0.85rem 1rem",
+                  borderRadius: "16px",
+                  padding: "0.75rem 0.9rem",
                   fontSize: "1rem",
                   fontWeight: 600,
-                  border: isSelected ? "2px solid #eb8c2d" : "2px solid transparent",
-                  backgroundColor: isSelected ? "#ffe8c8" : "#fff4e5",
+                  border: isSelected ? "1px solid #eb8c2d" : "1px solid transparent",
+                  backgroundColor: isSelected ? "#ffe8c8" : "#fff",
                   color: "#7a4416",
                   boxShadow: isSelected
-                    ? "0 16px 30px rgba(235, 140, 45, 0.35)"
-                    : "0 10px 24px rgba(214, 171, 116, 0.22)",
+                    ? "0 10px 16px rgba(235, 140, 45, 0.25)"
+                    : "0 6px 12px rgba(214, 171, 116, 0.12)",
                   cursor: "pointer",
-                  transition: "all 0.2s ease"
+                  transition: "all 0.2s ease",
+                  outline: "none"
                 }}
               >
                 {option.label}
