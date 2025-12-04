@@ -1201,54 +1201,67 @@ export default function Bibliothek() {
       .map((_, index) => `${firstPageNumber + index} 0 R`)
       .join(" ");
 
-    const objects: number[][] = [];
+    const objects: { number: number; bytes: number[] }[] = [];
 
-    objects.push(
-      Array.from(`${catalogNumber} 0 obj << /Type /Catalog /Pages ${pagesNumber} 0 R >> endobj\n`).map((char) => char.charCodeAt(0))
-    );
-    objects.push(
-      Array.from(
+    objects.push({
+      number: catalogNumber,
+      bytes: Array.from(`${catalogNumber} 0 obj << /Type /Catalog /Pages ${pagesNumber} 0 R >> endobj\n`).map((char) =>
+        char.charCodeAt(0)
+      )
+    });
+    objects.push({
+      number: pagesNumber,
+      bytes: Array.from(
         `${pagesNumber} 0 obj << /Type /Pages /Kids [${kidsRefs}] /Count ${paginatedLines.length} >> endobj\n`
       ).map((char) => char.charCodeAt(0))
-    );
+    });
 
-    objects.push(
-      Array.from(
+    objects.push({
+      number: fontNumber,
+      bytes: Array.from(
         `${fontNumber} 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >> endobj\n`
       ).map((char) => char.charCodeAt(0))
-    );
+    });
 
     paginatedLines.forEach((pageLines, index) => {
       const pageObjNumber = firstPageNumber + index;
       const contentObjNumber = firstContentNumber + index;
       const contentStreamBytes = createContentStream(pageLines);
 
-      objects.push(
-        Array.from(
+      objects.push({
+        number: pageObjNumber,
+        bytes: Array.from(
           `${pageObjNumber} 0 obj << /Type /Page /Parent ${pagesNumber} 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 ${fontNumber} 0 R >> >> /Contents ${contentObjNumber} 0 R >> endobj\n`
         ).map((char) => char.charCodeAt(0))
-      );
+      });
 
-      objects.push([
-        ...Array.from(`${contentObjNumber} 0 obj << /Length ${contentStreamBytes.length} >> stream\n`).map((char) =>
-          char.charCodeAt(0)
-        ),
-        ...contentStreamBytes,
-        ...Array.from("\nendstream endobj\n").map((char) => char.charCodeAt(0))
-      ]);
+      objects.push({
+        number: contentObjNumber,
+        bytes: [
+          ...Array.from(`${contentObjNumber} 0 obj << /Length ${contentStreamBytes.length} >> stream\n`).map((char) =>
+            char.charCodeAt(0)
+          ),
+          ...contentStreamBytes,
+          ...Array.from("\nendstream endobj\n").map((char) => char.charCodeAt(0))
+        ]
+      });
     });
 
-    const pdfBytes: number[] = [...headerBytes];
-    const offsets: number[] = [];
+    const sortedObjects = [...objects].sort((a, b) => a.number - b.number);
+    const maxObjectNumber = sortedObjects[sortedObjects.length - 1]?.number ?? 0;
 
-    objects.forEach((object) => {
-      offsets.push(pdfBytes.length);
-      pdfBytes.push(...object);
+    const pdfBytes: number[] = [...headerBytes];
+    const offsets: number[] = new Array(maxObjectNumber + 1).fill(0);
+
+    sortedObjects.forEach((object) => {
+      offsets[object.number] = pdfBytes.length;
+      pdfBytes.push(...object.bytes);
     });
 
     const xrefPosition = pdfBytes.length;
-    const objectCount = objects.length + 1; // +1 for the xref free object
+    const objectCount = maxObjectNumber + 1; // +1 for the xref free object
     const offsetLines = offsets
+      .slice(1)
       .map((offset) => `${offset.toString().padStart(10, "0")} 00000 n \n`)
       .join("");
 
