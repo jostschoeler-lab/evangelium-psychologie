@@ -342,6 +342,7 @@ export default function Bibliothek() {
   const activeFieldRef = useRef<DictationField | null>(null);
   const pendingFieldRef = useRef<DictationField | null>(null);
   const pendingBaseRef = useRef<string>("");
+  const shareInProgressRef = useRef(false);
   const dictationBaseRef = useRef<Record<DictationField, string>>({
     problem: "",
     personalNeed: "",
@@ -1287,51 +1288,62 @@ export default function Bibliothek() {
   };
 
   const shareChatAsPdf = async (chat: SavedChat) => {
-    const pdfBlob = createChatPdfBlob(chat);
-    const fileName = `chat-${new Date(chat.createdAt).toISOString()}.pdf`;
-    const pdfFile = new File([pdfBlob], fileName, {
-      type: "application/pdf"
-    });
-
-    const supportsNativeFileShare = typeof navigator.canShare === "function" && navigator.canShare({ files: [pdfFile] });
-    const shareData: ShareData = {
-      files: supportsNativeFileShare ? [pdfFile] : undefined,
-      title: "Gespeicherter Chat",
-      text: "Hier ist der gespeicherte Chat als PDF."
-    };
-
-    if (navigator.share && supportsNativeFileShare) {
-      try {
-        await navigator.share(shareData);
-        return;
-      } catch (error) {
-        console.error("Teilen abgebrochen oder fehlgeschlagen", error);
-        alert(
-          "Das Teilen über das System-Menü war nicht möglich. Deine PDF wird stattdessen zum Download bereitgestellt.\n\n" +
-            (error instanceof Error ? `Fehlermeldung: ${error.message}` : "Unbekannter Fehler.")
-        );
-      }
+    if (shareInProgressRef.current) {
+      alert("Es läuft noch ein Teilen-Vorgang. Warte bitte einen Moment und versuche es erneut.");
+      return;
     }
 
-    const pdfUrl = URL.createObjectURL(pdfBlob);
+    shareInProgressRef.current = true;
 
-    const downloadLink = document.createElement("a");
-    downloadLink.href = pdfUrl;
-    downloadLink.download = fileName;
-    document.body.appendChild(downloadLink);
-    downloadLink.click();
-    downloadLink.remove();
+    try {
+      const pdfBlob = createChatPdfBlob(chat);
+      const fileName = `chat-${new Date(chat.createdAt).toISOString()}.pdf`;
+      const pdfFile = new File([pdfBlob], fileName, {
+        type: "application/pdf"
+      });
 
-    const telegramMessage =
-      (supportsNativeFileShare
-        ? "Das Teilen über das System-Menü ist fehlgeschlagen."
-        : "Dein Browser unterstützt das direkte Teilen als Datei nicht.") +
-      " Die PDF wurde gespeichert. Öffne Telegram und hänge die Datei aus deinem Download-Ordner an.";
-    const telegramShareUrl = `https://t.me/share/url?text=${encodeURIComponent(telegramMessage)}`;
-    window.open(telegramShareUrl, "_blank", "noopener,noreferrer");
+      const supportsNativeFileShare = typeof navigator.canShare === "function" && navigator.canShare({ files: [pdfFile] });
+      const shareData: ShareData = {
+        files: supportsNativeFileShare ? [pdfFile] : undefined,
+        title: "Gespeicherter Chat",
+        text: "Hier ist der gespeicherte Chat als PDF."
+      };
 
-    setTimeout(() => URL.revokeObjectURL(pdfUrl), 60_000);
-    alert(telegramMessage);
+      if (navigator.share && supportsNativeFileShare) {
+        try {
+          await navigator.share(shareData);
+          return;
+        } catch (error) {
+          console.error("Teilen abgebrochen oder fehlgeschlagen", error);
+          alert(
+            "Das Teilen über das System-Menü war nicht möglich. Deine PDF wird stattdessen zum Download bereitgestellt.\n\n" +
+              (error instanceof Error ? `Fehlermeldung: ${error.message}` : "Unbekannter Fehler.")
+          );
+        }
+      }
+
+      const pdfUrl = URL.createObjectURL(pdfBlob);
+
+      const downloadLink = document.createElement("a");
+      downloadLink.href = pdfUrl;
+      downloadLink.download = fileName;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      downloadLink.remove();
+
+      const telegramMessage =
+        (supportsNativeFileShare
+          ? "Das Teilen über das System-Menü ist fehlgeschlagen."
+          : "Dein Browser unterstützt das direkte Teilen als Datei nicht.") +
+        " Die PDF wurde gespeichert. Öffne Telegram und hänge die Datei aus deinem Download-Ordner an.";
+      const telegramShareUrl = `https://t.me/share/url?text=${encodeURIComponent(telegramMessage)}`;
+      window.open(telegramShareUrl, "_blank", "noopener,noreferrer");
+
+      setTimeout(() => URL.revokeObjectURL(pdfUrl), 60_000);
+      alert(telegramMessage);
+    } finally {
+      shareInProgressRef.current = false;
+    }
   };
 
   const renderChatSaveSection = () => (
