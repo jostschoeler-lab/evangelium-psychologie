@@ -1070,70 +1070,149 @@ export default function Bibliothek() {
       timeStyle: "short"
     });
 
+    const wrapLine = (text: string, maxLength = 90) => {
+      const words = text.split(/\s+/);
+      const wrappedLines: string[] = [];
+      let currentLine = "";
+
+      words.forEach((word) => {
+        const candidate = currentLine ? `${currentLine} ${word}` : word;
+
+        if (candidate.length <= maxLength) {
+          currentLine = candidate;
+        } else {
+          if (currentLine) {
+            wrappedLines.push(currentLine);
+          }
+          currentLine = word;
+        }
+      });
+
+      if (currentLine) {
+        wrappedLines.push(currentLine);
+      }
+
+      return wrappedLines.length > 0 ? wrappedLines : ["—"];
+    };
+
+    const pdfDocEncodingMap: Record<string, number> = {
+      Ä: 0xc4,
+      Ö: 0xd6,
+      Ü: 0xdc,
+      ä: 0xe4,
+      ö: 0xf6,
+      ü: 0xfc,
+      ß: 0xdf,
+      é: 0xe9,
+      è: 0xe8,
+      á: 0xe1,
+      à: 0xe0,
+      â: 0xe2,
+      ô: 0xf4,
+      ç: 0xe7
+    };
+
+    const encodePdfDocString = (text: string) => {
+      const bytes: number[] = [0x28]; // (
+
+      for (const char of text) {
+        if (char === "\\" || char === "(" || char === ")") {
+          bytes.push(0x5c, char.charCodeAt(0));
+          continue;
+        }
+
+        const mapped = pdfDocEncodingMap[char];
+
+        if (mapped !== undefined) {
+          bytes.push(mapped);
+          continue;
+        }
+
+        const code = char.charCodeAt(0);
+
+        if (code <= 0x7f) {
+          bytes.push(code);
+        } else {
+          bytes.push(0x3f); // ? for unsupported characters
+        }
+      }
+
+      bytes.push(0x29); // )
+      return bytes;
+    };
+
+    const addTextLine = (line: string) => {
+      const encodedLine = encodePdfDocString(line);
+      contentStreamBytes.push(...encodedLine, 0x20, 0x54, 0x6a, 0x20, 0x54, 0x2a, 0x0a); // " Tj T*\n"
+    };
+
     const lines: string[] = [heading, `Gespeichert am: ${timestamp}`, ""];
 
     chat.items.forEach((item) => {
       const value = item.value?.trim() || "—";
-      const valueLines = value.split(/\r?\n/).filter((line) => line.trim() !== "");
+      const valueLines = value
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0);
 
       lines.push(`${item.label}:`);
 
       if (valueLines.length === 0) {
         lines.push("—");
       } else {
-        lines.push(...valueLines);
+        valueLines.forEach((line) => {
+          lines.push(...wrapLine(line));
+        });
       }
 
       lines.push("");
     });
 
-    const encodePdfText = (text: string) => {
-      const utf16 = "\uFEFF" + text;
-      let hexString = "";
+    const headerBytes = Array.from("%PDF-1.4\n").map((char) => char.charCodeAt(0));
 
-      for (let i = 0; i < utf16.length; i++) {
-        hexString += utf16.charCodeAt(i).toString(16).padStart(4, "0");
-      }
+    const contentStreamBytes: number[] = [];
+    const contentStreamPrefix = "BT\n/F1 12 Tf\n1 16 TL\n50 780 Td\n";
+    contentStreamBytes.push(...Array.from(contentStreamPrefix).map((char) => char.charCodeAt(0)));
+    lines.forEach(addTextLine);
+    contentStreamBytes.push(...Array.from("ET").map((char) => char.charCodeAt(0)));
 
-      return `<${hexString}>`;
-    };
-
-    const textLines = lines.map((line) => `${encodePdfText(line)} Tj T*`);
-    const contentStream = [
-      "BT",
-      "/F1 12 Tf",
-      "1 14 TL",
-      "50 780 Td",
-      ...textLines,
-      "ET"
-    ].join("\n");
-
-    const objects: string[] = [
-      "1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj",
-      "2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj",
-      "3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 5 0 R >> >> /Contents 4 0 R >> endobj",
-      `4 0 obj << /Length ${contentStream.length} >> stream\n${contentStream}\nendstream endobj`,
-      "5 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj"
+    const objects: number[][] = [
+      Array.from("1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj\n").map((char) => char.charCodeAt(0)),
+      Array.from("2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj\n").map((char) => char.charCodeAt(0)),
+      Array.from(
+        "3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 5 0 R >> >> /Contents 4 0 R >> endobj\n"
+      ).map((char) => char.charCodeAt(0)),
+      [
+        ...Array.from(`4 0 obj << /Length ${contentStreamBytes.length} >> stream\n`).map((char) => char.charCodeAt(0)),
+        ...contentStreamBytes,
+        ...Array.from("\nendstream endobj\n").map((char) => char.charCodeAt(0))
+      ],
+      Array.from("5 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >> endobj\n").map(
+        (char) => char.charCodeAt(0)
+      )
     ];
 
-    let pdfContent = "%PDF-1.4\n";
+    const pdfBytes: number[] = [...headerBytes];
     const offsets: number[] = [];
 
     objects.forEach((object) => {
-      offsets.push(pdfContent.length);
-      pdfContent += `${object}\n`;
+      offsets.push(pdfBytes.length);
+      pdfBytes.push(...object);
     });
 
-    const xrefPosition = pdfContent.length;
+    const xrefPosition = pdfBytes.length;
     const objectCount = objects.length + 1; // +1 for the xref free object
     const offsetLines = offsets
-      .map((offset) => `${offset.toString().padStart(10, "0")} 00000 n `)
-      .join("\n");
+      .map((offset) => `${offset.toString().padStart(10, "0")} 00000 n \n`)
+      .join("");
 
-    pdfContent += `xref\n0 ${objectCount}\n0000000000 65535 f \n${offsetLines}\n`;
-    pdfContent += `trailer << /Size ${objectCount} /Root 1 0 R >>\nstartxref\n${xrefPosition}\n%%EOF`;
+    const trailer =
+      `xref\n0 ${objectCount}\n0000000000 65535 f \n${offsetLines}` +
+      `trailer << /Size ${objectCount} /Root 1 0 R >>\nstartxref\n${xrefPosition}\n%%EOF`;
 
-    return new Blob([pdfContent], { type: "application/pdf" });
+    pdfBytes.push(...Array.from(trailer).map((char) => char.charCodeAt(0)));
+
+    return new Blob([new Uint8Array(pdfBytes)], { type: "application/pdf" });
   };
 
   const downloadChatAsPdf = (chat: SavedChat) => {
