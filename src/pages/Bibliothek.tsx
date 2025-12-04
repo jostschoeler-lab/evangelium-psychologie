@@ -1063,6 +1063,82 @@ export default function Bibliothek() {
     setSavedChats((previous) => previous.filter((chat) => chat.id !== id));
   };
 
+  const downloadChatAsPdf = (chat: SavedChat) => {
+    const heading = "Gespeicherter Chat";
+    const timestamp = new Date(chat.createdAt).toLocaleString("de-DE", {
+      dateStyle: "short",
+      timeStyle: "short"
+    });
+
+    const lines: string[] = [heading, `Gespeichert am: ${timestamp}`, ""];
+
+    chat.items.forEach((item) => {
+      const value = item.value?.trim() || "—";
+      const valueLines = value.split(/\r?\n/).filter((line) => line.trim() !== "");
+
+      lines.push(`${item.label}:`);
+
+      if (valueLines.length === 0) {
+        lines.push("—");
+      } else {
+        lines.push(...valueLines);
+      }
+
+      lines.push("");
+    });
+
+    const escapePdfText = (text: string) =>
+      text
+        .replace(/\\/g, "\\\\")
+        .replace(/\(/g, "\\(")
+        .replace(/\)/g, "\\)");
+
+    const textLines = lines.map((line) => `(${escapePdfText(line)}) Tj T*`);
+    const contentStream = [
+      "BT",
+      "/F1 12 Tf",
+      "1 14 TL",
+      "50 780 Td",
+      ...textLines,
+      "ET"
+    ].join("\n");
+
+    const objects: string[] = [
+      "1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj",
+      "2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj",
+      "3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 5 0 R >> >> /Contents 4 0 R >> endobj",
+      `4 0 obj << /Length ${contentStream.length} >> stream\n${contentStream}\nendstream endobj`,
+      "5 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj"
+    ];
+
+    let pdfContent = "%PDF-1.4\n";
+    const offsets: number[] = [];
+
+    objects.forEach((object) => {
+      offsets.push(pdfContent.length);
+      pdfContent += `${object}\n`;
+    });
+
+    const xrefPosition = pdfContent.length;
+    const objectCount = objects.length + 1; // +1 for the xref free object
+    const offsetLines = offsets
+      .map((offset) => `${offset.toString().padStart(10, "0")} 00000 n `)
+      .join("\n");
+
+    pdfContent += `xref\n0 ${objectCount}\n0000000000 65535 f \n${offsetLines}\n`;
+    pdfContent += `trailer << /Size ${objectCount} /Root 1 0 R >>\nstartxref\n${xrefPosition}\n%%EOF`;
+
+    const blob = new Blob([pdfContent], { type: "application/pdf" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `chat-${new Date(chat.createdAt).toISOString()}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  };
+
   const renderChatSaveSection = () => (
     <section
       style={{
@@ -1189,16 +1265,31 @@ export default function Bibliothek() {
                   style={{
                     display: "flex",
                     justifyContent: "space-between",
-                    alignItems: "center",
-                    marginBottom: "0.5rem"
-                  }}
-                >
-                  <strong>
-                    {new Date(chat.createdAt).toLocaleString("de-DE", {
-                      dateStyle: "short",
-                      timeStyle: "short"
-                    })}
-                  </strong>
+                  alignItems: "center",
+                  marginBottom: "0.5rem"
+                }}
+              >
+                <strong>
+                  {new Date(chat.createdAt).toLocaleString("de-DE", {
+                    dateStyle: "short",
+                    timeStyle: "short"
+                  })}
+                </strong>
+                <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
+                  <button
+                    onClick={() => downloadChatAsPdf(chat)}
+                    style={{
+                      backgroundColor: "#f0f4ff",
+                      color: "#2c3e50",
+                      border: "1px solid #d6e0f5",
+                      borderRadius: "6px",
+                      cursor: "pointer",
+                      fontWeight: 600,
+                      padding: "0.35rem 0.6rem"
+                    }}
+                  >
+                    📄 Gespeichertes als PDF herunterladen
+                  </button>
                   <button
                     onClick={() => handleDeleteChat(chat.id)}
                     style={{
@@ -1212,10 +1303,11 @@ export default function Bibliothek() {
                     ✖️ Löschen
                   </button>
                 </div>
-                <ul style={{ margin: 0, paddingLeft: "1rem", display: "flex", flexDirection: "column", gap: "0.4rem" }}>
-                  {chat.items.map((item) => (
-                    <li key={`${chat.id}-${item.label}`} style={{ whiteSpace: "pre-wrap", lineHeight: 1.5 }}>
-                      <strong>{item.label}:</strong> {item.value ? item.value : "—"}
+              </div>
+              <ul style={{ margin: 0, paddingLeft: "1rem", display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+                {chat.items.map((item) => (
+                  <li key={`${chat.id}-${item.label}`} style={{ whiteSpace: "pre-wrap", lineHeight: 1.5 }}>
+                    <strong>{item.label}:</strong> {item.value ? item.value : "—"}
                     </li>
                   ))}
                 </ul>
