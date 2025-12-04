@@ -1141,11 +1141,6 @@ export default function Bibliothek() {
       return bytes;
     };
 
-    const addTextLine = (line: string) => {
-      const encodedLine = encodePdfDocString(line);
-      contentStreamBytes.push(...encodedLine, 0x20, 0x54, 0x6a, 0x20, 0x54, 0x2a, 0x0a); // " Tj T*\n"
-    };
-
     const lines: string[] = [heading, `Gespeichert am: ${timestamp}`, ""];
 
     chat.items.forEach((item) => {
@@ -1168,29 +1163,80 @@ export default function Bibliothek() {
       lines.push("");
     });
 
+    const linesPerPage = 45;
+    const paginatedLines: string[][] = [];
+
+    for (let i = 0; i < lines.length; i += linesPerPage) {
+      paginatedLines.push(lines.slice(i, i + linesPerPage));
+    }
+
+    if (paginatedLines.length === 0) {
+      paginatedLines.push([]);
+    }
+
     const headerBytes = Array.from("%PDF-1.4\n").map((char) => char.charCodeAt(0));
 
-    const contentStreamBytes: number[] = [];
-    const contentStreamPrefix = "BT\n/F1 12 Tf\n1 16 TL\n50 780 Td\n";
-    contentStreamBytes.push(...Array.from(contentStreamPrefix).map((char) => char.charCodeAt(0)));
-    lines.forEach(addTextLine);
-    contentStreamBytes.push(...Array.from("ET").map((char) => char.charCodeAt(0)));
+    const createContentStream = (pageLines: string[]) => {
+      const contentStreamBytes: number[] = [];
+      const addTextLine = (line: string) => {
+        const encodedLine = encodePdfDocString(line);
+        contentStreamBytes.push(...encodedLine, 0x20, 0x54, 0x6a, 0x20, 0x54, 0x2a, 0x0a); // " Tj T*\n"
+      };
 
-    const objects: number[][] = [
-      Array.from("1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj\n").map((char) => char.charCodeAt(0)),
-      Array.from("2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj\n").map((char) => char.charCodeAt(0)),
+      const contentStreamPrefix = "BT\n/F1 12 Tf\n1 16 TL\n50 780 Td\n";
+      contentStreamBytes.push(...Array.from(contentStreamPrefix).map((char) => char.charCodeAt(0)));
+      pageLines.forEach(addTextLine);
+      contentStreamBytes.push(...Array.from("ET").map((char) => char.charCodeAt(0)));
+
+      return contentStreamBytes;
+    };
+
+    const catalogNumber = 1;
+    const pagesNumber = 2;
+    const fontNumber = 3;
+    const firstPageNumber = 4;
+    const firstContentNumber = firstPageNumber + paginatedLines.length;
+
+    const kidsRefs = paginatedLines
+      .map((_, index) => `${firstPageNumber + index} 0 R`)
+      .join(" ");
+
+    const objects: number[][] = [];
+
+    objects.push(
+      Array.from(`${catalogNumber} 0 obj << /Type /Catalog /Pages ${pagesNumber} 0 R >> endobj\n`).map((char) => char.charCodeAt(0))
+    );
+    objects.push(
       Array.from(
-        "3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 5 0 R >> >> /Contents 4 0 R >> endobj\n"
-      ).map((char) => char.charCodeAt(0)),
-      [
-        ...Array.from(`4 0 obj << /Length ${contentStreamBytes.length} >> stream\n`).map((char) => char.charCodeAt(0)),
+        `${pagesNumber} 0 obj << /Type /Pages /Kids [${kidsRefs}] /Count ${paginatedLines.length} >> endobj\n`
+      ).map((char) => char.charCodeAt(0))
+    );
+
+    objects.push(
+      Array.from(
+        `${fontNumber} 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >> endobj\n`
+      ).map((char) => char.charCodeAt(0))
+    );
+
+    paginatedLines.forEach((pageLines, index) => {
+      const pageObjNumber = firstPageNumber + index;
+      const contentObjNumber = firstContentNumber + index;
+      const contentStreamBytes = createContentStream(pageLines);
+
+      objects.push(
+        Array.from(
+          `${pageObjNumber} 0 obj << /Type /Page /Parent ${pagesNumber} 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 ${fontNumber} 0 R >> >> /Contents ${contentObjNumber} 0 R >> endobj\n`
+        ).map((char) => char.charCodeAt(0))
+      );
+
+      objects.push([
+        ...Array.from(`${contentObjNumber} 0 obj << /Length ${contentStreamBytes.length} >> stream\n`).map((char) =>
+          char.charCodeAt(0)
+        ),
         ...contentStreamBytes,
         ...Array.from("\nendstream endobj\n").map((char) => char.charCodeAt(0))
-      ],
-      Array.from("5 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >> endobj\n").map(
-        (char) => char.charCodeAt(0)
-      )
-    ];
+      ]);
+    });
 
     const pdfBytes: number[] = [...headerBytes];
     const offsets: number[] = [];
