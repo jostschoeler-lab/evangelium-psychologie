@@ -1087,13 +1087,18 @@ export default function Bibliothek() {
       lines.push("");
     });
 
-    const escapePdfText = (text: string) =>
-      text
-        .replace(/\\/g, "\\\\")
-        .replace(/\(/g, "\\(")
-        .replace(/\)/g, "\\)");
+    const encodePdfText = (text: string) => {
+      const utf16 = "\uFEFF" + text;
+      let hexString = "";
 
-    const textLines = lines.map((line) => `(${escapePdfText(line)}) Tj T*`);
+      for (let i = 0; i < utf16.length; i++) {
+        hexString += utf16.charCodeAt(i).toString(16).padStart(4, "0");
+      }
+
+      return `<${hexString}>`;
+    };
+
+    const textLines = lines.map((line) => `${encodePdfText(line)} Tj T*`);
     const contentStream = [
       "BT",
       "/F1 12 Tf",
