@@ -1293,18 +1293,23 @@ export default function Bibliothek() {
       type: "application/pdf"
     });
 
+    const supportsNativeFileShare = typeof navigator.canShare === "function" && navigator.canShare({ files: [pdfFile] });
     const shareData: ShareData = {
-      files: [pdfFile],
+      files: supportsNativeFileShare ? [pdfFile] : undefined,
       title: "Gespeicherter Chat",
       text: "Hier ist der gespeicherte Chat als PDF."
     };
 
-    if (navigator.share && (!navigator.canShare || navigator.canShare(shareData))) {
+    if (navigator.share && supportsNativeFileShare) {
       try {
         await navigator.share(shareData);
         return;
       } catch (error) {
         console.error("Teilen abgebrochen oder fehlgeschlagen", error);
+        alert(
+          "Das Teilen über das System-Menü war nicht möglich. Deine PDF wird stattdessen zum Download bereitgestellt.\n\n" +
+            (error instanceof Error ? `Fehlermeldung: ${error.message}` : "Unbekannter Fehler.")
+        );
       }
     }
 
@@ -1318,8 +1323,10 @@ export default function Bibliothek() {
     downloadLink.remove();
 
     const telegramMessage =
-      "Dein Browser unterstützt das direkte Teilen als Datei nicht. " +
-      "Die PDF wurde gespeichert. Öffne Telegram und hänge die Datei aus deinem Download-Ordner an.";
+      (supportsNativeFileShare
+        ? "Das Teilen über das System-Menü ist fehlgeschlagen."
+        : "Dein Browser unterstützt das direkte Teilen als Datei nicht.") +
+      " Die PDF wurde gespeichert. Öffne Telegram und hänge die Datei aus deinem Download-Ordner an.";
     const telegramShareUrl = `https://t.me/share/url?text=${encodeURIComponent(telegramMessage)}`;
     window.open(telegramShareUrl, "_blank", "noopener,noreferrer");
 
