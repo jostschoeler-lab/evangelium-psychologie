@@ -378,27 +378,27 @@ export default function Stuhldialog() {
                 width: CARD_WIDTH,
                 justifySelf: "center",
                 padding: 16,
-                borderRadius: 18,
+                borderRadius: 14,
                 background: "#FFF",
-                border: isActive ? `3px solid ${info.color}` : "2px solid #CBD5E1",
+                border: isActive ? `2px solid ${info.color}` : "1px solid #CBD5E1",
                 boxShadow: isActive
-                  ? `0 12px 24px rgba(0,0,0,0.14), 0 0 0 4px ${hexToRgba(info.color, 0.1)}`
-                  : "0 8px 18px rgba(0,0,0,0.08)",
+                  ? `0 6px 14px rgba(0,0,0,0.1), 0 0 0 2px ${hexToRgba(info.color, 0.12)}`
+                  : "0 4px 10px rgba(0,0,0,0.06)",
                 cursor: "pointer",
                 userSelect: "none",
                 display: "flex",
                 flexDirection: "column",
-                gap: 14,
+                gap: 12,
                 alignItems: "center",
                 transition: "transform 0.18s ease, box-shadow 0.18s ease",
-                transform: isActive ? "translateY(-6px)" : "translateY(0)",
+                transform: isActive ? "translateY(-4px)" : "translateY(0)",
               }}
             >
               <div
                 style={{
                   width: "100%",
                   aspectRatio: "1 / 1",
-                  borderRadius: 12,
+                  borderRadius: 10,
                   overflow: "hidden",
                   background: "#F8FAFC",
                 }}
@@ -440,7 +440,7 @@ export default function Stuhldialog() {
       <div
         style={{
           display: "inline-flex",
-          borderRadius: 14,
+          borderRadius: 12,
           background: "#E2E8F0",
           padding: 4,
           gap: 4,
@@ -450,7 +450,7 @@ export default function Stuhldialog() {
           onClick={() => setActiveTab("preset")}
           style={{
             padding: "8px 20px",
-            borderRadius: 10,
+            borderRadius: 8,
             border: "none",
             cursor: "pointer",
             fontWeight: 600,
@@ -464,7 +464,7 @@ export default function Stuhldialog() {
           onClick={() => setActiveTab("custom")}
           style={{
             padding: "8px 20px",
-            borderRadius: 10,
+            borderRadius: 8,
             border: "none",
             cursor: "pointer",
             fontWeight: 600,
@@ -482,7 +482,7 @@ export default function Stuhldialog() {
             onChange={(event) => setSelectedPreset(event.target.value as PresetKey)}
             style={{
               padding: "8px 14px",
-              borderRadius: 10,
+              borderRadius: 8,
               border: "1px solid #CBD5E1",
               background: "#FFF",
               fontSize: 14,
@@ -504,7 +504,7 @@ export default function Stuhldialog() {
             marginTop: 10,
             padding: 16,
             border: "1px solid #E5E7EB",
-            borderRadius: 12,
+            borderRadius: 10,
             background: "#FFFFFF",
             display: "flex",
             alignItems: "center",
@@ -519,7 +519,7 @@ export default function Stuhldialog() {
                   borderRadius: "50%",
                   overflow: "hidden",
                   flexShrink: 0,
-                  border: `3px solid ${activeRole.color}`,
+                  border: `2px solid ${activeRole.color}`,
                   background: "#F8FAFC",
                 }}
               >
@@ -537,8 +537,8 @@ export default function Stuhldialog() {
                     onChange={(event) => setDraft(event.target.value)}
                     placeholder="Schreibe hier, was dieser Modus sagt oder fühlt…"
                     style={{
-                      border: `2px solid ${activeRole.color}`,
-                      borderRadius: 12,
+                      border: `1px solid ${activeRole.color}`,
+                      borderRadius: 10,
                       padding: 12,
                       minHeight: 110,
                       fontSize: 15,
@@ -580,7 +580,7 @@ export default function Stuhldialog() {
                     onClick={handleCancel}
                     style={{
                       padding: "8px 14px",
-                      borderRadius: 10,
+                      borderRadius: 8,
                       border: "1px solid #CBD5E1",
                       background: "#F1F5F9",
                       cursor: "pointer",
@@ -593,7 +593,7 @@ export default function Stuhldialog() {
                     disabled={isSubmitDisabled}
                     style={{
                       padding: "8px 18px",
-                      borderRadius: 10,
+                      borderRadius: 8,
                       border: "none",
                       background: isSubmitDisabled ? "#CBD5E1" : activeRole.color,
                       color: "#FFF",
@@ -631,7 +631,7 @@ export default function Stuhldialog() {
           marginTop: 18,
           padding: 16,
           border: "1px solid #E5E7EB",
-          borderRadius: 12,
+          borderRadius: 10,
           background: "#FFFFFF",
           display: "grid",
           gap: 12,
@@ -655,25 +655,25 @@ export default function Stuhldialog() {
                   gap: 14,
                   alignItems: "flex-start",
                   padding: 12,
-                  borderRadius: 12,
+                  borderRadius: 10,
                   border:
                     activeSpeechId === entry.id ? `1px solid ${info.color}` : "1px solid #E2E8F0",
                   background: activeSpeechId === entry.id ? "#DBEAFE" : "#F8FAFC",
                   boxShadow:
-                    activeSpeechId === entry.id ? `0 0 0 3px ${hexToRgba(info.color, 0.18)}` : "none",
+                    activeSpeechId === entry.id ? `0 0 0 2px ${hexToRgba(info.color, 0.16)}` : "none",
                   transition: "background 0.2s ease, box-shadow 0.2s ease, border 0.2s ease",
                 }}
               >
                 <div
                   style={{
                     width: 56,
-                    height: 56,
-                    borderRadius: "50%",
-                    overflow: "hidden",
-                    border: `3px solid ${info.color}`,
-                    flexShrink: 0,
-                    background: "#FFF",
-                  }}
+                  height: 56,
+                  borderRadius: "50%",
+                  overflow: "hidden",
+                  border: `2px solid ${info.color}`,
+                  flexShrink: 0,
+                  background: "#FFF",
+                }}
                 >
                   <img
                     src={info.defaultImg}
@@ -716,7 +716,7 @@ export default function Stuhldialog() {
             marginTop: 18,
             padding: 16,
             border: "1px solid #E5E7EB",
-            borderRadius: 12,
+            borderRadius: 10,
             background: "#FFF9F4",
             display: "grid",
             gap: 12,
@@ -731,7 +731,7 @@ export default function Stuhldialog() {
                 key={entry.ts ?? Math.random()}
                 style={{
                   border: "1px solid #FECACA",
-                  borderRadius: 12,
+                  borderRadius: 10,
                   padding: 12,
                   background: "#FFF",
                   display: "grid",
