@@ -1063,7 +1063,7 @@ export default function Bibliothek() {
     setSavedChats((previous) => previous.filter((chat) => chat.id !== id));
   };
 
-  const downloadChatAsPdf = (chat: SavedChat) => {
+  const createChatPdfBlob = (chat: SavedChat) => {
     const heading = "Gespeicherter Chat";
     const timestamp = new Date(chat.createdAt).toLocaleString("de-DE", {
       dateStyle: "short",
@@ -1128,7 +1128,11 @@ export default function Bibliothek() {
     pdfContent += `xref\n0 ${objectCount}\n0000000000 65535 f \n${offsetLines}\n`;
     pdfContent += `trailer << /Size ${objectCount} /Root 1 0 R >>\nstartxref\n${xrefPosition}\n%%EOF`;
 
-    const blob = new Blob([pdfContent], { type: "application/pdf" });
+    return new Blob([pdfContent], { type: "application/pdf" });
+  };
+
+  const downloadChatAsPdf = (chat: SavedChat) => {
+    const blob = createChatPdfBlob(chat);
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
@@ -1137,6 +1141,29 @@ export default function Bibliothek() {
     link.click();
     link.remove();
     URL.revokeObjectURL(url);
+  };
+
+  const shareChatAsPdf = async (chat: SavedChat) => {
+    const pdfBlob = createChatPdfBlob(chat);
+    const pdfFile = new File([pdfBlob], `chat-${new Date(chat.createdAt).toISOString()}.pdf`, {
+      type: "application/pdf"
+    });
+
+    if (navigator.canShare?.({ files: [pdfFile] })) {
+      try {
+        await navigator.share({
+          files: [pdfFile],
+          title: "Gespeicherter Chat",
+          text: "Hier ist der gespeicherte Chat als PDF."
+        });
+      } catch (error) {
+        console.error("Teilen abgebrochen oder fehlgeschlagen", error);
+      }
+    } else {
+      alert(
+        "Teilen per Telegram wird von diesem Gerät oder Browser nicht unterstützt. Bitte lade die PDF herunter und teile sie manuell."
+      );
+    }
   };
 
   const renderChatSaveSection = () => (
@@ -1275,7 +1302,7 @@ export default function Bibliothek() {
                     timeStyle: "short"
                   })}
                 </strong>
-                <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
+                <div style={{ display: "flex", gap: "0.75rem", alignItems: "center", flexWrap: "wrap" }}>
                   <button
                     onClick={() => downloadChatAsPdf(chat)}
                     style={{
@@ -1289,6 +1316,20 @@ export default function Bibliothek() {
                     }}
                   >
                     📄 Gespeichertes als PDF herunterladen
+                  </button>
+                  <button
+                    onClick={() => shareChatAsPdf(chat)}
+                    style={{
+                      backgroundColor: "#e3f6f5",
+                      color: "#096c70",
+                      border: "1px solid #b8e0df",
+                      borderRadius: "6px",
+                      cursor: "pointer",
+                      fontWeight: 600,
+                      padding: "0.35rem 0.6rem"
+                    }}
+                  >
+                    📲 Als PDF via Telegram teilen
                   </button>
                   <button
                     onClick={() => handleDeleteChat(chat.id)}
