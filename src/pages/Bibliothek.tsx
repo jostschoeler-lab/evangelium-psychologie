@@ -10,6 +10,7 @@ import {
 
 import kindMitPanzerImage from "../assets/images/kindmitpanzer.png";
 import childImage from "../assets/images/kind.png";
+import styles from "./Bibliothek.module.css";
 
 const HIGH_PRIEST_IMAGE_CANDIDATES = [
   "/public-images/Hohepriester.png",
@@ -1869,23 +1870,14 @@ export default function Bibliothek() {
             gap: "0.5rem"
           }}
         >
-          <h3
-            style={{
-              margin: 0,
-              fontSize: "1rem",
-              color: "#5c3b1f",
-              display: "flex",
-              alignItems: "center",
-              gap: "0.4rem"
-            }}
-          >
+          <h3 className={styles.subCardHeading}>
             <span aria-hidden="true">{section.icon}</span>
             <span>{section.title}</span>
           </h3>
           {section.paragraphs?.map((paragraph) => (
             <p
               key={paragraph}
-              style={{ margin: 0, fontSize: "0.92rem", lineHeight: 1.55, color: "#5f4630" }}
+              className={styles.bodyText}
             >
               {paragraph}
             </p>
@@ -1915,17 +1907,7 @@ export default function Bibliothek() {
     return (
       <section
         aria-label="Einführung: Verwandlung als Kind Gottes"
-        style={{
-          margin: "0 auto 2rem",
-          maxWidth: "420px",
-          background: "linear-gradient(180deg, #fff5e6 0%, #fdebd2 100%)",
-          borderRadius: "28px",
-          padding: "1.5rem 1.5rem 1.75rem",
-          boxShadow: "0 24px 48px rgba(149, 94, 36, 0.18)",
-          display: "flex",
-          flexDirection: "column",
-          gap: "1rem"
-        }}
+        className={`${styles.cardBase} ${styles.introCard}`}
       >
         <div
           style={{
@@ -1945,23 +1927,12 @@ export default function Bibliothek() {
         {!hideHeading && (
           <div>
             <h2
-              style={{
-                margin: 0,
-                fontSize: "1.45rem",
-                lineHeight: 1.3,
-                color: "#5c3b1f"
-              }}
+              className={styles.sectionHeading}
             >
               Verwandlung als Kind Gottes
             </h2>
             <p
-              style={{
-                margin: "0.3rem 0 0",
-                fontSize: "0.95rem",
-                lineHeight: 1.5,
-                color: "#8c5d32",
-                fontStyle: "italic"
-              }}
+              className={styles.sectionSubheading}
             >
               „Selig sind die Trauernden, denn sie werden getröstet werden.“ (Matthäus 5,4)
             </p>
@@ -1971,7 +1942,7 @@ export default function Bibliothek() {
         {displayedLeadParagraphs.map((paragraph) => (
           <p
             key={paragraph}
-            style={{ margin: 0, fontSize: "0.95rem", lineHeight: 1.6, color: "#5f4630" }}
+            className={styles.bodyText}
           >
             {paragraph}
           </p>
@@ -1994,17 +1965,7 @@ export default function Bibliothek() {
     <section
       ref={attachRef ? formRef : undefined}
       aria-labelledby={sectionLabelId}
-      style={{
-        margin: "0 auto 2rem",
-        maxWidth: "420px",
-        background: "linear-gradient(180deg, #fdf0d5 0%, #f3e8ff 100%)",
-        borderRadius: "32px",
-        padding: "2.25rem 1.75rem 2.5rem",
-        boxShadow: "0 26px 60px rgba(45, 64, 102, 0.18)",
-        display: "flex",
-        flexDirection: "column",
-        gap: "1.5rem"
-      }}
+      className={`${styles.cardBase} ${styles.problemCard}`}
     >
       <div
         style={{
@@ -2028,7 +1989,7 @@ export default function Bibliothek() {
         {problemLeadParagraphs.map((paragraph) => (
           <p
             key={paragraph}
-            style={{ margin: 0, fontSize: "1rem", lineHeight: 1.6, color: "#3d2f1d" }}
+            className={styles.problemText}
           >
             {paragraph}
           </p>
@@ -2128,19 +2089,7 @@ export default function Bibliothek() {
       <button
         type="button"
         onClick={handleContinueFromStepOne}
-        style={{
-          alignSelf: "center",
-          marginTop: "0.5rem",
-          backgroundColor: "#3867d6",
-          color: "#fff",
-          border: "none",
-          borderRadius: "999px",
-          padding: "0.85rem 2.75rem",
-          fontSize: "1.05rem",
-          fontWeight: 600,
-          cursor: "pointer",
-          boxShadow: "0 18px 32px rgba(56, 103, 214, 0.28)"
-        }}
+        className={styles.primaryButton}
       >
         Weiter
       </button>
@@ -2148,27 +2097,8 @@ export default function Bibliothek() {
   );
 
   const renderNeedSelectionSection = ({ attachRef = false }: { attachRef?: boolean } = {}) => (
-    <section
-      ref={attachRef ? stepTwoRef : undefined}
-      style={{
-        marginTop: "3rem",
-        display: "flex",
-        justifyContent: "center"
-      }}
-    >
-      <div
-        style={{
-          width: "100%",
-          maxWidth: "420px",
-          background: "#fdf2e4",
-          borderRadius: "28px",
-          padding: "2.5rem 1.75rem",
-          boxShadow: "0 28px 40px rgba(198, 134, 66, 0.2)",
-          display: "flex",
-          flexDirection: "column",
-          gap: "1.5rem"
-        }}
-      >
+    <section ref={attachRef ? stepTwoRef : undefined} className={styles.needWrapper}>
+      <div className={`${styles.cardBase} ${styles.needCard}`}>
         <div style={{ textAlign: "center" }}>
           <div
             style={{
@@ -2202,11 +2132,7 @@ export default function Bibliothek() {
         </div>
 
         <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
-            gap: "0.75rem"
-          }}
+          className={styles.needGrid}
         >
           {needOptions.map((option) => {
             const isSelected = selectedNeed === option.key;
