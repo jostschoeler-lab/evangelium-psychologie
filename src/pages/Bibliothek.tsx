@@ -3209,7 +3209,7 @@ export default function Bibliothek() {
         ← Zurück zum Hauptmenü
       </button>
 
-      <section style={{ maxWidth: "800px", margin: "0 auto" }}>
+      <section style={{ maxWidth: "1100px", margin: "0 auto" }}>
         <div>
           {!showResult && (
             <>
