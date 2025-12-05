@@ -2213,11 +2213,10 @@ export default function Bibliothek() {
 
   const renderMobileStepContent = (): JSX.Element => {
     const baseCardStyle: CSSProperties = {
-      background: "#ffffffcc",
-      backdropFilter: "blur(6px)",
-      borderRadius: "28px",
-      padding: "28px 22px",
-      boxShadow: "0 24px 48px rgba(31, 61, 116, 0.16)",
+      background: "transparent",
+      borderRadius: 0,
+      padding: "0.5rem 0 1.5rem",
+      boxShadow: "none",
       display: "flex",
       flexDirection: "column",
       gap: "18px"
@@ -3221,11 +3220,10 @@ export default function Bibliothek() {
           {showResult ? (
             <div
               style={{
-                backgroundColor: "#fff",
-                padding: "1.5rem",
-                borderRadius: "10px",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                marginTop: "1.5rem"
+                marginTop: "1.5rem",
+                display: "flex",
+                flexDirection: "column",
+                gap: "1.25rem"
               }}
             >
               <div
@@ -3238,8 +3236,8 @@ export default function Bibliothek() {
               >
                 <div
                   style={{
-                    display: "flex",
-                    flexWrap: "wrap",
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
                     gap: "0.6rem"
                   }}
                 >
@@ -3251,22 +3249,22 @@ export default function Bibliothek() {
                         type="button"
                         onClick={() => setActiveMobileStep(index)}
                         style={{
-                          flex: "1 1 180px",
-                          borderRadius: "999px",
-                          border: "none",
-                          padding: "0.55rem 1rem",
+                          width: "100%",
+                          borderRadius: "14px",
+                          border: isActive ? "2px solid #4b7bec" : "1px solid #c7d2fe",
+                          padding: "0.7rem 1rem",
                           cursor: "pointer",
-                          background: isActive ? "#4b7bec" : "#e1e9ff",
-                          color: isActive ? "#fff" : "#1f3c88",
-                          fontWeight: 600,
+                          background: "#fff",
+                          color: "#1f3c88",
+                          fontWeight: 700,
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
-                          gap: "0.4rem",
-                          boxShadow: isActive
-                            ? "0 12px 28px rgba(75, 123, 236, 0.25)"
-                            : "none",
-                          transition: "background-color 0.2s ease, box-shadow 0.2s ease"
+                          gap: "0.45rem",
+                          textAlign: "left",
+                          boxShadow: "none",
+                          transition: "border-color 0.15s ease, transform 0.15s ease",
+                          transform: isActive ? "translateY(-2px)" : "none"
                         }}
                       >
                         <span aria-hidden="true">{step.icon}</span>
@@ -3277,11 +3275,11 @@ export default function Bibliothek() {
                 </div>
                 <div
                   style={{
-                    borderRadius: "36px",
-                    overflow: "hidden",
-                    padding: "1.5rem",
-                    background: mobileStepMeta[activeMobileStep].background,
-                    boxShadow: "0 24px 48px rgba(31, 61, 116, 0.18)"
+                    borderRadius: 0,
+                    overflow: "visible",
+                    padding: "0.25rem 0 0.5rem",
+                    background: "transparent",
+                    boxShadow: "none"
                   }}
                 >
                   {activeMobileStep === chatSaveStepIndex
