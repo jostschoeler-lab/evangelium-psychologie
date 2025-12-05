@@ -204,11 +204,23 @@ export default function Stuhldialog() {
     recognition.interimResults = true;
     recognition.continuous = true;
     recognition.onresult = (event: any) => {
-      let transcript = "";
-      for (let i = 0; i < event.results.length; i += 1) {
-        transcript += event.results[i][0].transcript;
+      let interimTranscript = "";
+
+      for (let i = event.resultIndex; i < event.results.length; i += 1) {
+        const result = event.results[i];
+        const text = result?.[0]?.transcript ?? "";
+
+        if (result.isFinal) {
+          const currentBase = dictationBaseRef.current;
+          const separator = currentBase.endsWith(" ") || currentBase.length === 0 ? "" : " ";
+          dictationBaseRef.current = `${currentBase}${separator}${text}`.trimEnd() + " ";
+        } else {
+          interimTranscript += text;
+        }
       }
-      setDraft(dictationBaseRef.current + transcript.trim());
+
+      const combined = `${dictationBaseRef.current}${interimTranscript}`.trim();
+      setDraft(combined);
     };
     recognition.onend = () => setIsDictating(false);
     recognition.onerror = () => setIsDictating(false);

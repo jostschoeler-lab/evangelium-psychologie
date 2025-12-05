@@ -351,6 +351,13 @@ export default function Bibliothek() {
     meditationNotes: "",
     introDiscussionQuestion: ""
   });
+  const lastFinalResultRef = useRef<Record<DictationField, string>>({
+    problem: "",
+    personalNeed: "",
+    childhoodExperience: "",
+    meditationNotes: "",
+    introDiscussionQuestion: ""
+  });
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -515,14 +522,14 @@ export default function Bibliothek() {
         case "personalNeed":
           setPersonalNeed(value);
           break;
-      case "childhoodExperience":
-        setChildhoodExperience(value);
-        break;
-      case "meditationNotes":
-        setMeditationNotes(value);
-        break;
-      case "introDiscussionQuestion":
-        setIntroDiscussionQuestion(value);
+        case "childhoodExperience":
+          setChildhoodExperience(value);
+          break;
+        case "meditationNotes":
+          setMeditationNotes(value);
+          break;
+        case "introDiscussionQuestion":
+          setIntroDiscussionQuestion(value);
         break;
       default:
         break;
@@ -537,6 +544,7 @@ export default function Bibliothek() {
       const recognition = recognitionRef.current;
       if (!recognition) return;
       dictationBaseRef.current[field] = baseValue;
+      lastFinalResultRef.current[field] = "";
       activeFieldRef.current = field;
       setListeningField(field);
       try {
@@ -563,16 +571,35 @@ export default function Bibliothek() {
       const field = activeFieldRef.current;
       if (!field) return;
 
-      const transcript = Array.from(event.results)
-        .map((result: any) => result[0]?.transcript ?? "")
-        .join(" ")
-        .trim();
+      let interimTranscript = "";
+
+      for (let i = event.resultIndex; i < event.results.length; i += 1) {
+        const result = event.results[i];
+        const text = result?.[0]?.transcript ?? "";
+
+        if (result.isFinal) {
+          const trimmedText = text.trim();
+
+          if (trimmedText.length === 0) {
+            continue;
+          }
+
+          if (lastFinalResultRef.current[field] === trimmedText) {
+            continue;
+          }
+
+          lastFinalResultRef.current[field] = trimmedText;
+
+          const currentBase = dictationBaseRef.current[field] ?? "";
+          const separator = currentBase.endsWith(" ") || currentBase.length === 0 ? "" : " ";
+          dictationBaseRef.current[field] = `${currentBase}${separator}${trimmedText}`.trimEnd() + " ";
+        } else {
+          interimTranscript += text;
+        }
+      }
 
       const base = dictationBaseRef.current[field] ?? "";
-      if (!transcript && !base) {
-        return;
-      }
-      const combined = `${base}${transcript}`.trim();
+      const combined = `${base}${interimTranscript}`.trim();
       setFieldValue(field, combined);
     };
 
@@ -587,6 +614,7 @@ export default function Bibliothek() {
       const field = activeFieldRef.current;
       if (field) {
         dictationBaseRef.current[field] = "";
+        lastFinalResultRef.current[field] = "";
       }
       activeFieldRef.current = null;
       setListeningField(null);
@@ -603,6 +631,7 @@ export default function Bibliothek() {
     recognition.onerror = () => {
       if (activeFieldRef.current) {
         dictationBaseRef.current[activeFieldRef.current] = "";
+        lastFinalResultRef.current[activeFieldRef.current] = "";
       }
       activeFieldRef.current = null;
       pendingFieldRef.current = null;
