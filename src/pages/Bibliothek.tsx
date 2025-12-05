@@ -563,16 +563,23 @@ export default function Bibliothek() {
       const field = activeFieldRef.current;
       if (!field) return;
 
-      const transcript = Array.from(event.results)
-        .map((result: any) => result[0]?.transcript ?? "")
-        .join(" ")
-        .trim();
+      let interimTranscript = "";
+
+      for (let i = event.resultIndex; i < event.results.length; i += 1) {
+        const result = event.results[i];
+        const text = result?.[0]?.transcript ?? "";
+
+        if (result.isFinal) {
+          const currentBase = dictationBaseRef.current[field] ?? "";
+          const separator = currentBase.endsWith(" ") || currentBase.length === 0 ? "" : " ";
+          dictationBaseRef.current[field] = `${currentBase}${separator}${text}`.trimEnd() + " ";
+        } else {
+          interimTranscript += text;
+        }
+      }
 
       const base = dictationBaseRef.current[field] ?? "";
-      if (!transcript && !base) {
-        return;
-      }
-      const combined = `${base}${transcript}`.trim();
+      const combined = `${base}${interimTranscript}`.trim();
       setFieldValue(field, combined);
     };
 
