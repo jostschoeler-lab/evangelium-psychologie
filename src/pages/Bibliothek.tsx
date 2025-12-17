@@ -515,28 +515,22 @@ export default function Bibliothek() {
     [maximizedField]
   );
 
-  const getLanguageButtonStyle = useCallback(
+  const getLanguageOptionStyle = useCallback(
     (mode: LanguageMode): CSSProperties => {
       const isSelected = languageMode === mode;
 
       return {
-        backgroundColor: isSelected ? "#1f3c88" : "#ffffff",
-        color: isSelected ? "#ffffff" : "#1f2933",
-        border: isSelected ? "2px solid #1b3578" : "1px solid #cbd2d9",
-        borderRadius: "10px",
-        padding: "0.65rem 0.9rem",
+        border: isSelected ? "1px solid #111" : "1px solid #d0d5dd",
+        backgroundColor: isSelected ? "#f8f8f8" : "#ffffff",
+        borderRadius: "8px",
+        padding: "0.65rem 0.75rem",
+        display: "flex",
+        alignItems: "center",
+        gap: "0.65rem",
         cursor: "pointer",
-        fontWeight: isSelected ? 800 : 700,
-        boxShadow: isSelected
-          ? "0 8px 14px rgba(31, 60, 136, 0.18)"
-          : "0 4px 10px rgba(17, 24, 39, 0.06)",
-        width: "100%",
-        textShadow: isSelected ? "0 1px 1px rgba(0, 0, 0, 0.25)" : "none",
-        transition:
-          "background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease",
-        outline: isSelected ? "none" : "2px solid transparent",
-        outlineOffset: "2px",
-        textAlign: "center"
+        color: "#111",
+        fontWeight: 600,
+        boxShadow: "0 2px 6px rgba(0, 0, 0, 0.05)"
       };
     },
     [languageMode]
@@ -3956,44 +3950,44 @@ export default function Bibliothek() {
       <section style={{ maxWidth: "1100px", margin: "0 auto" }}>
         <div
           style={{
-            backgroundColor: "#fff",
-            border: "1px solid #dfe7fb",
-            borderRadius: "14px",
+            backgroundColor: "#ffffff",
+            border: "1px solid #e5e7eb",
+            borderRadius: "12px",
             padding: "1rem 1.25rem",
             marginBottom: "1.25rem",
-            boxShadow: "0 6px 14px rgba(31, 60, 136, 0.08)"
+            boxShadow: "0 4px 10px rgba(0, 0, 0, 0.04)"
           }}
         >
-          <h2 style={{ margin: "0 0 0.35rem", color: "#1f3c88" }}>Sprachstil auswählen</h2>
-          <p style={{ margin: "0 0 0.75rem", color: "#4c5d73", lineHeight: 1.5 }}>
+          <h2 style={{ margin: "0 0 0.35rem", color: "#111827" }}>Sprachstil auswählen</h2>
+          <p style={{ margin: "0 0 0.75rem", color: "#111", lineHeight: 1.5 }}>
             Entscheide, ob die Antworten nur christliche Sprache nutzen oder zusätzlich psychologische und
             wissenschaftliche Begriffe einbinden dürfen.
           </p>
-          <div
-            style={{
-              display: "grid",
-              gap: "0.65rem",
-              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))"
-            }}
-          >
-            <button
-              type="button"
-              onClick={() => setLanguageMode("christian")}
-              style={getLanguageButtonStyle("christian")}
-              aria-pressed={languageMode === "christian"}
-            >
-              Nur christliche Sprache
-            </button>
-            <button
-              type="button"
-              onClick={() => setLanguageMode("combined")}
-              style={getLanguageButtonStyle("combined")}
-              aria-pressed={languageMode === "combined"}
-            >
-              Christlich + psychologisch / wissenschaftlich
-            </button>
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+            <label style={getLanguageOptionStyle("christian")}>
+              <input
+                type="radio"
+                name="language-style"
+                value="christian"
+                checked={languageMode === "christian"}
+                onChange={() => setLanguageMode("christian")}
+                style={{ width: "18px", height: "18px", accentColor: "#111" }}
+              />
+              <span>Nur christliche Sprache</span>
+            </label>
+            <label style={getLanguageOptionStyle("combined")}>
+              <input
+                type="radio"
+                name="language-style"
+                value="combined"
+                checked={languageMode === "combined"}
+                onChange={() => setLanguageMode("combined")}
+                style={{ width: "18px", height: "18px", accentColor: "#111" }}
+              />
+              <span>Christlich + psychologisch / wissenschaftlich</span>
+            </label>
           </div>
-          <p style={{ margin: "0.85rem 0 0", color: "#1f2933", fontWeight: 600, lineHeight: 1.4 }}>
+          <p style={{ margin: "0.85rem 0 0", color: "#111", fontWeight: 600, lineHeight: 1.4 }}>
             {languageMode === "combined"
               ? "Aktuell werden biblische Formulierungen mit psychologischer und wissenschaftlicher Sprache verbunden, wenn du das möchtest."
               : "Aktuell bleiben die Antworten bewusst in biblischer Sprache und vermeiden psychologische Fachbegriffe."}
