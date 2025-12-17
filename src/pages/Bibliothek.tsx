@@ -10,6 +10,7 @@ import {
 
 import kindMitPanzerImage from "../assets/images/kindmitpanzer.png";
 import childImage from "../assets/images/kind.png";
+import { runChatCompletion } from "../lib/openaiChat";
 import styles from "./Bibliothek.module.css";
 
 const HIGH_PRIEST_IMAGE_CANDIDATES = [
@@ -324,11 +325,20 @@ export default function Bibliothek() {
   const [listeningField, setListeningField] = useState<DictationField | null>(null);
   const [childhoodExperience, setChildhoodExperience] = useState("");
   const [needSuggestionsNotes, setNeedSuggestionsNotes] = useState("");
+  const [needSuggestionsLoading, setNeedSuggestionsLoading] = useState(false);
+  const [needSuggestionsError, setNeedSuggestionsError] = useState<string | null>(null);
   const [jesusChatResponse, setJesusChatResponse] = useState("");
+  const [jesusChatLoading, setJesusChatLoading] = useState(false);
+  const [jesusChatError, setJesusChatError] = useState<string | null>(null);
   const [closingChatResponse, setClosingChatResponse] = useState("");
+  const [closingChatLoading, setClosingChatLoading] = useState(false);
+  const [closingChatError, setClosingChatError] = useState<string | null>(null);
   const [savedChats, setSavedChats] = useState<SavedChat[]>([]);
   const [activeMobileStep, setActiveMobileStep] = useState(0);
   const [introDiscussionQuestion, setIntroDiscussionQuestion] = useState("");
+  const [introDiscussionAnswer, setIntroDiscussionAnswer] = useState("");
+  const [introDiscussionLoading, setIntroDiscussionLoading] = useState(false);
+  const [introDiscussionError, setIntroDiscussionError] = useState<string | null>(null);
   const [highPriestImageSrc, setHighPriestImageSrc] = useState<string | null>(null);
   const [isHighPriestImageAvailable, setHighPriestImageAvailable] = useState(false);
 
@@ -351,6 +361,16 @@ export default function Bibliothek() {
     meditationNotes: "",
     introDiscussionQuestion: ""
   });
+
+  const formatChatError = useCallback((error: unknown) => {
+    if (error instanceof Error) {
+      return error.message;
+    }
+    if (typeof error === "string") {
+      return error;
+    }
+    return "Leider kam keine Antwort von ChatGPT. Bitte prüfe deine Internetverbindung oder den API-Key.";
+  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -789,32 +809,47 @@ export default function Bibliothek() {
   );
 
   const handleIntroDiscussion = useCallback(
-    (mode: "initial" | "follow-up") => {
+    async (mode: "initial" | "follow-up") => {
       const promptText = buildIntroDiscussionPrompt(mode).trim();
       if (!promptText) {
         return;
       }
 
-      if (typeof window === "undefined") {
-        return;
-      }
+      setIntroDiscussionError(null);
+      setIntroDiscussionLoading(true);
 
-      const prompt = encodeURIComponent(promptText);
-      window.open(`https://chat.openai.com/?q=${prompt}`, "_blank", "noopener,noreferrer");
+      try {
+        const response = await runChatCompletion(promptText);
+        setIntroDiscussionAnswer(response);
+      } catch (error) {
+        setIntroDiscussionError(formatChatError(error));
+      } finally {
+        setIntroDiscussionLoading(false);
+      }
     },
-    [buildIntroDiscussionPrompt]
+    [buildIntroDiscussionPrompt, formatChatError]
   );
 
-  const handleChatGPT = () => {
-    const prompt = encodeURIComponent(
+  const handleChatGPT = useCallback(async () => {
+    const promptText =
       "Analysiere die folgende Situation mit einem einfühlsamen, psychologisch-christlichen Blick. Das Ziel ist, zu erkennen, welches Bedürfnis hinter der beschriebenen Reaktion oder dem Konflikt steckt. " +
-        "Orientiere dich dabei an diesen acht zentralen Bedürfnissen: 1) Gesehen / gehört / gewürdigt werden, 2) Sicherheit & Vorhersagbarkeit, 3) Würde / Respekt / Unversehrtheit, 4) Autonomie & Einfluss, 5) Fairness / Gerechtigkeit, 6) Nähe / Verbundenheit, 7) Kompetenz / Wirksamkeit, 8) Leichtigkeit / Entlastung. " +
-        "Bitte wähle 1–3 passende Bedürfnisse aus dieser Liste, erkläre kurz warum, und schlage anschließend einen kurzen Jesus-Impuls vor. " +
-        "Situation: " +
-        problem
-    );
-    window.open(`https://chat.openai.com/?q=${prompt}`, "_blank", "noopener,noreferrer");
-  };
+      "Orientiere dich dabei an diesen acht zentralen Bedürfnissen: 1) Gesehen / gehört / gewürdigt werden, 2) Sicherheit & Vorhersagbarkeit, 3) Würde / Respekt / Unversehrtheit, 4) Autonomie & Einfluss, 5) Fairness / Gerechtigkeit, 6) Nähe / Verbundenheit, 7) Kompetenz / Wirksamkeit, 8) Leichtigkeit / Entlastung. " +
+      "Bitte wähle 1–3 passende Bedürfnisse aus dieser Liste, erkläre kurz warum, und schlage anschließend einen kurzen Jesus-Impuls vor. " +
+      "Situation: " +
+      problem;
+
+    setNeedSuggestionsError(null);
+    setNeedSuggestionsLoading(true);
+
+    try {
+      const response = await runChatCompletion(promptText);
+      setNeedSuggestionsNotes(response);
+    } catch (error) {
+      setNeedSuggestionsError(formatChatError(error));
+    } finally {
+      setNeedSuggestionsLoading(false);
+    }
+  }, [formatChatError, problem]);
 
   const buildDetailList = (
     items: Array<{ label: string; value: string }>
@@ -894,15 +929,24 @@ export default function Bibliothek() {
     return promptLines.join("\n").trim();
   }, [problem, selectedNeed, personalNeed, childhoodExperience, selectedNeedData]);
 
-  const handleAskJesus = () => {
+  const handleAskJesus = useCallback(async () => {
     const promptText = askJesusPrompt.trim();
     if (!promptText) {
       return;
     }
 
-    const prompt = encodeURIComponent(promptText);
-    window.open(`https://chat.openai.com/?q=${prompt}`, "_blank", "noopener,noreferrer");
-  };
+    setJesusChatError(null);
+    setJesusChatLoading(true);
+
+    try {
+      const response = await runChatCompletion(promptText);
+      setJesusChatResponse(response);
+    } catch (error) {
+      setJesusChatError(formatChatError(error));
+    } finally {
+      setJesusChatLoading(false);
+    }
+  }, [askJesusPrompt, formatChatError]);
 
   const closingPromptContextItems = useMemo(() => {
     const entries: Array<{ label: string; value: string }> = [];
@@ -974,18 +1018,23 @@ export default function Bibliothek() {
 
   const hasClosingPrompt = closingPrompt.trim().length > 0;
 
-  const handleClosingChatGPT = useCallback(() => {
+  const handleClosingChatGPT = useCallback(async () => {
     if (!hasClosingPrompt) {
       return;
     }
 
-    if (typeof window === "undefined") {
-      return;
-    }
+    setClosingChatError(null);
+    setClosingChatLoading(true);
 
-    const prompt = encodeURIComponent(closingPrompt);
-    window.open(`https://chat.openai.com/?q=${prompt}`, "_blank", "noopener,noreferrer");
-  }, [closingPrompt, hasClosingPrompt]);
+    try {
+      const response = await runChatCompletion(closingPrompt);
+      setClosingChatResponse(response);
+    } catch (error) {
+      setClosingChatError(formatChatError(error));
+    } finally {
+      setClosingChatLoading(false);
+    }
+  }, [closingPrompt, formatChatError, hasClosingPrompt]);
 
 
   const chatSaveItems = useMemo(
@@ -993,6 +1042,10 @@ export default function Bibliothek() {
       {
         label: "Punkt 1 – Deine Nachricht an ChatGPT",
         value: introDiscussionQuestion
+      },
+      {
+        label: "Punkt 1 – ChatGPT-Antwort (Verwandlung als Kind Gottes)",
+        value: introDiscussionAnswer
       },
       {
         label: "Punkt 2 – Was dich beschäftigt",
@@ -1029,6 +1082,7 @@ export default function Bibliothek() {
     ],
     [
       introDiscussionQuestion,
+      introDiscussionAnswer,
       problem,
       selectedNeed,
       needSuggestionsNotes,
@@ -1837,7 +1891,7 @@ export default function Bibliothek() {
                 <button
                   type="button"
                   onClick={() => handleIntroDiscussion("initial")}
-                  disabled={!hasQuestion}
+                  disabled={!hasQuestion || introDiscussionLoading}
                   style={{
                     backgroundColor: hasQuestion ? "#f4a259" : "#f5d1a8",
                     color: hasQuestion ? "#fff" : "#6f4e37",
@@ -1846,18 +1900,46 @@ export default function Bibliothek() {
                     padding: "0.65rem 1.6rem",
                     fontSize: "0.95rem",
                     fontWeight: 600,
-                    cursor: hasQuestion ? "pointer" : "not-allowed",
+                    cursor: hasQuestion && !introDiscussionLoading ? "pointer" : "not-allowed",
                     boxShadow: hasQuestion ? "0 10px 18px rgba(244, 162, 89, 0.35)" : "none"
                   }}
                 >
-                  Antwort erhalten
+                  {introDiscussionLoading ? "Antwort wird geladen…" : "Antwort erhalten"}
                 </button>
 
               </div>
 
-              <p style={{ margin: 0, fontSize: "0.92rem", lineHeight: 1.55, color: "#5f4630" }}>
-                Wenn du weiter mit ChatGPT chatten willst, dann tue das in ChatGPT.
-              </p>
+              {introDiscussionError ? (
+                <p style={{ margin: 0, color: "#b00020", fontWeight: 600 }}>
+                  {introDiscussionError}
+                </p>
+              ) : null}
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                <label style={{ fontWeight: 700, color: "#5f4630" }} htmlFor="introDiscussionAnswer">
+                  ChatGPT-Antwort (Verwandlung als Kind Gottes)
+                </label>
+                <textarea
+                  id="introDiscussionAnswer"
+                  value={introDiscussionAnswer}
+                  onChange={(event) => setIntroDiscussionAnswer(event.target.value)}
+                  placeholder="Hier erscheint die Antwort von ChatGPT. Du kannst sie anpassen oder ergänzen."
+                  rows={4}
+                  style={{
+                    width: "100%",
+                    borderRadius: "14px",
+                    border: "1px solid rgba(56, 103, 214, 0.18)",
+                    padding: "0.75rem 0.85rem",
+                    fontSize: "0.95rem",
+                    lineHeight: 1.45,
+                    color: "#1f2933",
+                    backgroundColor: "#fdfbf7",
+                    boxShadow: "inset 0 1px 4px rgba(36, 53, 103, 0.08)",
+                    resize: "vertical",
+                    minHeight: "6rem"
+                  }}
+                />
+              </div>
 
             </div>
           </div>
@@ -2176,6 +2258,7 @@ export default function Bibliothek() {
         <button
           type="button"
           onClick={handleChatGPT}
+          disabled={needSuggestionsLoading}
           style={{
             borderRadius: "18px",
             padding: "0.9rem 1rem",
@@ -2188,8 +2271,36 @@ export default function Bibliothek() {
             cursor: "pointer"
           }}
         >
-          Ich weiß es nicht – bitte Vorschläge machen
+          {needSuggestionsLoading ? "ChatGPT denkt nach…" : "Ich weiß es nicht – bitte Vorschläge machen"}
         </button>
+
+        {needSuggestionsError ? (
+          <p style={{ color: "#b00020", margin: "0.35rem 0 0" }}>{needSuggestionsError}</p>
+        ) : null}
+
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem", width: "100%" }}>
+          <label htmlFor="needSuggestions" style={{ fontWeight: 700, color: "#7a4416" }}>
+            ChatGPT-Vorschläge für Bedürfnisse
+          </label>
+          <textarea
+            id="needSuggestions"
+            value={needSuggestionsNotes}
+            onChange={(event) => setNeedSuggestionsNotes(event.target.value)}
+            placeholder="Hier erscheinen die Vorschläge von ChatGPT zu deinen Bedürfnissen."
+            rows={4}
+            style={{
+              borderRadius: "12px",
+              border: "1px solid #e2c9a5",
+              padding: "0.75rem 0.9rem",
+              fontSize: "1rem",
+              lineHeight: 1.45,
+              background: "#fffdf8",
+              color: "#2c3e50",
+              boxShadow: "inset 0 1px 3px rgba(122, 68, 22, 0.08)",
+              minHeight: "5rem"
+            }}
+          />
+        </div>
 
         <button
           type="button"
@@ -2817,30 +2928,58 @@ export default function Bibliothek() {
                 </div>
               )}
 
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                <button
-                  type="button"
-                  onClick={handleAskJesus}
-                  disabled={!canAskJesus}
-                  style={{
-                    border: "none",
-                    borderRadius: "999px",
-                    padding: "0.85rem 1.35rem",
-                    fontSize: "1.05rem",
-                    fontWeight: 700,
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+                  <button
+                    type="button"
+                    onClick={handleAskJesus}
+                  disabled={!canAskJesus || jesusChatLoading}
+                    style={{
+                      border: "none",
+                      borderRadius: "999px",
+                      padding: "0.85rem 1.35rem",
+                      fontSize: "1.05rem",
+                      fontWeight: 700,
                     background: canAskJesus
                       ? "linear-gradient(135deg, #4b7bec, #20bf6b)"
                       : "#cbd2d9",
                     color: canAskJesus ? "#fff" : "#5b728f",
-                    cursor: canAskJesus ? "pointer" : "not-allowed",
+                    cursor: canAskJesus && !jesusChatLoading ? "pointer" : "not-allowed",
                     boxShadow: canAskJesus
                       ? "0 18px 34px rgba(75, 123, 236, 0.3)"
                       : "none",
                     transition: "background-color 0.2s ease, transform 0.2s ease"
                   }}
                 >
-                  💬 ChatGPT-Antwort öffnen
+                  {jesusChatLoading ? "ChatGPT antwortet…" : "💬 ChatGPT-Antwort abrufen"}
                 </button>
+
+                {jesusChatError ? (
+                  <p style={{ margin: 0, color: "#b00020", fontWeight: 600 }}>{jesusChatError}</p>
+                ) : null}
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem", width: "100%" }}>
+                  <label htmlFor="jesusChatResponse" style={{ fontWeight: 700, color: "#1f3c88" }}>
+                    ChatGPT-Antwort für dich
+                  </label>
+                  <textarea
+                    id="jesusChatResponse"
+                    value={jesusChatResponse}
+                    onChange={(event) => setJesusChatResponse(event.target.value)}
+                    placeholder="Hier erscheint die Antwort, wie Jesus dein Bedürfnis stillen könnte."
+                    rows={6}
+                    style={{
+                      borderRadius: "14px",
+                      border: "1px solid #c8d4f4",
+                      padding: "0.9rem 1rem",
+                      fontSize: "1rem",
+                      lineHeight: 1.55,
+                      background: "#f8fbff",
+                      color: "#1f3c88",
+                      boxShadow: "inset 0 1px 4px rgba(75, 123, 236, 0.12)",
+                      minHeight: "7rem"
+                    }}
+                  />
+                </div>
               </div>
             </section>
           </div>
@@ -3119,7 +3258,7 @@ export default function Bibliothek() {
                 <button
                   type="button"
                   onClick={handleClosingChatGPT}
-                  disabled={!hasClosingPrompt}
+                  disabled={!hasClosingPrompt || closingChatLoading}
                   style={{
                     border: "none",
                     borderRadius: "999px",
@@ -3130,14 +3269,14 @@ export default function Bibliothek() {
                       ? "linear-gradient(135deg, #7d5fff, #4b7bec)"
                       : "#cbd2d9",
                     color: hasClosingPrompt ? "#fff" : "#5b728f",
-                    cursor: hasClosingPrompt ? "pointer" : "not-allowed",
+                    cursor: hasClosingPrompt && !closingChatLoading ? "pointer" : "not-allowed",
                     boxShadow: hasClosingPrompt
                       ? "0 18px 34px rgba(75, 123, 236, 0.3)"
                       : "none",
                     transition: "background-color 0.2s ease, transform 0.2s ease"
                   }}
                 >
-                  ✨ Abschlussantwort in ChatGPT öffnen
+                  {closingChatLoading ? "ChatGPT erstellt den Abschluss…" : "✨ Abschluss von ChatGPT abrufen"}
                 </button>
 
                 {!hasClosingPrompt && (
@@ -3153,6 +3292,34 @@ export default function Bibliothek() {
                     Abschlussantwort mit ChatGPT öffnen.
                   </p>
                 )}
+
+                {closingChatError ? (
+                  <p style={{ margin: 0, color: "#b00020", fontWeight: 600 }}>{closingChatError}</p>
+                ) : null}
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem", width: "100%" }}>
+                  <label htmlFor="closingChatResponse" style={{ fontWeight: 700, color: "#4b7bec" }}>
+                    Abschluss von ChatGPT
+                  </label>
+                  <textarea
+                    id="closingChatResponse"
+                    value={closingChatResponse}
+                    onChange={(event) => setClosingChatResponse(event.target.value)}
+                    placeholder="Hier erscheint der Abschluss-Kommentar von ChatGPT."
+                    rows={6}
+                    style={{
+                      borderRadius: "14px",
+                      border: "1px solid #d2d9ff",
+                      padding: "0.9rem 1rem",
+                      fontSize: "1rem",
+                      lineHeight: 1.55,
+                      background: "#f8f9ff",
+                      color: "#1f3c88",
+                      boxShadow: "inset 0 1px 4px rgba(77, 97, 214, 0.12)",
+                      minHeight: "7rem"
+                    }}
+                  />
+                </div>
               </div>
 
               {hasContext && (
