@@ -405,12 +405,30 @@ export default function Bibliothek() {
   );
 
   const getMaximizeButtonStyle = useCallback(
-    (field: MaximizableField): CSSProperties => ({
-      ...maximizeButtonBaseStyle,
-      backgroundColor: maximizedField === field ? "#e8f0ff" : maximizeButtonBaseStyle.backgroundColor,
-      borderColor: maximizedField === field ? "#7aa2ff" : "#cbd2d9",
-      color: maximizedField === field ? "#1f3c88" : "#1f2933"
-    }),
+    (field: MaximizableField): CSSProperties => {
+      const needsDarkBlueContrast =
+        field === "introAnswer" ||
+        field === "needSuggestions" ||
+        field === "jesusResponse" ||
+        field === "closingResponse";
+      const isMaximized = maximizedField === field;
+
+      if (needsDarkBlueContrast) {
+        return {
+          ...maximizeButtonBaseStyle,
+          backgroundColor: "#1f3c88",
+          borderColor: isMaximized ? "#1b3578" : "#1f3c88",
+          color: "#fff"
+        };
+      }
+
+      return {
+        ...maximizeButtonBaseStyle,
+        backgroundColor: isMaximized ? "#e8f0ff" : maximizeButtonBaseStyle.backgroundColor,
+        borderColor: isMaximized ? "#7aa2ff" : "#cbd2d9",
+        color: isMaximized ? "#1f3c88" : "#1f2933"
+      };
+    },
     [maximizedField]
   );
 
