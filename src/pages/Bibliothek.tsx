@@ -10,7 +10,7 @@ import {
 
 import kindMitPanzerImage from "../assets/images/kindmitpanzer.png";
 import childImage from "../assets/images/kind.png";
-import { runChatCompletion } from "../lib/openaiChat";
+import { runChatCompletion, type ChatMessage } from "../lib/openaiChat";
 import styles from "./Bibliothek.module.css";
 
 const HIGH_PRIEST_IMAGE_CANDIDATES = [
@@ -219,6 +219,18 @@ const INTRO_DISCUSSION_PROMPT_BASE = [
   "Bitte beende jede Antwort mit einer kurzen Rückfrage, damit das Gespräch weitergehen kann."
 ].join("\n");
 
+const NEED_SUGGESTION_SYSTEM_MESSAGE =
+  "Analysiere die folgende Situation mit einem einfühlsamen, psychologisch-christlichen Blick. Das Ziel ist, zu erkennen, welches Bedürfnis hinter der beschriebenen Reaktion oder dem Konflikt steckt. Orientiere dich dabei an diesen acht zentralen Bedürfnissen: 1) Gesehen / gehört / gewürdigt werden, 2) Sicherheit & Vorhersagbarkeit, 3) Würde / Respekt / Unversehrtheit, 4) Autonomie & Einfluss, 5) Fairness / Gerechtigkeit, 6) Nähe / Verbundenheit, 7) Kompetenz / Wirksamkeit, 8) Leichtigkeit / Entlastung. Bitte wähle 1–3 passende Bedürfnisse aus dieser Liste, erkläre kurz warum, und schlage anschließend einen kurzen Jesus-Impuls vor.";
+
+const ASK_JESUS_SYSTEM_MESSAGE = [
+  "Lies den folgenden Text, in dem ein Mensch sein inneres Bedürfnis beschreibt.",
+  "Antworte als Jesus – liebevoll, wahrhaftig, ermutigend.",
+  "Zeige, wie dieses Bedürfnis in der Beziehung zu mir gestillt werden könnte,",
+  "nicht durch äußere Umstände, sondern durch die Gemeinschaft mit mir.",
+  "Schlage außerdem 2–3 Bibelverse vor, die unterstützen, wie ich dieses Bedürfnis mit dir erlebe, und nenne die genaue Bibelstelle.",
+  "Sprich in der Du-Form, sanft und persönlich, mit Wärme."
+].join("\n");
+
 const introSections: IntroSection[] = [
   {
     icon: "⚡",
@@ -352,6 +364,10 @@ export default function Bibliothek() {
   const [closingChatResponse, setClosingChatResponse] = useState("");
   const [closingChatLoading, setClosingChatLoading] = useState(false);
   const [closingChatError, setClosingChatError] = useState<string | null>(null);
+  const [introDiscussionMessages, setIntroDiscussionMessages] = useState<ChatMessage[]>([]);
+  const [needSuggestionsMessages, setNeedSuggestionsMessages] = useState<ChatMessage[]>([]);
+  const [jesusChatMessages, setJesusChatMessages] = useState<ChatMessage[]>([]);
+  const [closingChatMessages, setClosingChatMessages] = useState<ChatMessage[]>([]);
   const [savedChats, setSavedChats] = useState<SavedChat[]>([]);
   const [activeMobileStep, setActiveMobileStep] = useState(0);
   const [introDiscussionQuestion, setIntroDiscussionQuestion] = useState("");
@@ -397,8 +413,12 @@ export default function Bibliothek() {
   }, []);
 
   const getTextareaSizing = useCallback(
-    (field: MaximizableField, defaultMinHeight: string, expandedMinHeight = "26rem") => ({
-      resize: maximizedField === field ? "none" : "vertical",
+    (
+      field: MaximizableField,
+      defaultMinHeight: string,
+      expandedMinHeight = "26rem"
+    ): Pick<CSSProperties, "resize" | "minHeight"> => ({
+      resize: (maximizedField === field ? "none" : "vertical") as CSSProperties["resize"],
       minHeight: maximizedField === field ? expandedMinHeight : defaultMinHeight
     }),
     [maximizedField]
@@ -843,73 +863,98 @@ export default function Bibliothek() {
     }
   }, [setActiveMobileStep, stepTwoRef]);
 
-  const buildIntroDiscussionPrompt = useCallback(
-    (mode: "initial" | "follow-up") => {
+  const buildIntroDiscussionMessages = useCallback(
+    (mode: "initial" | "follow-up"): ChatMessage[] => {
       const currentMessage =
         introDiscussionQuestionRef.current?.value.trim() ?? introDiscussionQuestion.trim();
       if (!currentMessage) {
-        return "";
+        return [];
       }
 
-      const segments: string[] = [INTRO_DISCUSSION_PROMPT_BASE];
+      const systemInstruction = [
+        INTRO_DISCUSSION_PROMPT_BASE,
+        mode === "initial"
+          ? "Aufgabe: Antworte auf die folgende Frage oder Aussage eines Kindes Gottes."
+          : "Aufgabe: Antworte auf die folgende Rückmeldung des Kindes Gottes, beziehe dich auf die bisherigen Gedanken und führe das Gespräch weiter."
+      ].join("\n\n");
 
-      if (mode === "initial") {
-        segments.push("Aufgabe: Antworte auf die folgende Frage oder Aussage eines Kindes Gottes.");
-      } else {
-        segments.push(
-          "Aufgabe: Antworte auf die folgende Rückmeldung des Kindes Gottes, beziehe dich auf die bisherigen Gedanken und führe das Gespräch weiter."
-        );
-      }
+      const userMessage: ChatMessage = {
+        role: "user",
+        content: ["Nachricht der Person:", currentMessage].join("\n")
+      };
 
-      segments.push("Nachricht der Person:", currentMessage);
-
-      return segments.join("\n\n");
+      return [
+        { role: "system", content: systemInstruction },
+        ...introDiscussionMessages,
+        userMessage
+      ];
     },
-    [introDiscussionQuestion]
+    [introDiscussionMessages, introDiscussionQuestion]
   );
 
   const handleIntroDiscussion = useCallback(
     async (mode: "initial" | "follow-up") => {
-      const promptText = buildIntroDiscussionPrompt(mode).trim();
-      if (!promptText) {
+      const messages = buildIntroDiscussionMessages(mode);
+      if (messages.length === 0) {
         return;
       }
+
+      const userMessage = messages[messages.length - 1];
 
       setIntroDiscussionError(null);
       setIntroDiscussionLoading(true);
 
       try {
-        const response = await runChatCompletion(promptText);
+        const response = await runChatCompletion({ messages });
         setIntroDiscussionAnswer(response);
+        setIntroDiscussionMessages((previous) => [
+          ...previous,
+          userMessage,
+          { role: "assistant", content: response }
+        ]);
       } catch (error) {
         setIntroDiscussionError(formatChatError(error));
       } finally {
         setIntroDiscussionLoading(false);
       }
     },
-    [buildIntroDiscussionPrompt, formatChatError]
+    [buildIntroDiscussionMessages, formatChatError]
   );
 
   const handleChatGPT = useCallback(async () => {
-    const promptText =
-      "Analysiere die folgende Situation mit einem einfühlsamen, psychologisch-christlichen Blick. Das Ziel ist, zu erkennen, welches Bedürfnis hinter der beschriebenen Reaktion oder dem Konflikt steckt. " +
-      "Orientiere dich dabei an diesen acht zentralen Bedürfnissen: 1) Gesehen / gehört / gewürdigt werden, 2) Sicherheit & Vorhersagbarkeit, 3) Würde / Respekt / Unversehrtheit, 4) Autonomie & Einfluss, 5) Fairness / Gerechtigkeit, 6) Nähe / Verbundenheit, 7) Kompetenz / Wirksamkeit, 8) Leichtigkeit / Entlastung. " +
-      "Bitte wähle 1–3 passende Bedürfnisse aus dieser Liste, erkläre kurz warum, und schlage anschließend einen kurzen Jesus-Impuls vor. " +
-      "Situation: " +
-      problem;
+    const trimmedProblem = problem.trim();
+    if (!trimmedProblem) {
+      return;
+    }
+
+    const userMessage: ChatMessage = {
+      role: "user",
+      content: `Situation: ${trimmedProblem}`
+    };
+
+    const messages: ChatMessage[] = [
+      { role: "system", content: NEED_SUGGESTION_SYSTEM_MESSAGE },
+      ...needSuggestionsMessages,
+      userMessage
+    ];
 
     setNeedSuggestionsError(null);
     setNeedSuggestionsLoading(true);
 
     try {
-      const response = await runChatCompletion(promptText);
+      const response = await runChatCompletion({ messages });
       setNeedSuggestionsNotes(response);
+      setNeedSuggestionsMessages((previous) => [
+        ...previous,
+        userMessage,
+        { role: "assistant", content: response }
+      ]);
     } catch (error) {
       setNeedSuggestionsError(formatChatError(error));
     } finally {
       setNeedSuggestionsLoading(false);
     }
-  }, [formatChatError, problem]);
+  }, [formatChatError, needSuggestionsMessages, problem]);
 
   const buildDetailList = (
     items: Array<{ label: string; value: string }>
@@ -989,24 +1034,44 @@ export default function Bibliothek() {
     return promptLines.join("\n").trim();
   }, [problem, selectedNeed, personalNeed, childhoodExperience, selectedNeedData]);
 
+  const askJesusMessages = useMemo<ChatMessage[]>(() => {
+    const trimmedPrompt = askJesusPrompt.trim();
+
+    if (!trimmedPrompt) {
+      return [] as ChatMessage[];
+    }
+
+    return [
+      { role: "system", content: ASK_JESUS_SYSTEM_MESSAGE },
+      ...jesusChatMessages,
+      { role: "user", content: trimmedPrompt }
+    ];
+  }, [askJesusPrompt, jesusChatMessages]);
+
   const handleAskJesus = useCallback(async () => {
-    const promptText = askJesusPrompt.trim();
-    if (!promptText) {
+    if (askJesusMessages.length === 0) {
       return;
     }
+
+    const userMessage = askJesusMessages[askJesusMessages.length - 1];
 
     setJesusChatError(null);
     setJesusChatLoading(true);
 
     try {
-      const response = await runChatCompletion(promptText);
+      const response = await runChatCompletion({ messages: askJesusMessages });
       setJesusChatResponse(response);
+      setJesusChatMessages((previous) => [
+        ...previous,
+        userMessage,
+        { role: "assistant", content: response }
+      ]);
     } catch (error) {
       setJesusChatError(formatChatError(error));
     } finally {
       setJesusChatLoading(false);
     }
-  }, [askJesusPrompt, formatChatError]);
+  }, [askJesusMessages, formatChatError]);
 
   const closingPromptContextItems = useMemo(() => {
     const entries: Array<{ label: string; value: string }> = [];
@@ -1038,9 +1103,9 @@ export default function Bibliothek() {
   const meditationNotesReference =
     "Das Texteingabefeld mit der Frage „Was hat Jesus dir in dieser Meditation gesagt?“ findest du in src/pages/Bibliothek.tsx. Dort wird innerhalb des mobilen Abschnitts ein <textarea> mit der id=\"mobileMeditationNotes\" gerendert, und direkt daneben sitzt der DictationButton, über den du die Eingaben diktieren kannst.";
 
-  const closingPrompt = useMemo(() => {
+  const closingMessages = useMemo<ChatMessage[]>(() => {
     if (closingPromptContextItems.length === 0) {
-      return "";
+      return [] as ChatMessage[];
     }
 
     const stepEightEntry = closingPromptContextItems.find((item) =>
@@ -1069,32 +1134,47 @@ export default function Bibliothek() {
       .map((item) => `- ${item.label}: ${item.value}`)
       .join("\n");
 
-    return [
-      instructions.join("\n\n"),
-      `Kontext:\n${contextLines}\n${meditationNotesReference}`,
-      `Angaben der Person:\n${meditationNotesReference}`
-    ].join("\n\n");
-  }, [closingPromptContextItems, meditationNotesReference]);
+    const userMessage: ChatMessage = {
+      role: "user",
+      content: [
+        `Kontext:\n${contextLines}\n${meditationNotesReference}`,
+        `Angaben der Person:\n${meditationNotesReference}`
+      ].join("\n\n")
+    };
 
-  const hasClosingPrompt = closingPrompt.trim().length > 0;
+    return [
+      { role: "system", content: instructions.join("\n\n") },
+      ...closingChatMessages,
+      userMessage
+    ];
+  }, [closingChatMessages, closingPromptContextItems, meditationNotesReference]);
+
+  const hasClosingPrompt = closingMessages.length > 0;
 
   const handleClosingChatGPT = useCallback(async () => {
     if (!hasClosingPrompt) {
       return;
     }
 
+    const userMessage = closingMessages[closingMessages.length - 1];
+
     setClosingChatError(null);
     setClosingChatLoading(true);
 
     try {
-      const response = await runChatCompletion(closingPrompt);
+      const response = await runChatCompletion({ messages: closingMessages });
       setClosingChatResponse(response);
+      setClosingChatMessages((previous) => [
+        ...previous,
+        userMessage,
+        { role: "assistant", content: response }
+      ]);
     } catch (error) {
       setClosingChatError(formatChatError(error));
     } finally {
       setClosingChatLoading(false);
     }
-  }, [closingPrompt, formatChatError, hasClosingPrompt]);
+  }, [closingMessages, formatChatError, hasClosingPrompt]);
 
 
   const chatSaveItems = useMemo(
@@ -1180,6 +1260,10 @@ export default function Bibliothek() {
     setNeedSuggestionsNotes("");
     setJesusChatResponse("");
     setClosingChatResponse("");
+    setIntroDiscussionMessages([]);
+    setNeedSuggestionsMessages([]);
+    setJesusChatMessages([]);
+    setClosingChatMessages([]);
   };
 
   const handleDeleteChat = (id: string) => {
@@ -2010,7 +2094,11 @@ export default function Bibliothek() {
               <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
                 <button
                   type="button"
-                  onClick={() => handleIntroDiscussion("initial")}
+                  onClick={() =>
+                    handleIntroDiscussion(
+                      introDiscussionMessages.length > 0 ? "follow-up" : "initial"
+                    )
+                  }
                   disabled={!hasQuestion || introDiscussionLoading}
                   style={{
                     backgroundColor: hasQuestion ? "#f4a259" : "#f5d1a8",
@@ -2024,7 +2112,11 @@ export default function Bibliothek() {
                     boxShadow: hasQuestion ? "0 10px 18px rgba(244, 162, 89, 0.35)" : "none"
                   }}
                 >
-                  {introDiscussionLoading ? "Antwort wird geladen…" : "Antwort erhalten"}
+                  {introDiscussionLoading
+                    ? "Antwort wird geladen…"
+                    : introDiscussionMessages.length > 0
+                    ? "Weiter fragen"
+                    : "Antwort erhalten"}
                 </button>
 
               </div>

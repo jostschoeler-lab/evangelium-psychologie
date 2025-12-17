@@ -1,5 +1,10 @@
 const DEFAULT_MODEL = "gpt-4o-mini";
 
+export type ChatMessage = {
+  role: "system" | "user" | "assistant";
+  content: string;
+};
+
 type ChatCompletionChoice = {
   message?: {
     content?: string;
@@ -24,7 +29,16 @@ function getModel(): string {
   return import.meta.env.VITE_OPENAI_MODEL || DEFAULT_MODEL;
 }
 
-export async function runChatCompletion(prompt: string): Promise<string> {
+type ChatCompletionPayload = string | { messages: ChatMessage[] };
+
+export async function runChatCompletion(
+  promptOrMessages: ChatCompletionPayload
+): Promise<string> {
+  const messages =
+    typeof promptOrMessages === "string"
+      ? [{ role: "user", content: promptOrMessages } satisfies ChatMessage]
+      : promptOrMessages.messages;
+
   const response = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: {
@@ -33,7 +47,7 @@ export async function runChatCompletion(prompt: string): Promise<string> {
     },
     body: JSON.stringify({
       model: getModel(),
-      messages: [{ role: "user", content: prompt }]
+      messages
     })
   });
 
