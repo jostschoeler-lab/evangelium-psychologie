@@ -44,6 +44,25 @@ type DictationField =
   | "meditationNotes"
   | "introDiscussionQuestion";
 
+type MaximizableField =
+  | "introAnswer"
+  | "needSuggestions"
+  | "jesusResponse"
+  | "closingResponse";
+
+const maximizeButtonBaseStyle: CSSProperties = {
+  borderRadius: "999px",
+  border: "1px solid #cbd2d9",
+  padding: "0.35rem 0.9rem",
+  fontSize: "0.9rem",
+  fontWeight: 700,
+  backgroundColor: "#f6f8fc",
+  color: "#1f2933",
+  cursor: "pointer",
+  boxShadow: "0 6px 12px rgba(31, 61, 116, 0.12)",
+  transition: "background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease"
+};
+
 const needs: Record<string, NeedContent> = {
   "Gesehen / gehört / gewürdigt werden": {
     resonance: [
@@ -341,6 +360,7 @@ export default function Bibliothek() {
   const [introDiscussionError, setIntroDiscussionError] = useState<string | null>(null);
   const [highPriestImageSrc, setHighPriestImageSrc] = useState<string | null>(null);
   const [isHighPriestImageAvailable, setHighPriestImageAvailable] = useState(false);
+  const [maximizedField, setMaximizedField] = useState<MaximizableField | null>(null);
 
   const dictationSupported =
     typeof window !== "undefined" &&
@@ -371,6 +391,28 @@ export default function Bibliothek() {
     }
     return "Leider kam keine Antwort von ChatGPT. Bitte prüfe deine Internetverbindung oder den API-Key.";
   }, []);
+
+  const toggleMaximizedField = useCallback((field: MaximizableField) => {
+    setMaximizedField((current) => (current === field ? null : field));
+  }, []);
+
+  const getTextareaSizing = useCallback(
+    (field: MaximizableField, defaultMinHeight: string, expandedMinHeight = "26rem") => ({
+      resize: maximizedField === field ? "none" : "vertical",
+      minHeight: maximizedField === field ? expandedMinHeight : defaultMinHeight
+    }),
+    [maximizedField]
+  );
+
+  const getMaximizeButtonStyle = useCallback(
+    (field: MaximizableField): CSSProperties => ({
+      ...maximizeButtonBaseStyle,
+      backgroundColor: maximizedField === field ? "#e8f0ff" : maximizeButtonBaseStyle.backgroundColor,
+      borderColor: maximizedField === field ? "#7aa2ff" : "#cbd2d9",
+      color: maximizedField === field ? "#1f3c88" : "#1f2933"
+    }),
+    [maximizedField]
+  );
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -1428,9 +1470,28 @@ export default function Bibliothek() {
         sobald du oben deine Fragen und die Antworten von ChatGPT ergänzt hast.
       </p>
 
-      <label htmlFor="chatNeedSuggestions" style={{ display: "block", fontWeight: 600, marginTop: "1rem" }}>
-        ChatGPT – Vorschläge für Bedürfnisse (Punkt 3)
-      </label>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "0.5rem",
+          flexWrap: "wrap",
+          marginTop: "1rem"
+        }}
+      >
+        <label htmlFor="chatNeedSuggestions" style={{ display: "block", fontWeight: 600 }}>
+          ChatGPT – Vorschläge für Bedürfnisse (Punkt 3)
+        </label>
+        <button
+          type="button"
+          aria-pressed={maximizedField === "needSuggestions"}
+          onClick={() => toggleMaximizedField("needSuggestions")}
+          style={getMaximizeButtonStyle("needSuggestions")}
+        >
+          {maximizedField === "needSuggestions" ? "Normale Größe" : "Maximieren"}
+        </button>
+      </div>
       <textarea
         id="chatNeedSuggestions"
         value={needSuggestionsNotes}
@@ -1444,14 +1505,32 @@ export default function Bibliothek() {
           marginTop: "0.5rem",
           borderRadius: "6px",
           border: "1px solid #ccc",
-          resize: "vertical",
-          minHeight: "10rem"
+          ...getTextareaSizing("needSuggestions", "10rem", "22rem")
         }}
       />
 
-      <label htmlFor="chatJesusAnswer" style={{ display: "block", fontWeight: 600, marginTop: "1rem" }}>
-        ChatGPT – Antwort auf deine Frage (Punkt 7)
-      </label>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "0.5rem",
+          flexWrap: "wrap",
+          marginTop: "1rem"
+        }}
+      >
+        <label htmlFor="chatJesusAnswer" style={{ display: "block", fontWeight: 600 }}>
+          ChatGPT – Antwort auf deine Frage (Punkt 7)
+        </label>
+        <button
+          type="button"
+          aria-pressed={maximizedField === "jesusResponse"}
+          onClick={() => toggleMaximizedField("jesusResponse")}
+          style={getMaximizeButtonStyle("jesusResponse")}
+        >
+          {maximizedField === "jesusResponse" ? "Normale Größe" : "Maximieren"}
+        </button>
+      </div>
       <textarea
         id="chatJesusAnswer"
         value={jesusChatResponse}
@@ -1465,14 +1544,32 @@ export default function Bibliothek() {
           marginTop: "0.5rem",
           borderRadius: "6px",
           border: "1px solid #ccc",
-          resize: "vertical",
-          minHeight: "12rem"
+          ...getTextareaSizing("jesusResponse", "12rem", "24rem")
         }}
       />
 
-      <label htmlFor="chatClosingAnswer" style={{ display: "block", fontWeight: 600, marginTop: "1rem" }}>
-        ChatGPT – Abschluss (Punkt 9)
-      </label>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "0.5rem",
+          flexWrap: "wrap",
+          marginTop: "1rem"
+        }}
+      >
+        <label htmlFor="chatClosingAnswer" style={{ display: "block", fontWeight: 600 }}>
+          ChatGPT – Abschluss (Punkt 9)
+        </label>
+        <button
+          type="button"
+          aria-pressed={maximizedField === "closingResponse"}
+          onClick={() => toggleMaximizedField("closingResponse")}
+          style={getMaximizeButtonStyle("closingResponse")}
+        >
+          {maximizedField === "closingResponse" ? "Normale Größe" : "Maximieren"}
+        </button>
+      </div>
       <textarea
         id="chatClosingAnswer"
         value={closingChatResponse}
@@ -1486,8 +1583,7 @@ export default function Bibliothek() {
           marginTop: "0.5rem",
           borderRadius: "6px",
           border: "1px solid #ccc",
-          resize: "vertical",
-          minHeight: "12rem"
+          ...getTextareaSizing("closingResponse", "12rem", "24rem")
         }}
       />
 
@@ -1921,10 +2017,34 @@ export default function Bibliothek() {
                 </p>
               ) : null}
 
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-                <label style={{ fontWeight: 700, color: "#5f4630" }} htmlFor="introDiscussionAnswer">
-                  ChatGPT-Antwort (Verwandlung als Kind Gottes)
-                </label>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "0.35rem"
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: "0.5rem",
+                    flexWrap: "wrap"
+                  }}
+                >
+                  <label style={{ fontWeight: 700, color: "#5f4630" }} htmlFor="introDiscussionAnswer">
+                    ChatGPT-Antwort (Verwandlung als Kind Gottes)
+                  </label>
+                  <button
+                    type="button"
+                    aria-pressed={maximizedField === "introAnswer"}
+                    onClick={() => toggleMaximizedField("introAnswer")}
+                    style={getMaximizeButtonStyle("introAnswer")}
+                  >
+                    {maximizedField === "introAnswer" ? "Normale Größe" : "Maximieren"}
+                  </button>
+                </div>
                 <textarea
                   id="introDiscussionAnswer"
                   value={introDiscussionAnswer}
@@ -1941,8 +2061,7 @@ export default function Bibliothek() {
                     color: "#1f2933",
                     backgroundColor: "#fdfbf7",
                     boxShadow: "inset 0 1px 4px rgba(36, 53, 103, 0.08)",
-                    resize: "vertical",
-                    minHeight: "12rem"
+                    ...getTextareaSizing("introAnswer", "12rem", "24rem")
                   }}
                 />
               </div>
@@ -2285,9 +2404,27 @@ export default function Bibliothek() {
         ) : null}
 
         <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem", width: "100%" }}>
-          <label htmlFor="needSuggestions" style={{ fontWeight: 700, color: "#7a4416" }}>
-            ChatGPT-Vorschläge für Bedürfnisse
-          </label>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: "0.5rem",
+              flexWrap: "wrap"
+            }}
+          >
+            <label htmlFor="needSuggestions" style={{ fontWeight: 700, color: "#7a4416" }}>
+              ChatGPT-Vorschläge für Bedürfnisse
+            </label>
+            <button
+              type="button"
+              aria-pressed={maximizedField === "needSuggestions"}
+              onClick={() => toggleMaximizedField("needSuggestions")}
+              style={getMaximizeButtonStyle("needSuggestions")}
+            >
+              {maximizedField === "needSuggestions" ? "Normale Größe" : "Maximieren"}
+            </button>
+          </div>
           <textarea
             id="needSuggestions"
             value={needSuggestionsNotes}
@@ -2303,8 +2440,7 @@ export default function Bibliothek() {
               background: "#fffdf8",
               color: "#2c3e50",
               boxShadow: "inset 0 1px 3px rgba(122, 68, 22, 0.08)",
-              minHeight: "10rem",
-              resize: "vertical"
+              ...getTextareaSizing("needSuggestions", "10rem", "22rem")
             }}
           />
         </div>
@@ -2965,9 +3101,27 @@ export default function Bibliothek() {
                 ) : null}
 
                 <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem", width: "100%" }}>
-                  <label htmlFor="jesusChatResponse" style={{ fontWeight: 700, color: "#1f3c88" }}>
-                    ChatGPT-Antwort für dich
-                  </label>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      gap: "0.5rem",
+                      flexWrap: "wrap"
+                    }}
+                  >
+                    <label htmlFor="jesusChatResponse" style={{ fontWeight: 700, color: "#1f3c88" }}>
+                      ChatGPT-Antwort für dich
+                    </label>
+                    <button
+                      type="button"
+                      aria-pressed={maximizedField === "jesusResponse"}
+                      onClick={() => toggleMaximizedField("jesusResponse")}
+                      style={getMaximizeButtonStyle("jesusResponse")}
+                    >
+                      {maximizedField === "jesusResponse" ? "Normale Größe" : "Maximieren"}
+                    </button>
+                  </div>
                   <textarea
                     id="jesusChatResponse"
                     value={jesusChatResponse}
@@ -2983,8 +3137,7 @@ export default function Bibliothek() {
                     background: "#f8fbff",
                     color: "#1f3c88",
                     boxShadow: "inset 0 1px 4px rgba(75, 123, 236, 0.12)",
-                    minHeight: "12rem",
-                    resize: "vertical"
+                    ...getTextareaSizing("jesusResponse", "12rem", "24rem")
                   }}
                 />
                 </div>
@@ -3306,9 +3459,27 @@ export default function Bibliothek() {
                 ) : null}
 
                 <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem", width: "100%" }}>
-                  <label htmlFor="closingChatResponse" style={{ fontWeight: 700, color: "#4b7bec" }}>
-                    Abschluss von ChatGPT
-                  </label>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      gap: "0.5rem",
+                      flexWrap: "wrap"
+                    }}
+                  >
+                    <label htmlFor="closingChatResponse" style={{ fontWeight: 700, color: "#4b7bec" }}>
+                      Abschluss von ChatGPT
+                    </label>
+                    <button
+                      type="button"
+                      aria-pressed={maximizedField === "closingResponse"}
+                      onClick={() => toggleMaximizedField("closingResponse")}
+                      style={getMaximizeButtonStyle("closingResponse")}
+                    >
+                      {maximizedField === "closingResponse" ? "Normale Größe" : "Maximieren"}
+                    </button>
+                  </div>
                   <textarea
                     id="closingChatResponse"
                     value={closingChatResponse}
@@ -3324,8 +3495,7 @@ export default function Bibliothek() {
                     background: "#f8f9ff",
                     color: "#1f3c88",
                     boxShadow: "inset 0 1px 4px rgba(77, 97, 214, 0.12)",
-                    minHeight: "12rem",
-                    resize: "vertical"
+                    ...getTextareaSizing("closingResponse", "12rem", "24rem")
                   }}
                 />
                 </div>
