@@ -2381,12 +2381,12 @@ export default function Bibliothek() {
                   padding: "0.75rem 0.9rem",
                   fontSize: "1rem",
                   fontWeight: 600,
-                  border: isSelected ? "1px solid #eb8c2d" : "1px solid transparent",
-                  backgroundColor: isSelected ? "#ffe8c8" : "#fff",
-                  color: "#7a4416",
+                  border: isSelected ? "1px solid #ffcf91" : "1px solid #1a2d68",
+                  backgroundColor: isSelected ? "#274f9b" : "#1f3c88",
+                  color: "#fff",
                   boxShadow: isSelected
-                    ? "0 10px 16px rgba(235, 140, 45, 0.25)"
-                    : "0 6px 12px rgba(214, 171, 116, 0.12)",
+                    ? "0 12px 18px rgba(31, 60, 136, 0.35)"
+                    : "0 8px 14px rgba(31, 60, 136, 0.22)",
                   cursor: "pointer",
                   transition: "all 0.2s ease",
                   outline: "none"
@@ -2407,10 +2407,10 @@ export default function Bibliothek() {
             padding: "0.9rem 1rem",
             fontSize: "1rem",
             fontWeight: 600,
-            border: "none",
-            backgroundColor: "#fff",
-            color: "#7a4416",
-            boxShadow: "0 10px 24px rgba(214, 171, 116, 0.22)",
+            border: "1px solid #1a2d68",
+            background: "linear-gradient(135deg, #1f3c88, #274f9b)",
+            color: "#fff",
+            boxShadow: "0 12px 20px rgba(31, 60, 136, 0.3)",
             cursor: "pointer"
           }}
         >
