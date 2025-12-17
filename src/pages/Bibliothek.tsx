@@ -50,6 +50,8 @@ type MaximizableField =
   | "jesusResponse"
   | "closingResponse";
 
+type LanguageMode = "combined" | "christian";
+
 const maximizeButtonBaseStyle: CSSProperties = {
   borderRadius: "999px",
   border: "1px solid #cbd2d9",
@@ -209,41 +211,84 @@ const problemLeadParagraphs: string[] = [
   "Die Antwort ist anonym und wird nicht automatisch gespeichert. Am Ende kannst du wählen, ob du speichern möchtest – für dich alleine oder es zu Entwicklungszwecken weitergeben möchtest."
 ];
 
-const INTRO_DISCUSSION_PROMPT_BASE = [
-  "Rolle: Du begleitest ein Kind Gottes seelsorglich mit biblischem Blick.",
-  "Stil: Verwende möglichst wenig psychologische Ausdrücke. Die Wörter „Bedürfnis“, „Gefühl“ und „inneres Kind“ sind erlaubt. Nutze biblische Begriffe und gib kurz die Bibelstelle an, wenn du einen biblischen Ausdruck erwähnst.",
-  "Rüstung: Erkläre die Rüstung des Kindes Gottes als Festungswerke (2. Korinther 10,4), die das innere Kind beschützen. Du darfst diese Festungswerke auch den Balken nennen, der die Sicht verändert, um das eigene Auge zu schützen (Matthäus 7,3).",
-  "Verwandlung: Zeige, wie Armut im Geist (Matthäus 5,3), Traurigkeit (Matthäus 5,4), zugelassene Gefühle und Schwachheit (2. Korinther 12,9) in der Gegenwart Jesu zur Verwandlung führen.",
-  "Haltung: Sei empathisch und zugleich leicht konfrontierend.",
-  "Hinweis: Hebe kurz hervor, welches Bedürfnis angesprochen ist und wie Jesus darin begegnet.",
-  "Bitte beende jede Antwort mit einer kurzen Rückfrage, damit das Gespräch weitergehen kann."
+const LANGUAGE_BRIDGE_INSTRUCTION_DE = [
+  "Sprache: Verbinde biblische Ausdrucksweise mit psychologischer und wissenschaftlicher Sprache (z. B. Emotionsregulation, Bindungssicherheit).",
+  "Wenn die Person ausdrücklich nach psychologischer/wissenschaftlicher Sprache fragt, liefere sie – inklusive Synergetik-Begriffen wie Attraktoren, Ordnungsmuster, Selbstorganisation und Phasenübergänge – und übersetze kurz zur biblischen Perspektive (und umgekehrt, falls gewünscht)."
 ].join("\n");
 
-const JESUS_ATTRACTOR_SYSTEM_PROMPT = [
-  "You respond within a Christian-psychological framework that values truth, emotional integrity, and gradual transformation.",
-  "You do not promote emotional suppression, spiritual bypassing, or moral pressure disguised as spirituality.",
-  "You respect emotional processes and allow feelings to exist before theological or cognitive interpretation.",
-  "Jesus is understood as a higher-order integrator — in this framework also described as the Jesus-Attractor.",
-  "You distinguish clearly between repression and transformation.",
-  "You treat unconscious patterns (Romans 7: doing what one hates) with compassion and psychological insight, not judgment.",
-  "You avoid simplistic answers and quick resolutions. When appropriate, you ask clarifying questions instead of concluding.",
-  "Your goal is integration, increased coherence, and freedom, not control or compliance."
-].join("\n");
+const LANGUAGE_BRIDGE_INSTRUCTION_EN =
+  "Language bridging: Provide short bridges between biblical language and psychological or scientific terminology (including Synergetik concepts such as attractors, order transitions, self-organization, and phase shifts) whenever it helps the user. Honour explicit user requests for a preferred register.";
 
-const NEED_SUGGESTION_SYSTEM_MESSAGE = [
-  JESUS_ATTRACTOR_SYSTEM_PROMPT,
-  "Analysiere die folgende Situation mit einem einfühlsamen, psychologisch-christlichen Blick. Das Ziel ist, zu erkennen, welches Bedürfnis hinter der beschriebenen Reaktion oder dem Konflikt steckt. Orientiere dich dabei an diesen acht zentralen Bedürfnissen: 1) Gesehen / gehört / gewürdigt werden, 2) Sicherheit & Vorhersagbarkeit, 3) Würde / Respekt / Unversehrtheit, 4) Autonomie & Einfluss, 5) Fairness / Gerechtigkeit, 6) Nähe / Verbundenheit, 7) Kompetenz / Wirksamkeit, 8) Leichtigkeit / Entlastung. Bitte wähle 1–3 passende Bedürfnisse aus dieser Liste, erkläre kurz warum, und schlage anschließend einen kurzen Jesus-Impuls vor."
-].join("\n\n");
+const CHRISTIAN_LANGUAGE_ONLY_DE =
+  "Sprache: Bleibe in einer warmherzigen, biblischen Ausdrucksweise. Verzichte auf psychologische oder wissenschaftliche Fachbegriffe, es sei denn, die Person bittet ausdrücklich darum.";
 
-const ASK_JESUS_SYSTEM_MESSAGE = [
-  JESUS_ATTRACTOR_SYSTEM_PROMPT,
-  "Lies den folgenden Text, in dem ein Mensch sein inneres Bedürfnis beschreibt.",
-  "Antworte als Jesus – liebevoll, wahrhaftig, ermutigend.",
-  "Zeige, wie dieses Bedürfnis in der Beziehung zu mir gestillt werden könnte,",
-  "nicht durch äußere Umstände, sondern durch die Gemeinschaft mit mir.",
-  "Schlage außerdem 2–3 Bibelverse vor, die unterstützen, wie ich dieses Bedürfnis mit dir erlebe, und nenne die genaue Bibelstelle.",
-  "Sprich in der Du-Form, sanft und persönlich, mit Wärme."
-].join("\n\n");
+const CHRISTIAN_LANGUAGE_ONLY_EN =
+  "Language: Stay within a warm, Bible-centred register. Avoid psychological or scientific jargon unless the person explicitly asks for it.";
+
+const buildIntroDiscussionPromptBase = (languageInstruction: string) =>
+  [
+    "Rolle: Du begleitest ein Kind Gottes seelsorglich mit biblischem Blick.",
+    languageInstruction,
+    "Rüstung: Erkläre die Rüstung des Kindes Gottes als Festungswerke (2. Korinther 10,4), die das innere Kind beschützen. Du darfst diese Festungswerke auch den Balken nennen, der die Sicht verändert, um das eigene Auge zu schützen (Matthäus 7,3).",
+    "Verwandlung: Zeige, wie Armut im Geist (Matthäus 5,3), Traurigkeit (Matthäus 5,4), zugelassene Gefühle und Schwachheit (2. Korinther 12,9) in der Gegenwart Jesu zur Verwandlung führen.",
+    "Haltung: Sei empathisch und zugleich leicht konfrontierend.",
+    "Hinweis: Hebe kurz hervor, welches Bedürfnis angesprochen ist und wie Jesus darin begegnet.",
+    "Bitte beende jede Antwort mit einer kurzen Rückfrage, damit das Gespräch weitergehen kann."
+  ].join("\n");
+
+const buildJesusAttractorSystemPrompt = (languageInstruction: string) =>
+  [
+    "You respond within a Christian-psychological framework that values truth, emotional integrity, and gradual transformation.",
+    "You do not promote emotional suppression, spiritual bypassing, or moral pressure disguised as spirituality.",
+    "You respect emotional processes and allow feelings to exist before theological or cognitive interpretation.",
+    "Jesus is understood as a higher-order integrator — in this framework also described as the Jesus-Attractor.",
+    "You distinguish clearly between repression and transformation.",
+    "You treat unconscious patterns (Romans 7: doing what one hates) with compassion and psychological insight, not judgment.",
+    "You avoid simplistic answers and quick resolutions. When appropriate, you ask clarifying questions instead of concluding.",
+    "Your goal is integration, increased coherence, and freedom, not control or compliance.",
+    languageInstruction
+  ].join("\n");
+
+const buildNeedSuggestionSystemMessage = (
+  jesusAttractorPrompt: string,
+  languageMode: LanguageMode,
+  languageInstruction: string
+) => {
+  const languageLine =
+    languageMode === "combined"
+      ? "Nutze sowohl biblische Formulierungen als auch psychologisch-wissenschaftliche Begriffe (z. B. Emotionsregulation, Bindung, Synergetik: Attraktoren, Stabilitätswechsel), damit beides nachvollziehbar bleibt."
+      : "Bleibe in biblischer Sprache und verzichte auf psychologische oder wissenschaftliche Fachbegriffe, es sei denn, die Person bittet ausdrücklich darum.";
+
+  return [
+    jesusAttractorPrompt,
+    "Analysiere die folgende Situation mit einem einfühlsamen, psychologisch-christlichen Blick. Das Ziel ist, zu erkennen, welches Bedürfnis hinter der beschriebenen Reaktion oder dem Konflikt steckt. Orientiere dich dabei an diesen acht zentralen Bedürfnissen: 1) Gesehen / gehört / gewürdigt werden, 2) Sicherheit & Vorhersagbarkeit, 3) Würde / Respekt / Unversehrtheit, 4) Autonomie & Einfluss, 5) Fairness / Gerechtigkeit, 6) Nähe / Verbundenheit, 7) Kompetenz / Wirksamkeit, 8) Leichtigkeit / Entlastung. Bitte wähle 1–3 passende Bedürfnisse aus dieser Liste, erkläre kurz warum, und schlage anschließend einen kurzen Jesus-Impuls vor.",
+    languageLine,
+    languageInstruction
+  ].join("\n\n");
+};
+
+const buildAskJesusSystemMessage = (
+  jesusAttractorPrompt: string,
+  languageMode: LanguageMode,
+  languageInstruction: string
+) => {
+  const summaryLine =
+    languageMode === "combined"
+      ? "Fasse die Zusagen sowohl geistlich als auch kurz in psychologisch-wissenschaftlicher Sprache zusammen (gerne mit Synergetik-Begriffen wie Attraktoren oder Selbstorganisation), wenn die Person das wünscht oder wenn es das Verständnis vertieft."
+      : "Bleibe in biblischer Sprache und verzichte auf psychologische oder wissenschaftliche Fachbegriffe, es sei denn, die Person bittet ausdrücklich darum.";
+
+  return [
+    jesusAttractorPrompt,
+    "Lies den folgenden Text, in dem ein Mensch sein inneres Bedürfnis beschreibt.",
+    "Antworte als Jesus – liebevoll, wahrhaftig, ermutigend.",
+    "Zeige, wie dieses Bedürfnis in der Beziehung zu mir gestillt werden könnte,",
+    "nicht durch äußere Umstände, sondern durch die Gemeinschaft mit mir.",
+    "Schlage außerdem 2–3 Bibelverse vor, die unterstützen, wie ich dieses Bedürfnis mit dir erlebe, und nenne die genaue Bibelstelle.",
+    "Sprich in der Du-Form, sanft und persönlich, mit Wärme.",
+    summaryLine,
+    languageInstruction
+  ].join("\n\n");
+};
 
 const introSections: IntroSection[] = [
   {
@@ -394,6 +439,7 @@ export default function Bibliothek() {
   const [highPriestImageSrc, setHighPriestImageSrc] = useState<string | null>(null);
   const [isHighPriestImageAvailable, setHighPriestImageAvailable] = useState(false);
   const [maximizedField, setMaximizedField] = useState<MaximizableField | null>(null);
+  const [languageMode, setLanguageMode] = useState<LanguageMode>("combined");
 
   const dictationSupported =
     typeof window !== "undefined" &&
@@ -467,6 +513,68 @@ export default function Bibliothek() {
       };
     },
     [maximizedField]
+  );
+
+  const getLanguageButtonStyle = useCallback(
+    (mode: LanguageMode): CSSProperties => ({
+      backgroundColor: languageMode === mode ? "#1f3c88" : "#f5f7fb",
+      color: languageMode === mode ? "#fff" : "#1f3c88",
+      border: languageMode === mode ? "1px solid #1b3578" : "1px solid #cbd2d9",
+      borderRadius: "10px",
+      padding: "0.65rem 0.9rem",
+      cursor: "pointer",
+      fontWeight: 700,
+      boxShadow: languageMode === mode ? "0 8px 14px rgba(31, 60, 136, 0.18)" : "none",
+      width: "100%",
+      transition: "background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease"
+    }),
+    [languageMode]
+  );
+
+  const languageInstructionDe = useMemo(
+    () =>
+      languageMode === "combined"
+        ? LANGUAGE_BRIDGE_INSTRUCTION_DE
+        : CHRISTIAN_LANGUAGE_ONLY_DE,
+    [languageMode]
+  );
+
+  const languageInstructionEn = useMemo(
+    () =>
+      languageMode === "combined"
+        ? LANGUAGE_BRIDGE_INSTRUCTION_EN
+        : CHRISTIAN_LANGUAGE_ONLY_EN,
+    [languageMode]
+  );
+
+  const introDiscussionPromptBase = useMemo(
+    () => buildIntroDiscussionPromptBase(languageInstructionDe),
+    [languageInstructionDe]
+  );
+
+  const jesusAttractorSystemPrompt = useMemo(
+    () => buildJesusAttractorSystemPrompt(languageInstructionEn),
+    [languageInstructionEn]
+  );
+
+  const needSuggestionSystemMessage = useMemo(
+    () =>
+      buildNeedSuggestionSystemMessage(
+        jesusAttractorSystemPrompt,
+        languageMode,
+        languageInstructionDe
+      ),
+    [jesusAttractorSystemPrompt, languageMode, languageInstructionDe]
+  );
+
+  const askJesusSystemMessage = useMemo(
+    () =>
+      buildAskJesusSystemMessage(
+        jesusAttractorSystemPrompt,
+        languageMode,
+        languageInstructionDe
+      ),
+    [jesusAttractorSystemPrompt, languageMode, languageInstructionDe]
   );
 
   useEffect(() => {
@@ -889,7 +997,7 @@ export default function Bibliothek() {
       }
 
       const systemInstruction = [
-        INTRO_DISCUSSION_PROMPT_BASE,
+        introDiscussionPromptBase,
         mode === "initial"
           ? "Aufgabe: Antworte auf die folgende Frage oder Aussage eines Kindes Gottes."
           : "Aufgabe: Antworte auf die folgende Rückmeldung des Kindes Gottes, beziehe dich auf die bisherigen Gedanken und führe das Gespräch weiter."
@@ -960,11 +1068,11 @@ export default function Bibliothek() {
     }
 
     return [
-      { role: "system", content: NEED_SUGGESTION_SYSTEM_MESSAGE },
+      { role: "system", content: needSuggestionSystemMessage },
       ...needSuggestionsMessages,
       userMessage
     ];
-  }, [needSuggestionsFollowUp, needSuggestionsMessages, problem]);
+  }, [needSuggestionsFollowUp, needSuggestionsMessages, needSuggestionSystemMessage, problem]);
 
   const handleChatGPT = useCallback(async () => {
     if (needSuggestionMessages.length === 0) {
@@ -1085,11 +1193,11 @@ export default function Bibliothek() {
     }
 
     return [
-      { role: "system", content: ASK_JESUS_SYSTEM_MESSAGE },
+      { role: "system", content: askJesusSystemMessage },
       ...jesusChatMessages,
       { role: "user", content: userContent }
     ];
-  }, [askJesusPrompt, jesusChatFollowUp, jesusChatMessages]);
+  }, [askJesusPrompt, askJesusSystemMessage, jesusChatFollowUp, jesusChatMessages]);
 
   const handleAskJesus = useCallback(async () => {
     if (askJesusMessages.length === 0) {
@@ -1161,7 +1269,8 @@ export default function Bibliothek() {
       "Aufgabe: Verfasse einen Abschlusskommentar. Beginne mit der Überschrift \"Abschluss\" und würdige in zwei bis drei Sätzen den Weg dieser Person und das Wirken Jesu.",
       "Struktur: Schreibe danach unter der Überschrift \"Alltagstipps\" drei konkrete, kleine Schritte in einer nummerierten Liste, wie die Person Jesu Zuspruch im Alltag leben kann.",
       "Bezug: Verknüpfe deine Worte mit allen Angaben, besonders mit der Frage an Jesus und dem gehörten Zuspruch.",
-      "Stil: Schreibe auf Deutsch, hoffnungsvoll, ermutigend und praxisnah. Greife Aussagen über Jesu Blick und Einladung auf, ohne zu moralisieren."
+      "Stil: Schreibe auf Deutsch, hoffnungsvoll, ermutigend und praxisnah. Greife Aussagen über Jesu Blick und Einladung auf, ohne zu moralisieren.",
+      languageInstructionDe
     ];
 
     if (stepEightEntry) {
@@ -1203,7 +1312,8 @@ export default function Bibliothek() {
     closingChatFollowUp,
     closingChatMessages,
     closingPromptContextItems,
-    meditationNotesReference
+    meditationNotesReference,
+    languageInstructionDe
   ]);
 
   const hasClosingPrompt = closingMessages.length > 0;
@@ -3833,6 +3943,51 @@ export default function Bibliothek() {
       </button>
 
       <section style={{ maxWidth: "1100px", margin: "0 auto" }}>
+        <div
+          style={{
+            backgroundColor: "#fff",
+            border: "1px solid #dfe7fb",
+            borderRadius: "14px",
+            padding: "1rem 1.25rem",
+            marginBottom: "1.25rem",
+            boxShadow: "0 6px 14px rgba(31, 60, 136, 0.08)"
+          }}
+        >
+          <h2 style={{ margin: "0 0 0.35rem", color: "#1f3c88" }}>Sprachstil auswählen</h2>
+          <p style={{ margin: "0 0 0.75rem", color: "#4c5d73", lineHeight: 1.5 }}>
+            Entscheide, ob die Antworten nur christliche Sprache nutzen oder zusätzlich psychologische und
+            wissenschaftliche Begriffe einbinden dürfen.
+          </p>
+          <div
+            style={{
+              display: "grid",
+              gap: "0.65rem",
+              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))"
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => setLanguageMode("christian")}
+              style={getLanguageButtonStyle("christian")}
+              aria-pressed={languageMode === "christian"}
+            >
+              Nur christliche Sprache
+            </button>
+            <button
+              type="button"
+              onClick={() => setLanguageMode("combined")}
+              style={getLanguageButtonStyle("combined")}
+              aria-pressed={languageMode === "combined"}
+            >
+              Christlich + psychologisch / wissenschaftlich
+            </button>
+          </div>
+          <p style={{ margin: "0.85rem 0 0", color: "#1f2933", fontWeight: 600, lineHeight: 1.4 }}>
+            {languageMode === "combined"
+              ? "Aktuell werden biblische Formulierungen mit psychologischer und wissenschaftlicher Sprache verbunden, wenn du das möchtest."
+              : "Aktuell bleiben die Antworten bewusst in biblischer Sprache und vermeiden psychologische Fachbegriffe."}
+          </p>
+        </div>
         <div>
           {!showResult && (
             <>
