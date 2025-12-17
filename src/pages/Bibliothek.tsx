@@ -1443,7 +1443,9 @@ export default function Bibliothek() {
           padding: "0.5rem",
           marginTop: "0.5rem",
           borderRadius: "6px",
-          border: "1px solid #ccc"
+          border: "1px solid #ccc",
+          resize: "vertical",
+          minHeight: "10rem"
         }}
       />
 
@@ -1462,7 +1464,9 @@ export default function Bibliothek() {
           padding: "0.5rem",
           marginTop: "0.5rem",
           borderRadius: "6px",
-          border: "1px solid #ccc"
+          border: "1px solid #ccc",
+          resize: "vertical",
+          minHeight: "12rem"
         }}
       />
 
@@ -1481,7 +1485,9 @@ export default function Bibliothek() {
           padding: "0.5rem",
           marginTop: "0.5rem",
           borderRadius: "6px",
-          border: "1px solid #ccc"
+          border: "1px solid #ccc",
+          resize: "vertical",
+          minHeight: "12rem"
         }}
       />
 
@@ -1936,7 +1942,7 @@ export default function Bibliothek() {
                     backgroundColor: "#fdfbf7",
                     boxShadow: "inset 0 1px 4px rgba(36, 53, 103, 0.08)",
                     resize: "vertical",
-                    minHeight: "6rem"
+                    minHeight: "12rem"
                   }}
                 />
               </div>
@@ -2297,7 +2303,8 @@ export default function Bibliothek() {
               background: "#fffdf8",
               color: "#2c3e50",
               boxShadow: "inset 0 1px 3px rgba(122, 68, 22, 0.08)",
-              minHeight: "5rem"
+              minHeight: "10rem",
+              resize: "vertical"
             }}
           />
         </div>
@@ -2970,15 +2977,16 @@ export default function Bibliothek() {
                     style={{
                       borderRadius: "14px",
                       border: "1px solid #c8d4f4",
-                      padding: "0.9rem 1rem",
-                      fontSize: "1rem",
-                      lineHeight: 1.55,
-                      background: "#f8fbff",
-                      color: "#1f3c88",
-                      boxShadow: "inset 0 1px 4px rgba(75, 123, 236, 0.12)",
-                      minHeight: "7rem"
-                    }}
-                  />
+                    padding: "0.9rem 1rem",
+                    fontSize: "1rem",
+                    lineHeight: 1.55,
+                    background: "#f8fbff",
+                    color: "#1f3c88",
+                    boxShadow: "inset 0 1px 4px rgba(75, 123, 236, 0.12)",
+                    minHeight: "12rem",
+                    resize: "vertical"
+                  }}
+                />
                 </div>
               </div>
             </section>
@@ -3310,15 +3318,16 @@ export default function Bibliothek() {
                     style={{
                       borderRadius: "14px",
                       border: "1px solid #d2d9ff",
-                      padding: "0.9rem 1rem",
-                      fontSize: "1rem",
-                      lineHeight: 1.55,
-                      background: "#f8f9ff",
-                      color: "#1f3c88",
-                      boxShadow: "inset 0 1px 4px rgba(77, 97, 214, 0.12)",
-                      minHeight: "7rem"
-                    }}
-                  />
+                    padding: "0.9rem 1rem",
+                    fontSize: "1rem",
+                    lineHeight: 1.55,
+                    background: "#f8f9ff",
+                    color: "#1f3c88",
+                    boxShadow: "inset 0 1px 4px rgba(77, 97, 214, 0.12)",
+                    minHeight: "12rem",
+                    resize: "vertical"
+                  }}
+                />
                 </div>
               </div>
 
