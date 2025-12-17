@@ -356,14 +356,17 @@ export default function Bibliothek() {
   const [listeningField, setListeningField] = useState<DictationField | null>(null);
   const [childhoodExperience, setChildhoodExperience] = useState("");
   const [needSuggestionsNotes, setNeedSuggestionsNotes] = useState("");
+  const [needSuggestionsFollowUp, setNeedSuggestionsFollowUp] = useState("");
   const [needSuggestionsLoading, setNeedSuggestionsLoading] = useState(false);
   const [needSuggestionsError, setNeedSuggestionsError] = useState<string | null>(null);
   const [jesusChatResponse, setJesusChatResponse] = useState("");
   const [jesusChatLoading, setJesusChatLoading] = useState(false);
   const [jesusChatError, setJesusChatError] = useState<string | null>(null);
+  const [jesusChatFollowUp, setJesusChatFollowUp] = useState("");
   const [closingChatResponse, setClosingChatResponse] = useState("");
   const [closingChatLoading, setClosingChatLoading] = useState(false);
   const [closingChatError, setClosingChatError] = useState<string | null>(null);
+  const [closingChatFollowUp, setClosingChatFollowUp] = useState("");
   const [introDiscussionMessages, setIntroDiscussionMessages] = useState<ChatMessage[]>([]);
   const [needSuggestionsMessages, setNeedSuggestionsMessages] = useState<ChatMessage[]>([]);
   const [jesusChatMessages, setJesusChatMessages] = useState<ChatMessage[]>([]);
@@ -921,40 +924,59 @@ export default function Bibliothek() {
     [buildIntroDiscussionMessages, formatChatError]
   );
 
-  const handleChatGPT = useCallback(async () => {
+  const needSuggestionMessages = useMemo<ChatMessage[]>(() => {
     const trimmedProblem = problem.trim();
-    if (!trimmedProblem) {
-      return;
-    }
+    const followUp = needSuggestionsFollowUp.trim();
+    const hasHistory = needSuggestionsMessages.length > 0;
+
+    const baseUserText = trimmedProblem
+      ? `Situation: ${trimmedProblem}`
+      : "Situation: (keine Beschreibung hinterlegt)";
 
     const userMessage: ChatMessage = {
       role: "user",
-      content: `Situation: ${trimmedProblem}`
+      content:
+        hasHistory && followUp
+          ? [followUp, "", "Ausgangssituation:", baseUserText].join("\n")
+          : baseUserText
     };
 
-    const messages: ChatMessage[] = [
+    if (!trimmedProblem && !followUp) {
+      return [] as ChatMessage[];
+    }
+
+    return [
       { role: "system", content: NEED_SUGGESTION_SYSTEM_MESSAGE },
       ...needSuggestionsMessages,
       userMessage
     ];
+  }, [needSuggestionsFollowUp, needSuggestionsMessages, problem]);
+
+  const handleChatGPT = useCallback(async () => {
+    if (needSuggestionMessages.length === 0) {
+      return;
+    }
+
+    const userMessage = needSuggestionMessages[needSuggestionMessages.length - 1];
 
     setNeedSuggestionsError(null);
     setNeedSuggestionsLoading(true);
 
     try {
-      const response = await runChatCompletion({ messages });
+      const response = await runChatCompletion({ messages: needSuggestionMessages });
       setNeedSuggestionsNotes(response);
       setNeedSuggestionsMessages((previous) => [
         ...previous,
         userMessage,
         { role: "assistant", content: response }
       ]);
+      setNeedSuggestionsFollowUp("");
     } catch (error) {
       setNeedSuggestionsError(formatChatError(error));
     } finally {
       setNeedSuggestionsLoading(false);
     }
-  }, [formatChatError, needSuggestionsMessages, problem]);
+  }, [formatChatError, needSuggestionMessages]);
 
   const buildDetailList = (
     items: Array<{ label: string; value: string }>
@@ -1036,17 +1058,24 @@ export default function Bibliothek() {
 
   const askJesusMessages = useMemo<ChatMessage[]>(() => {
     const trimmedPrompt = askJesusPrompt.trim();
+    const followUp = jesusChatFollowUp.trim();
+    const hasHistory = jesusChatMessages.length > 0;
 
-    if (!trimmedPrompt) {
+    const userContent = hasHistory && followUp
+      ? [followUp, "", "Kontext zur Erinnerung:", trimmedPrompt || "(kein Kontext hinterlegt)"]
+          .join("\n")
+      : trimmedPrompt;
+
+    if (!userContent) {
       return [] as ChatMessage[];
     }
 
     return [
       { role: "system", content: ASK_JESUS_SYSTEM_MESSAGE },
       ...jesusChatMessages,
-      { role: "user", content: trimmedPrompt }
+      { role: "user", content: userContent }
     ];
-  }, [askJesusPrompt, jesusChatMessages]);
+  }, [askJesusPrompt, jesusChatFollowUp, jesusChatMessages]);
 
   const handleAskJesus = useCallback(async () => {
     if (askJesusMessages.length === 0) {
@@ -1058,19 +1087,20 @@ export default function Bibliothek() {
     setJesusChatError(null);
     setJesusChatLoading(true);
 
-    try {
-      const response = await runChatCompletion({ messages: askJesusMessages });
-      setJesusChatResponse(response);
-      setJesusChatMessages((previous) => [
-        ...previous,
-        userMessage,
-        { role: "assistant", content: response }
-      ]);
-    } catch (error) {
-      setJesusChatError(formatChatError(error));
-    } finally {
-      setJesusChatLoading(false);
-    }
+      try {
+        const response = await runChatCompletion({ messages: askJesusMessages });
+        setJesusChatResponse(response);
+        setJesusChatMessages((previous) => [
+          ...previous,
+          userMessage,
+          { role: "assistant", content: response }
+        ]);
+        setJesusChatFollowUp("");
+      } catch (error) {
+        setJesusChatError(formatChatError(error));
+      } finally {
+        setJesusChatLoading(false);
+      }
   }, [askJesusMessages, formatChatError]);
 
   const closingPromptContextItems = useMemo(() => {
@@ -1134,12 +1164,20 @@ export default function Bibliothek() {
       .map((item) => `- ${item.label}: ${item.value}`)
       .join("\n");
 
+    const baseUserMessage = [
+      `Kontext:\n${contextLines}\n${meditationNotesReference}`,
+      `Angaben der Person:\n${meditationNotesReference}`
+    ].join("\n\n");
+
+    const followUp = closingChatFollowUp.trim();
+    const hasHistory = closingChatMessages.length > 0;
+
     const userMessage: ChatMessage = {
       role: "user",
-      content: [
-        `Kontext:\n${contextLines}\n${meditationNotesReference}`,
-        `Angaben der Person:\n${meditationNotesReference}`
-      ].join("\n\n")
+      content:
+        hasHistory && followUp
+          ? [followUp, "", "Kontext zur Erinnerung:", baseUserMessage].join("\n")
+          : baseUserMessage
     };
 
     return [
@@ -1147,7 +1185,12 @@ export default function Bibliothek() {
       ...closingChatMessages,
       userMessage
     ];
-  }, [closingChatMessages, closingPromptContextItems, meditationNotesReference]);
+  }, [
+    closingChatFollowUp,
+    closingChatMessages,
+    closingPromptContextItems,
+    meditationNotesReference
+  ]);
 
   const hasClosingPrompt = closingMessages.length > 0;
 
@@ -1161,19 +1204,20 @@ export default function Bibliothek() {
     setClosingChatError(null);
     setClosingChatLoading(true);
 
-    try {
-      const response = await runChatCompletion({ messages: closingMessages });
-      setClosingChatResponse(response);
-      setClosingChatMessages((previous) => [
-        ...previous,
-        userMessage,
-        { role: "assistant", content: response }
-      ]);
-    } catch (error) {
-      setClosingChatError(formatChatError(error));
-    } finally {
-      setClosingChatLoading(false);
-    }
+      try {
+        const response = await runChatCompletion({ messages: closingMessages });
+        setClosingChatResponse(response);
+        setClosingChatMessages((previous) => [
+          ...previous,
+          userMessage,
+          { role: "assistant", content: response }
+        ]);
+        setClosingChatFollowUp("");
+      } catch (error) {
+        setClosingChatError(formatChatError(error));
+      } finally {
+        setClosingChatLoading(false);
+      }
   }, [closingMessages, formatChatError, hasClosingPrompt]);
 
 
@@ -1264,6 +1308,9 @@ export default function Bibliothek() {
     setNeedSuggestionsMessages([]);
     setJesusChatMessages([]);
     setClosingChatMessages([]);
+    setNeedSuggestionsFollowUp("");
+    setJesusChatFollowUp("");
+    setClosingChatFollowUp("");
   };
 
   const handleDeleteChat = (id: string) => {
@@ -2490,6 +2537,39 @@ export default function Bibliothek() {
           })}
         </div>
 
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "0.35rem",
+            width: "100%"
+          }}
+        >
+          <label htmlFor="needSuggestionsFollowUp" style={{ fontWeight: 700, color: "#7a4416" }}>
+            Rückfrage an ChatGPT (optional)
+          </label>
+          <textarea
+            id="needSuggestionsFollowUp"
+            value={needSuggestionsFollowUp}
+            onChange={(event) => setNeedSuggestionsFollowUp(event.target.value)}
+            placeholder="Stelle hier eine Rückfrage oder Präzisierung, falls du nach der ersten Antwort weiterfragen möchtest."
+            rows={3}
+            style={{
+              borderRadius: "12px",
+              border: "1px solid #e2c9a5",
+              padding: "0.7rem 0.85rem",
+              fontSize: "0.98rem",
+              lineHeight: 1.45,
+              background: "#fffdf8",
+              color: "#2c3e50",
+              boxShadow: "inset 0 1px 3px rgba(122, 68, 22, 0.08)"
+            }}
+          />
+          <p style={{ margin: 0, fontSize: "0.9rem", color: "#7a4416", lineHeight: 1.4 }}>
+            Deine Rückfrage wird zusammen mit der ursprünglichen Situation an ChatGPT geschickt, damit du direkt nachhaken kannst.
+          </p>
+        </div>
+
         <button
           type="button"
           onClick={handleChatGPT}
@@ -3181,6 +3261,39 @@ export default function Bibliothek() {
                 </div>
               )}
 
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "0.35rem",
+                    width: "100%"
+                  }}
+                >
+                  <label htmlFor="jesusChatFollowUp" style={{ fontWeight: 700, color: "#1f3c88" }}>
+                    Rückfrage an ChatGPT (optional)
+                  </label>
+                  <textarea
+                    id="jesusChatFollowUp"
+                    value={jesusChatFollowUp}
+                    onChange={(event) => setJesusChatFollowUp(event.target.value)}
+                    placeholder="Formuliere eine Rückfrage, falls du nach der ersten Antwort noch etwas vertiefen möchtest."
+                    rows={3}
+                    style={{
+                      borderRadius: "12px",
+                      border: "1px solid #c8d4f4",
+                      padding: "0.75rem 0.9rem",
+                      fontSize: "0.98rem",
+                      lineHeight: 1.45,
+                      background: "#f8faff",
+                      color: "#1f3c88",
+                      boxShadow: "inset 0 1px 3px rgba(31, 60, 136, 0.1)"
+                    }}
+                  />
+                  <p style={{ margin: 0, fontSize: "0.9rem", color: "#1f3c88", lineHeight: 1.4 }}>
+                    Deine Rückfrage wird zusammen mit dem bisherigen Kontext an ChatGPT geschickt, damit das Gespräch weitergehen kann.
+                  </p>
+                </div>
+
                 <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
                   <button
                     type="button"
@@ -3526,6 +3639,39 @@ export default function Bibliothek() {
               </div>
 
               <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "0.35rem",
+                    width: "100%"
+                  }}
+                >
+                  <label htmlFor="closingChatFollowUp" style={{ fontWeight: 700, color: "#4b7bec" }}>
+                    Rückfrage an ChatGPT (optional)
+                  </label>
+                  <textarea
+                    id="closingChatFollowUp"
+                    value={closingChatFollowUp}
+                    onChange={(event) => setClosingChatFollowUp(event.target.value)}
+                    placeholder="Falls du nach dem Abschluss noch etwas klären möchtest, formuliere es hier."
+                    rows={3}
+                    style={{
+                      borderRadius: "12px",
+                      border: "1px solid #d2d9ff",
+                      padding: "0.75rem 0.9rem",
+                      fontSize: "0.98rem",
+                      lineHeight: 1.45,
+                      background: "#f8f9ff",
+                      color: "#1f3c88",
+                      boxShadow: "inset 0 1px 3px rgba(77, 97, 214, 0.12)"
+                    }}
+                  />
+                  <p style={{ margin: 0, fontSize: "0.9rem", color: "#4b7bec", lineHeight: 1.4 }}>
+                    Deine Rückfrage wird gemeinsam mit den vorherigen Angaben geschickt, damit ChatGPT auf deinen Weg eingehen kann.
+                  </p>
+                </div>
+
                 <button
                   type="button"
                   onClick={handleClosingChatGPT}
