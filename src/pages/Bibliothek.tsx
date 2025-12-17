@@ -520,17 +520,23 @@ export default function Bibliothek() {
       const isSelected = languageMode === mode;
 
       return {
-        backgroundColor: isSelected ? "#1f3c88" : "#f5f7fb",
-        color: isSelected ? "#ffffff" : "#1f3c88",
-        border: isSelected ? "1px solid #1b3578" : "1px solid #cbd2d9",
+        backgroundColor: isSelected ? "#1f3c88" : "#ffffff",
+        color: isSelected ? "#ffffff" : "#1f2933",
+        border: isSelected ? "2px solid #1b3578" : "1px solid #cbd2d9",
         borderRadius: "10px",
         padding: "0.65rem 0.9rem",
         cursor: "pointer",
-        fontWeight: 700,
-        boxShadow: isSelected ? "0 8px 14px rgba(31, 60, 136, 0.18)" : "none",
+        fontWeight: isSelected ? 800 : 700,
+        boxShadow: isSelected
+          ? "0 8px 14px rgba(31, 60, 136, 0.18)"
+          : "0 4px 10px rgba(17, 24, 39, 0.06)",
         width: "100%",
         textShadow: isSelected ? "0 1px 1px rgba(0, 0, 0, 0.25)" : "none",
-        transition: "background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease"
+        transition:
+          "background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease",
+        outline: isSelected ? "none" : "2px solid transparent",
+        outlineOffset: "2px",
+        textAlign: "center"
       };
     },
     [languageMode]
