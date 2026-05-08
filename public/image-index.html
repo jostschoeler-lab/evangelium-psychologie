@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bildvorschau – Evangelium Psychologie</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #f7f7f8;
+        --card: #ffffff;
+        --text: #1f2937;
+        --muted: #6b7280;
+        --border: #e5e7eb;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #111827;
+          --card: #1f2937;
+          --text: #f3f4f6;
+          --muted: #9ca3af;
+          --border: #374151;
+        }
+      }
+      body {
+        margin: 0;
+        font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+      }
+      header {
+        padding: 24px;
+        border-bottom: 1px solid var(--border);
+      }
+      h1 {
+        margin: 0 0 8px;
+        font-size: 1.5rem;
+      }
+      p {
+        margin: 0;
+        color: var(--muted);
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 16px;
+        padding: 20px;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+      }
+      .preview {
+        height: 190px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: repeating-conic-gradient(#00000008 0% 25%, transparent 0% 50%) 50% / 20px 20px;
+      }
+      .preview img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+      }
+      .meta {
+        padding: 10px 12px 14px;
+      }
+      .path {
+        margin: 0;
+        font-size: 0.9rem;
+        line-height: 1.3;
+        word-break: break-all;
+      }
+      .link {
+        display: inline-block;
+        margin-top: 6px;
+        color: #2563eb;
+        text-decoration: none;
+        font-size: 0.85rem;
+      }
+      .link:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Bildvorschau</h1>
+      <p>Alle aktuell im Projekt gefundenen PNG/SVG-Dateien mit Pfad und Direktlink.</p>
+    </header>
+
+    <main class="grid">
+      <article class="card">
+        <div class="preview"><img src="/Bedürfnisse/jesus-traegt-weinendes-kind.svg" alt="/Bedürfnisse/jesus-traegt-weinendes-kind.svg" /></div>
+        <div class="meta"><p class="path">/Bedürfnisse/jesus-traegt-weinendes-kind.svg</p><a class="link" href="/Bedürfnisse/jesus-traegt-weinendes-kind.svg" target="_blank" rel="noreferrer">Direkt öffnen</a></div>
+      </article>
+      <article class="card">
+        <div class="preview"><img src="/Bedürfnisse/personal-step-child.svg" alt="/Bedürfnisse/personal-step-child.svg" /></div>
+        <div class="meta"><p class="path">/Bedürfnisse/personal-step-child.svg</p><a class="link" href="/Bedürfnisse/personal-step-child.svg" target="_blank" rel="noreferrer">Direkt öffnen</a></div>
+      </article>
+      <article class="card">
+        <div class="preview"><img src="/Bedürfnisse/personal-step-guide.svg" alt="/Bedürfnisse/personal-step-guide.svg" /></div>
+        <div class="meta"><p class="path">/Bedürfnisse/personal-step-guide.svg</p><a class="link" href="/Bedürfnisse/personal-step-guide.svg" target="_blank" rel="noreferrer">Direkt öffnen</a></div>
+      </article>
+      <article class="card">
+        <div class="preview"><img src="/Bedürfnisse/verwandlung-intro.svg" alt="/Bedürfnisse/verwandlung-intro.svg" /></div>
+        <div class="meta"><p class="path">/Bedürfnisse/verwandlung-intro.svg</p><a class="link" href="/Bedürfnisse/verwandlung-intro.svg" target="_blank" rel="noreferrer">Direkt öffnen</a></div>
+      </article>
+      <article class="card">
+        <div class="preview"><img src="/Images/hohepriester.png" alt="/Images/hohepriester.png" /></div>
+        <div class="meta"><p class="path">/Images/hohepriester.png</p><a class="link" href="/Images/hohepriester.png" target="_blank" rel="noreferrer">Direkt öffnen</a></div>
+      </article>
+      <article class="card">
+        <div class="preview"><img src="/Images/jesus.png" alt="/Images/jesus.png" /></div>
+        <div class="meta"><p class="path">/Images/jesus.png</p><a class="link" href="/Images/jesus.png" target="_blank" rel="noreferrer">Direkt öffnen</a></div>
+      </article>
+      <article class="card">
+        <div class="preview"><img src="/assets/need-child.svg" alt="/assets/need-child.svg" /></div>
+        <div class="meta"><p class="path">/assets/need-child.svg</p><a class="link" href="/assets/need-child.svg" target="_blank" rel="noreferrer">Direkt öffnen</a></div>
+      </article>
+      <article class="card">
+        <div class="preview"><img src="/src/assets/images/kind.png" alt="/src/assets/images/kind.png" /></div>
+        <div class="meta"><p class="path">/src/assets/images/kind.png <br/><small>(Hinweis: Datei liegt in src/, kann je nach Build-Setup ggf. nicht direkt geladen werden.)</small></p></div>
+      </article>
+      <article class="card">
+        <div class="preview"><img src="/src/assets/images/kindmitpanzer.png" alt="/src/assets/images/kindmitpanzer.png" /></div>
+        <div class="meta"><p class="path">/src/assets/images/kindmitpanzer.png <br/><small>(Hinweis: Datei liegt in src/, kann je nach Build-Setup ggf. nicht direkt geladen werden.)</small></p></div>
+      </article>
+      <article class="card">
+        <div class="preview"><img src="/src/assets/stuhldialog/anklaeger.png" alt="/src/assets/stuhldialog/anklaeger.png" /></div>
+        <div class="meta"><p class="path">/src/assets/stuhldialog/anklaeger.png <br/><small>(Hinweis: Datei liegt in src/, kann je nach Build-Setup ggf. nicht direkt geladen werden.)</small></p></div>
+      </article>
+      <article class="card">
+        <div class="preview"><img src="/src/assets/stuhldialog/coping.png" alt="/src/assets/stuhldialog/coping.png" /></div>
+        <div class="meta"><p class="path">/src/assets/stuhldialog/coping.png <br/><small>(Hinweis: Datei liegt in src/, kann je nach Build-Setup ggf. nicht direkt geladen werden.)</small></p></div>
+      </article>
+      <article class="card">
+        <div class="preview"><img src="/src/assets/stuhldialog/erwachsener.png" alt="/src/assets/stuhldialog/erwachsener.png" /></div>
+        <div class="meta"><p class="path">/src/assets/stuhldialog/erwachsener.png <br/><small>(Hinweis: Datei liegt in src/, kann je nach Build-Setup ggf. nicht direkt geladen werden.)</small></p></div>
+      </article>
+      <article class="card">
+        <div class="preview"><img src="/src/assets/stuhldialog/jesus.png" alt="/src/assets/stuhldialog/jesus.png" /></div>
+        <div class="meta"><p class="path">/src/assets/stuhldialog/jesus.png <br/><small>(Hinweis: Datei liegt in src/, kann je nach Build-Setup ggf. nicht direkt geladen werden.)</small></p></div>
+      </article>
+      <article class="card">
+        <div class="preview"><img src="/src/assets/stuhldialog/kind.png" alt="/src/assets/stuhldialog/kind.png" /></div>
+        <div class="meta"><p class="path">/src/assets/stuhldialog/kind.png <br/><small>(Hinweis: Datei liegt in src/, kann je nach Build-Setup ggf. nicht direkt geladen werden.)</small></p></div>
+      </article>
+    </main>
+  </body>
+</html>
