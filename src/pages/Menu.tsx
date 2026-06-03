@@ -121,6 +121,16 @@ export default function Menu() {
           <span>Stuhldialog</span>
           <span style={subtitle}>Dialog-Modus öffnen</span>
         </Link>
+
+        <Link
+          to="/repression-or-transformation"
+          style={btnStyle}
+          onMouseEnter={(e) => handleHover(e, true)}
+          onMouseLeave={(e) => handleHover(e, false)}
+        >
+          <span>Repression or Transformation</span>
+          <span style={subtitle}>Unterdrücken oder verwandeln?</span>
+        </Link>
       </div>
     </main>
   );
